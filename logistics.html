@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bhowanee — Logistics & Storage Operations</title>
+<meta name="description" content="Manage farm pickups, cold chain warehousing, digital proof of handoff, and crop loss tracking across Maharashtra.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600&family=Zilla+Slab:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+.kpi-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:20px; }
+.kpi-card { background:var(--sheet); border:1px solid var(--rule); padding:16px; }
+.kpi-card .num { font-family:var(--font-slab); font-size:26px; font-weight:700; color:var(--ink); line-height:1.1; margin-bottom:4px; }
+.kpi-card .lbl { font-size:13.5px; color:var(--ink-soft); font-weight:500; }
+.storage-grid { display:grid; grid-template-columns:1fr 360px; min-height:500px; border:1px solid var(--rule); }
+.storage-panel { background:var(--sheet); border-left:1px solid var(--rule); padding:20px; overflow-y:auto; }
+.fill-bar-wrap { background:var(--rule); height:12px; border-radius:6px; overflow:hidden; margin:8px 0 4px; }
+.fill-bar { height:100%; transition:width 400ms ease; }
+.stat-pill { display:inline-flex; align-items:center; gap:6px; padding:3px 8px; border-radius:12px; font-size:12.5px; font-weight:600; }
+.pill-green { background:#E6F4EA; color:#137333; }
+.pill-amber { background:#FEF7E0; color:#B06000; }
+.pill-red { background:#FCE8E6; color:#C5221F; }
+.upload-zone { border:2px dashed var(--rule); padding:20px; text-align:center; background:var(--tint); cursor:pointer; margin-top:8px; border-radius:4px; }
+.upload-zone:hover { border-color:var(--ink); }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- Topbar -->
+  <header class="topbar" role="banner">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="topbar-brand">Bhowanee</span>
+      <span class="chip sm" style="background:var(--forest);color:#FFF;font-weight:600">Logistics & Cold Storage</span>
+    </div>
+    <div class="topbar-tools">
+      <span id="tb-log-user" style="font-size:14.5px;font-weight:500">Fleet Operations Desk</span>
+      <span id="sync-badge" class="sync-badge">Live GPS / Fill</span>
+      <button class="ghost" onclick="Auth.logout()">Sign out</button>
+    </div>
+  </header>
+
+  <!-- Sidenav -->
+  <nav class="sidenav" aria-label="Logistics navigation">
+    <button class="sidenav-item active" data-section="pickups">Farm Pickups</button>
+    <button class="sidenav-item" data-section="storage">Storage & Warehouses</button>
+    <button class="sidenav-item" data-section="handoff">Handoff Confirmation</button>
+    <button class="sidenav-item" data-section="losses">Loss & Spoilage Tracker</button>
+    <button class="sidenav-item" data-section="demand">Demand & Dispatches</button>
+  </nav>
+
+  <!-- Main -->
+  <main class="main-area" id="main-area">
+
+    <!-- ── 1. FARM PICKUPS ─────────────────────────────────── -->
+    <section id="s-pickups">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title">Farm Gate Harvest Collections</h1>
+          <p class="page-sub">Coordinate truck dispatch, driver assignment, and scheduled pickup windows directly from fields.</p>
+        </div>
+        <button class="btn" onclick="openSchedulePickupModal()">+ Schedule Farm Pickup</button>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="num" id="kpi-pickups-active">2 Pickups</div>
+          <div class="lbl">Pending Collections</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">20.0 Qt</div>
+          <div class="lbl">Harvest Volume in Transit</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--forest)">100%</div>
+          <div class="lbl">On-Time Arrival Rate</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">0.0%</div>
+          <div class="lbl">Transit Loss to Date</div>
+        </div>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Pickup ID</th>
+              <th>Farm Location</th>
+              <th>Associated Lot</th>
+              <th>Destination Storage</th>
+              <th>Scheduled Window</th>
+              <th>Assigned Vehicle</th>
+              <th>Status</th>
+              <th>Operations Action</th>
+            </tr>
+          </thead>
+          <tbody id="pickups-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 2. STORAGE & WAREHOUSES ─────────────────────────── -->
+    <section id="s-storage" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Warehouse Network & Cold Chain Fill Levels</h1>
+        <p class="page-sub">Real-time inventory fill gauges, humidity/temperature telemetry, and space allocation.</p>
+      </div>
+
+      <div class="storage-grid">
+        <div id="storage-map" style="min-height:500px"></div>
+        <div class="storage-panel" id="warehouse-panel">
+          <h3 id="wh-panel-name" style="font-family:var(--font-slab);font-size:18px;margin:0 0 8px">Select a Warehouse</h3>
+          <p id="wh-panel-sub" style="font-size:13px;color:var(--ink-soft);margin-bottom:14px">Click any facility pin on the map to inspect live storage levels.</p>
+          <div id="wh-panel-content"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 3. HANDOFF CONFIRMATION ─────────────────────────── -->
+    <section id="s-handoff" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Digital Proof of Handoff & Weighment</h1>
+        <p class="page-sub">Irrefutable digital chain-of-custody transfer with weighbridge receipts and photo validation.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:20px">
+        <div style="background:var(--sheet);border:1px solid var(--rule);padding:20px">
+          <h3 style="font-family:var(--font-slab);font-size:18px;margin-bottom:12px">Execute Digital Custody Transfer</h3>
+          
+          <div class="field">
+            <label for="hf-lot">Lot Reference</label>
+            <select id="hf-lot">
+              <option value="l1">Lot L1 (Gat 118, 12 Qt Onion)</option>
+              <option value="l2">Lot L2 (Gat 147, 8 Qt Onion)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="hf-from">Custody Origin (From)</label>
+            <input id="hf-from" value="Farm Gate 118, Pimpalgaon">
+          </div>
+
+          <div class="field">
+            <label for="hf-to">Receiving Custody (To)</label>
+            <select id="hf-to">
+              <option value="Dindori Cold Store">Dindori Cold Store (Facility #1)</option>
+              <option value="Nashik Hub Warehouse">Nashik Hub Warehouse (Facility #2)</option>
+              <option value="Pimpalgaon Storage">Pimpalgaon Storage (Facility #3)</option>
+              <option value="Buyer Receiving Dock">Buyer Receiving Dock (Vashi APMC)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="hf-weight">Weighed Gross Weight (Quintals)</label>
+            <input type="number" step="0.1" id="hf-weight" value="12.0">
+          </div>
+
+          <div class="field">
+            <label>Upload Weighment Slip / Bagging Photo</label>
+            <div class="upload-zone" onclick="document.getElementById('hf-file').click()">
+              <span id="hf-file-label">📷 Tap to select photo / weighbridge receipt</span>
+              <input type="file" id="hf-file" accept="image/*" style="display:none" onchange="previewHandoffPhoto(this)">
+            </div>
+          </div>
+
+          <button class="btn" style="width:100%;margin-top:16px" onclick="submitHandoffProof()">Sign & Confirm Digital Handoff</button>
+        </div>
+
+        <div>
+          <h3 style="font-family:var(--font-slab);font-size:18px;margin-bottom:12px">Confirmed Chain of Custody Records</h3>
+          <div class="tablewrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Lot</th>
+                  <th>Origin &rarr; Destination</th>
+                  <th>Weight</th>
+                  <th>Sign-off</th>
+                </tr>
+              </thead>
+              <tbody id="handoffs-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 4. LOSS & SPOILAGE TRACKER ──────────────────────── -->
+    <section id="s-losses" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <div>
+          <h1 class="page-title">Loss & Spoilage Incident Log</h1>
+          <p class="page-sub">Report bag tears, moisture spoilage, or transit shrinkage with photographic evidence.</p>
+        </div>
+      </div>
+
+      <div style="background:var(--sheet);border:1px solid var(--rule);padding:20px;max-width:680px;margin-bottom:24px">
+        <h3 style="font-family:var(--font-slab);font-size:18px;margin-bottom:12px">Log Incident</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="field">
+            <label for="loss-pickup">Consignment / Pickup</label>
+            <select id="loss-pickup">
+              <option value="pk1">PK1 — Gat 118 &rarr; Dindori Cold Store</option>
+              <option value="pk2">PK2 — Gat 147 &rarr; Nashik Hub Warehouse</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="loss-qty">Lost Quantity (Quintals)</label>
+            <input type="number" step="0.1" id="loss-qty" placeholder="e.g. 0.4">
+          </div>
+          <div class="field" style="grid-column:span 2">
+            <label for="loss-reason">Incident Category & Root Cause</label>
+            <input id="loss-reason" placeholder="e.g. Bag rupture during loading or condensation dampening">
+          </div>
+        </div>
+        <button class="btn" style="margin-top:14px" onclick="submitLossReport()">Record Incident & Deduct Net Weight</button>
+      </div>
+
+      <h3 style="font-family:var(--font-slab);font-size:18px;margin-bottom:10px">Logged Spoilage Incidents</h3>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Consignment</th>
+              <th>Lost Amount</th>
+              <th>Reason / Finding</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="loss-records-tbody">
+            <tr>
+              <td>PK1 (Lot L1)</td>
+              <td>0.0 Qt</td>
+              <td>Zero loss recorded at dock</td>
+              <td><span class="stat-pill pill-green">Clear</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 5. DEMAND & DISPATCHES ──────────────────────────── -->
+    <section id="s-demand" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Confirmed Bids & Delivery Dispatches</h1>
+        <p class="page-sub">Syncing warehouse releases with closed buyer bids to schedule dock drops.</p>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Lot Ref</th>
+              <th>Commodity</th>
+              <th>Weight</th>
+              <th>Winning Off-Taker</th>
+              <th>Current Storage Hub</th>
+              <th>Target Drop Dock</th>
+              <th>Status</th>
+              <th>Fleet Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Lot L1</b></td>
+              <td>Onion Grade A</td>
+              <td>12 Qt</td>
+              <td>Buyer C / Fresh Mart</td>
+              <td>Dindori Cold Store</td>
+              <td>Vashi APMC Dock 4</td>
+              <td><span class="chip sm" style="background:#E6F4EA;color:#137333">Ready for Final Dispatch</span></td>
+              <td><button class="btn sm" onclick="alert('Vehicle MH-15-AB-1234 scheduled for dock transit.')">Dispatch Truck</button></td>
+            </tr>
+            <tr>
+              <td><b>Lot L2</b></td>
+              <td>Onion Grade B</td>
+              <td>8 Qt</td>
+              <td>Buyer A</td>
+              <td>Nashik Hub Warehouse</td>
+              <td>Kalyan Wholesale Hub</td>
+              <td><span class="chip sm" style="background:#FEF7E0;color:#B06000">Pending Farm Pickup</span></td>
+              <td><button class="btn sm secondary" onclick="switchSection('pickups')">Coordinate Pickup</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Modal: Schedule Pickup -->
+<div id="modal-pickup" class="modal-overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pk-m-title">
+    <h3 id="pk-m-title" style="font-family:var(--font-slab)">Schedule Farm Pickup</h3>
+    <p class="modal-sub">Assign transport for ready harvest lots at farm gate.</p>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+      <div class="field">
+        <label for="pk-lot">Lot</label>
+        <select id="pk-lot">
+          <option value="l1">Lot L1 (Gat 118, 12 Qt)</option>
+          <option value="l2">Lot L2 (Gat 147, 8 Qt)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="pk-wh">Target Warehouse</label>
+        <select id="pk-wh">
+          <option value="w1">Dindori Cold Store</option>
+          <option value="w2">Nashik Hub Warehouse</option>
+          <option value="w3">Pimpalgaon Storage</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="pk-farm">Farm Gate Address</label>
+        <input id="pk-farm" value="Gat 118, Pimpalgaon, Dindori">
+      </div>
+      <div class="field">
+        <label for="pk-date">Scheduled Time</label>
+        <input type="datetime-local" id="pk-date">
+      </div>
+    </div>
+    
+    <div class="modal-actions">
+      <button class="btn" type="button" onclick="submitNewPickup()">Schedule Transport</button>
+      <button class="btn secondary" type="button" onclick="closePickupModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="auth.js"></script>
+<script src="data.js"></script>
+<script src="components.js"></script>
+<script>
+/* ============================================================
+   Logistics & Cold Storage Logic
+   ============================================================ */
+
+// 1. Auth Guard
+Auth.requireRole('logistics');
+var session = Auth.getSession();
+if (session && session.name) {
+  document.getElementById('tb-log-user').textContent = session.name + ' (Fleet Desk)';
+}
+
+// 2. Navigation
+var navBtns = document.querySelectorAll('.sidenav-item');
+navBtns.forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var sec = btn.getAttribute('data-section');
+    switchSection(sec);
+  });
+});
+
+function switchSection(sec) {
+  navBtns.forEach(function (b) {
+    b.classList.toggle('active', b.getAttribute('data-section') === sec);
+  });
+  document.querySelectorAll('main > section').forEach(function (s) {
+    s.style.display = s.id === 's-' + sec ? 'block' : 'none';
+  });
+  if (sec === 'storage' && storageMap) {
+    setTimeout(function () { storageMap.invalidateSize(); }, 200);
+  }
+}
+
+// 3. Farm Pickups
+function renderPickups() {
+  var pickups = BD.getPickups();
+  var tbody = document.getElementById('pickups-tbody');
+  var html = '';
+
+  document.getElementById('kpi-pickups-active').textContent = pickups.length + ' Pickups';
+
+  pickups.forEach(function (pk) {
+    var wh = BD.getWarehouses().find(function (w) { return w.id === pk.warehouseId; });
+    var isScheduled = pk.status === 'scheduled';
+
+    html += '<tr>';
+    html += '<td><b>' + pk.id.toUpperCase() + '</b></td>';
+    html += '<td>' + pk.farm + '</td>';
+    html += '<td>' + pk.lotId.toUpperCase() + '</td>';
+    html += '<td>' + (wh ? wh.name : 'Central Warehouse') + '</td>';
+    html += '<td>' + new Date(pk.scheduledAt).toLocaleString('en-IN', { dateStyle:'short', timeStyle:'short' }) + '</td>';
+    html += '<td>' + (pk.vehicle ? '<b>' + pk.vehicle + '</b>' : '<span style="color:var(--ink-soft)">Unassigned</span>') + '</td>';
+    html += '<td><span class="stat-pill ' + (isScheduled ? 'pill-green' : 'pill-amber') + '">' + pk.status + '</span></td>';
+    html += '<td>';
+    if (!pk.vehicle) {
+      html += '<button class="btn sm" onclick="assignTruck(\'' + pk.id + '\')">Assign Vehicle</button>';
+    } else {
+      html += '<button class="btn sm secondary" onclick="switchSection(\'handoff\')">Confirm Handoff</button>';
+    }
+    html += '</td>';
+    html += '</tr>';
+  });
+
+  tbody.innerHTML = html;
+}
+
+window.assignTruck = function (pkId) {
+  var truck = prompt("Enter Truck / Tempo Registration Number:", "MH-15-CD-5678");
+  if (!truck) return;
+  var pk = BD.getPickups().find(function (p) { return p.id === pkId; });
+  if (pk) {
+    pk.vehicle = truck;
+    pk.status = 'scheduled';
+    BD.writeAudit('Assigned vehicle ' + truck + ' to pickup ' + pkId, 'Logistics Desk', pk.farm, 'Fleet Dispatch');
+    BhComp.toast("Vehicle assigned and driver notified.", "info");
+    renderPickups();
+  }
+};
+
+window.openSchedulePickupModal = function () {
+  document.getElementById('pk-date').value = new Date(Date.now() + 86400000).toISOString().slice(0, 16);
+  document.getElementById('modal-pickup').removeAttribute('hidden');
+};
+
+window.closePickupModal = function () {
+  document.getElementById('modal-pickup').setAttribute('hidden', '');
+};
+
+window.submitNewPickup = function () {
+  var lotId = document.getElementById('pk-lot').value;
+  var whId = document.getElementById('pk-wh').value;
+  var farm = document.getElementById('pk-farm').value.trim();
+  var date = document.getElementById('pk-date').value || new Date().toISOString();
+
+  var lot = BD.getLot(lotId);
+  var cid = lot ? lot.contractId : 'c1';
+
+  BD.schedulePickup(lotId, cid, farm, whId, date);
+  BD.writeAudit('Scheduled farm harvest pickup for ' + lotId + ' at ' + farm, 'Logistics Desk', 'Farmer', 'Logistics Scheduling');
+  BhComp.toast("Farm pickup scheduled.", "info");
+  closePickupModal();
+  renderPickups();
+};
+
+// 4. Warehouse & Storage Map
+var storageMap = null;
+
+function initStorageMap() {
+  if (storageMap) return;
+  storageMap = L.map('storage-map').setView([20.10, 73.81], 10);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; CartoDB, &copy; OpenStreetMap',
+    maxZoom: 16
+  }).addTo(storageMap);
+
+  var warehouses = BD.getWarehouses();
+  warehouses.forEach(function (wh) {
+    var pct = Math.round((wh.usedQt / wh.capacityQt) * 100);
+    var markerColor = pct >= 80 ? '#B86B14' : '#2C6E49';
+
+    var marker = L.circleMarker([wh.lat, wh.lng], {
+      radius: 12,
+      fillColor: markerColor,
+      color: '#1C2452',
+      weight: 2,
+      opacity: 1,
+      fillOpacity: 0.85
+    }).addTo(storageMap);
+
+    marker.bindTooltip('<b>' + wh.name + '</b><br>' + pct + '% Full (' + wh.usedQt + ' / ' + wh.capacityQt + ' Qt)', {
+      className: 'dist-tooltip'
+    });
+
+    marker.on('click', function () {
+      inspectWarehouse(wh);
+    });
+  });
+
+  if (warehouses.length) inspectWarehouse(warehouses[0]);
+}
+
+function inspectWarehouse(wh) {
+  var pct = Math.round((wh.usedQt / wh.capacityQt) * 100);
+  var free = wh.capacityQt - wh.usedQt;
+
+  document.getElementById('wh-panel-name').textContent = wh.name;
+  document.getElementById('wh-panel-sub').textContent = 'Facility Contact: ' + wh.contact;
+
+  var barColor = pct >= 80 ? '#B86B14' : '#2C6E49';
+
+  var html = '';
+  html += '<div style="margin-bottom:14px">';
+  html += '<div style="display:flex;justify-content:space-between;font-size:14px">';
+  html += '<span>Storage Utilization:</span> <b>' + pct + '%</b>';
+  html += '</div>';
+  html += '<div class="fill-bar-wrap"><div class="fill-bar" style="width:' + pct + '%;background:' + barColor + '"></div></div>';
+  html += '<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-soft)">';
+  html += '<span>Used: ' + wh.usedQt.toLocaleString('en-IN') + ' Qt</span>';
+  html += '<span>Available: ' + free.toLocaleString('en-IN') + ' Qt</span>';
+  html += '</div>';
+  html += '</div>';
+
+  html += '<div style="background:var(--tint);padding:12px;border-radius:4px;font-size:13.5px;line-height:1.7;margin-bottom:16px">';
+  html += '<div><b>Total Capacity:</b> ' + wh.capacityQt.toLocaleString('en-IN') + ' Quintals</div>';
+  html += '<div><b>Cold Chambers:</b> Active (4°C, 88% RH)</div>';
+  html += '<div><b>CCTV & Assaying:</b> Continuous Monitoring</div>';
+  html += '<div><b>Accreditation:</b> WDRA Registered</div>';
+  html += '</div>';
+
+  html += '<button class="btn sm" style="width:100%" onclick="switchSection(\'handoff\')">Record Inward Handoff</button>';
+
+  document.getElementById('wh-panel-content').innerHTML = html;
+}
+
+// 5. Digital Proof of Handoff
+function previewHandoffPhoto(input) {
+  if (input.files && input.files[0]) {
+    document.getElementById('hf-file-label').textContent = '✓ Attached: ' + input.files[0].name;
+  }
+}
+
+window.submitHandoffProof = function () {
+  var lotId = document.getElementById('hf-lot').value;
+  var from = document.getElementById('hf-from').value.trim();
+  var to = document.getElementById('hf-to').value;
+  var wt = parseFloat(document.getElementById('hf-weight').value) || 10;
+
+  var h = BD.confirmHandoff(lotId, from, to, wt);
+  BD.writeAudit('Confirmed custody handoff of ' + wt + ' Qt on lot ' + lotId + ' to ' + to, 'Logistics Desk', from, 'Weighbridge Digital Handoff');
+  BhComp.toast("Digital handoff confirmed! Warehouse fill updated.", "info");
+
+  renderHandoffs();
+  renderPickups();
+  if (storageMap) {
+    var wh = BD.getWarehouses()[0];
+    if (wh) inspectWarehouse(wh);
+  }
+};
+
+function renderHandoffs() {
+  var handoffs = BD.getHandoffs();
+  var tbody = document.getElementById('handoffs-tbody');
+  var html = '';
+
+  handoffs.slice().reverse().forEach(function (h) {
+    html += '<tr>';
+    html += '<td>' + new Date(h.timestamp).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }) + '</td>';
+    html += '<td><b>' + h.lotId.toUpperCase() + '</b></td>';
+    html += '<td>' + h.from + ' &rarr; ' + h.to + '</td>';
+    html += '<td><b>' + h.weightQt + ' Qt</b></td>';
+    html += '<td><span class="chip sm" style="background:#E6F4EA;color:#137333">Confirmed ✓</span></td>';
+    html += '</tr>';
+  });
+
+  tbody.innerHTML = html;
+}
+
+// 6. Loss Tracker
+window.submitLossReport = function () {
+  var pkId = document.getElementById('loss-pickup').value;
+  var qty = parseFloat(document.getElementById('loss-qty').value);
+  var reason = document.getElementById('loss-reason').value.trim();
+
+  if (!qty || qty <= 0 || !reason) {
+    alert("Please enter a valid lost quantity and reason.");
+    return;
+  }
+
+  BD.logLoss(pkId, qty, reason);
+  BD.writeAudit('Logged transit loss of ' + qty + ' Qt on ' + pkId + ': ' + reason, 'Logistics Desk', 'Field Staff', 'Incident Audit');
+  BhComp.toast("Incident logged and net consignment weight adjusted.", "warn");
+
+  var tbody = document.getElementById('loss-records-tbody');
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<td>' + pkId.toUpperCase() + '</td><td><b>' + qty + ' Qt</b></td><td>' + reason + '</td><td><span class="stat-pill pill-amber">Investigating</span></td>';
+  tbody.insertBefore(tr, tbody.firstChild);
+
+  document.getElementById('loss-qty').value = '';
+  document.getElementById('loss-reason').value = '';
+};
+
+// Initial calls
+renderPickups();
+renderHandoffs();
+initStorageMap();
+</script>
+</body>
+</html>

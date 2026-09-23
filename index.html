@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bhowanee — Sign in</title>
+<meta name="description" content="Sign in to Bhowanee — the platform connecting farmers, buyers, investors and administrators across Maharashtra.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600&family=Zilla+Slab:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+body { display:flex; align-items:center; justify-content:center; min-height:100dvh; padding:20px; }
+.login-wrap { display:grid; grid-template-columns:minmax(0,5fr) minmax(0,7fr); max-width:960px; width:100%; border:1px solid var(--rule); background:var(--sheet); min-height:660px; box-shadow:var(--shadow-lg); }
+.login-art { position:relative; background:#E3EAD9; border-right:1px solid var(--rule); display:flex; flex-direction:column; justify-content:space-between; padding:28px; overflow:hidden; }
+.login-art p { font-family:var(--font-slab); font-weight:600; font-size:22px; line-height:1.3; max-width:15ch; color:var(--ink); }
+.login-form { padding:28px 44px 36px; display:flex; flex-direction:column; max-width:520px; width:100%; }
+.login-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:32px; }
+.wordmark { font-family:var(--font-slab); font-size:24px; font-weight:600; }
+.roles { list-style:none; margin:20px 0 0; padding:0; border-top:1px solid var(--rule); }
+.roles li { border-bottom:1px solid var(--rule); }
+.roles button { display:block; width:100%; text-align:left; background:transparent; border:0; cursor:pointer; padding:14px 10px; font:inherit; color:var(--ink); transition:background var(--duration); }
+.roles button:hover { background:var(--paper); }
+.rn { display:block; font-weight:600; font-size:17px; }
+.rd { display:block; font-size:14.5px; color:var(--ink-soft); margin-top:2px; }
+.done-box { margin-top:18px; padding:16px; border:1px solid var(--rule); background:var(--paper); font-size:15px; }
+.done-box b { font-family:var(--font-slab); font-size:19px; display:block; margin-bottom:4px; }
+@media (max-width:700px) { .login-wrap{grid-template-columns:1fr;} .login-art{display:none;} .login-form{padding:22px 20px 32px;} }
+</style>
+</head>
+<body>
+<div class="login-wrap">
+  <!-- Left artwork panel -->
+  <div class="login-art" aria-hidden="true">
+    <svg viewBox="0 0 540 380">
+      <defs>
+        <pattern id="rowlines" width="9" height="9" patternUnits="userSpaceOnUse">
+          <line x1="0" y1="4.5" x2="9" y2="4.5" stroke="#1C2452" stroke-opacity=".18" stroke-width="1.5"/>
+        </pattern>
+      </defs>
+      <rect width="540" height="380" fill="#E3EAD9"/>
+      <!-- State outline suggestion -->
+      <polygon points="25,55 200,20 420,40 510,115 495,300 370,365 140,360 28,295" fill="#D5E0C7" stroke="#1C2452" stroke-width="1.5" stroke-dasharray="7 5"/>
+      <!-- Farm parcels -->
+      <polygon points="50,80 160,68 175,148 65,160" fill="#B7D29F" stroke="#1C2452" stroke-width="1.3"/>
+      <polygon points="178,66 295,58 310,136 195,148" fill="#F0C860" stroke="#1C2452" stroke-width="1.3"/>
+      <polygon points="312,62 428,75 438,148 325,140" fill="#B7D29F" stroke="#1C2452" stroke-width="1.3"/>
+      <polygon points="60,238 175,228 186,315 75,318" fill="#AEB8E4" stroke="#1C2452" stroke-width="1.3"/>
+      <polygon points="200,222 315,232 320,318 210,315" fill="#C9D0DE" stroke="#1C2452" stroke-width="1.3" stroke-dasharray="5 4"/>
+      <polygon points="338,238 435,245 430,314 340,318" fill="#DCADCB" stroke="#1C2452" stroke-width="1.3"/>
+      <!-- Row fill on parcels -->
+      <g fill="url(#rowlines)" opacity=".7">
+        <polygon points="50,80 160,68 175,148 65,160"/>
+        <polygon points="178,66 295,58 310,136 195,148"/>
+        <polygon points="312,62 428,75 438,148 325,140"/>
+        <polygon points="60,238 175,228 186,315 75,318"/>
+        <polygon points="338,238 435,245 430,314 340,318"/>
+      </g>
+      <!-- River -->
+      <path d="M0,190 C100,168 195,215 315,195 S490,218 545,200" fill="none" stroke="#9DB4CE" stroke-width="9" stroke-linecap="round"/>
+      <!-- Map pins -->
+      <g fill="#1C2452">
+        <path d="M220,132 L213,119 A8,8,0,1,1,227,119Z"/><circle cx="220" cy="112" r="3" fill="#F9FAF7"/>
+        <path d="M390,298 L383,285 A8,8,0,1,1,397,285Z"/><circle cx="390" cy="278" r="3" fill="#F9FAF7"/>
+      </g>
+    </svg>
+    <p>Every contract, from the state down to the village.</p>
+  </div>
+
+  <!-- Login form -->
+  <div class="login-form">
+    <div class="login-top">
+      <span class="wordmark">Bhowanee</span>
+      <div class="seg" role="group" aria-label="Language">
+        <button type="button" class="seg-btn" data-lang="en" aria-pressed="true">English</button>
+        <button type="button" class="seg-btn" data-lang="mr" aria-pressed="false" lang="mr">मराठी</button>
+        <button type="button" class="seg-btn" data-lang="hi" aria-pressed="false" lang="hi">हिन्दी</button>
+      </div>
+    </div>
+    <div id="loginBody" aria-live="polite"></div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script>
+/* ── Translations ─────────────────────────────────────────── */
+var T = {
+  en:{title:"Sign in",who:"Who are you?",mobile:"Mobile number",send:"Send code",call:"Call me with the code",
+      code:"6-digit code",signin:"Sign in",back:"Change role",email:"Email",pass:"Password",cont:"Continue",
+      again:"Send code again",sent:"Code sent to",authcode:"Code from your authenticator app",smscode:"SMS code sent to your phone",
+      roles:{farmer:["Farmer","Set your price and see offers"],block:["Block administrator","Manage your block from the map"],
+             buyer:["Buyer","Browse lots and place bids"],investor:["Investor","Compare plans and invest"],
+             logistics:["Logistics and storage","Pickups, storage and delivery"],team:["Bhowanee team","Control room for the whole platform"]}},
+  mr:{title:"साइन इन करा",who:"तुम्ही कोण आहात?",mobile:"मोबाईल नंबर",send:"कोड पाठवा",call:"मला फोन करून कोड सांगा",
+      code:"६ अंकी कोड",signin:"साइन इन करा",back:"भूमिका बदला",email:"ईमेल",pass:"पासवर्ड",cont:"पुढे जा",
+      again:"कोड पुन्हा पाठवा",sent:"कोड पाठवला:",authcode:"ऑथेंटिकेटर कोड",smscode:"SMS कोड पाठवला",
+      roles:{farmer:["शेतकरी","तुमची किंमत ठरवा आणि ऑफर पहा"],block:["ब्लॉक प्रशासक","नकाशावरून तुमचा ब्लॉक सांभाळा"],
+             buyer:["खरेदीदार","लॉट पहा आणि बोली लावा"],investor:["गुंतवणूकदार","योजना तुलना करा आणि गुंतवणूक करा"],
+             logistics:["वाहतूक आणि साठवण","उचल, साठवण आणि वितरण"],team:["भवानी टीम","संपूर्ण प्लॅटफॉर्मचे नियंत्रण"]}},
+  hi:{title:"साइन इन करें",who:"आप कौन हैं?",mobile:"मोबाइल नंबर",send:"कोड भेजें",call:"फ़ोन करके कोड बताएं",
+      code:"6 अंकों का कोड",signin:"साइन इन करें",back:"भूमिका बदलें",email:"ईमेल",pass:"पासवर्ड",cont:"आगे बढ़ें",
+      again:"कोड फिर से भेजें",sent:"कोड भेजा गया:",authcode:"ऑथेंटिकेटर कोड",smscode:"SMS कोड भेजा गया",
+      roles:{farmer:["किसान","अपनी कीमत तय करें और ऑफर देखें"],block:["ब्लॉक प्रशासक","मानचित्र से अपने ब्लॉक को संभालें"],
+             buyer:["खरीदार","लॉट देखें और बोली लगाएं"],investor:["निवेशक","योजनाएं तुलना करें और निवेश करें"],
+             logistics:["परिवहन और भंडारण","उठान, भंडारण और डिलीवरी"],team:["भवानी टीम","पूरे प्लेटफ़ॉर्म का नियंत्रण"]}}
+};
+var MODES  = {farmer:'phone',block:'phone',buyer:'email',investor:'email',logistics:'email',team:'staff'};
+var ORDER  = ['farmer','block','buyer','investor','logistics','team'];
+var NAMES  = {farmer:'Prakash Sonawane',block:'Admin Dindori',buyer:'Anil Merchant',investor:'Priya Capital',logistics:'Logistics Partner',team:'Super Admin'};
+
+var s = {lang:Auth.getLang()||'en', step:'role', role:null, phase:'first', tries:0, locked:false, phone:'', voice:false, err:''};
+var body = document.getElementById('loginBody');
+
+function esc(t){ return String(t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+function render(){
+  var t = T[s.lang], h = '';
+  if(s.step==='role'){
+    h += '<h3 style="font-size:28px">'+t.title+'</h3><p style="margin-top:6px;color:var(--ink-soft)">'+t.who+'</p><ul class="roles">';
+    ORDER.forEach(function(r){
+      h += '<li><button type="button" data-role="'+r+'"><span class="rn">'+esc(t.roles[r][0])+'</span><span class="rd">'+esc(t.roles[r][1])+'</span></button></li>';
+    });
+    h += '</ul>';
+  } else if(s.step==='done'){
+    h += '<h3 style="font-size:26px">'+esc(t.roles[s.role][0])+'</h3>';
+    h += '<p class="field-msg ok" style="margin-top:8px;font-size:16px">Signed in successfully.</p>';
+    h += '<div class="done-box"><b>Going to your dashboard…</b>Opening '+Auth.routeFor(s.role)+'</div>';
+    h += '<div class="stack" style="margin-top:16px"><button type="button" class="btn secondary" data-act="reset">Sign out and try another role</button></div>';
+  } else {
+    var mode = MODES[s.role];
+    h += '<button type="button" class="link-btn" data-act="back" style="margin-bottom:16px">← '+t.back+'</button>';
+    h += '<h3 style="font-size:26px">'+esc(t.roles[s.role][0])+'</h3>';
+    if(s.locked){
+      h += '<p class="alert error" style="margin-top:16px">Too many attempts. '+(mode==='phone'?'Ask your block administrator for help.':'Wait 15 minutes then try again.')+'</p>';
+      h += '<div class="stack" style="margin-top:12px"><button type="button" class="btn secondary" data-act="back">'+t.back+'</button></div>';
+    } else if(s.phase==='first' && mode==='phone'){
+      h += '<form data-form="phone" style="margin-top:20px"><div class="field'+(s.err?' err':'')+'"><label for="lgPhone">'+t.mobile+'</label>';
+      h += '<div class="phone-row"><span class="phone-pre">+91</span><input id="lgPhone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel-national" value="'+esc(s.phone)+'" aria-describedby="lgMsg"></div></div>';
+      h += '<p class="field-msg err" id="lgMsg">'+esc(s.err)+'</p>';
+      h += '<div class="stack" style="margin-top:16px"><button class="btn lg block" type="submit">'+t.send+'</button>';
+      if(s.role==='farmer') h += '<button class="btn secondary block" type="button" data-act="voice">'+t.call+'</button>';
+      h += '</div></form>';
+    } else if(s.phase==='first'){
+      h += '<form data-form="cred" style="margin-top:20px"><div class="field'+(s.err?' err':'')+'"><label for="lgEmail">'+(mode==='staff'?'Work email':t.email)+'</label><input id="lgEmail" type="email" autocomplete="username" aria-describedby="lgMsg"></div>';
+      h += '<div class="field'+(s.err?' err':'')+'"><label for="lgPass">'+t.pass+'</label><input id="lgPass" type="password" autocomplete="current-password" aria-describedby="lgMsg"></div>';
+      h += '<p class="field-msg err" id="lgMsg">'+esc(s.err)+'</p>';
+      h += '<div class="stack" style="margin-top:16px"><button class="btn lg block" type="submit">'+t.cont+'</button></div></form>';
+    } else {
+      var masked = mode==='phone' ? '+91 '+s.phone.slice(0,2)+'xxxxxx'+s.phone.slice(-2) : 'your phone';
+      var where = mode==='phone'?(s.voice?'A call is coming to '+masked+'. Listen for the code.':t.sent+' '+masked):(mode==='staff'?t.authcode:t.smscode);
+      h += '<form data-form="code" style="margin-top:20px"><p style="color:var(--ink-soft);font-size:15px;margin-bottom:16px">'+where+'</p>';
+      h += '<div class="field'+(s.err?' err':'')+'"><label for="lgCode">'+t.code+'</label><input id="lgCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" aria-describedby="lgMsg"></div>';
+      h += '<p class="field-msg err" id="lgMsg">'+esc(s.err)+'</p>';
+      h += '<div class="stack" style="margin-top:16px"><button class="btn lg block" type="submit">'+t.signin+'</button>';
+      if(mode==='phone') h += '<button type="button" class="link-btn" data-act="resend">'+t.again+'</button>';
+      h += '</div></form>';
+    }
+  }
+  body.innerHTML = h;
+  var fi = body.querySelector('input');
+  if(fi && s.step==='auth') fi.focus();
+}
+
+body.addEventListener('click',function(e){
+  var b = e.target.closest('[data-role],[data-act]'); if(!b) return;
+  if(b.dataset.role){s.role=b.dataset.role;s.step='auth';s.phase='first';s.tries=0;s.locked=false;s.err='';s.voice=false;s.phone='';render();return;}
+  var a = b.dataset.act;
+  if(a==='back'){s.step='role';s.role=null;s.err='';s.locked=false;render();}
+  else if(a==='reset'){s.step='role';s.role=null;s.err='';s.locked=false;s.tries=0;render();}
+  else if(a==='voice'){sendPhone(true);}
+  else if(a==='resend'){s.err='';s.tries=0;render();}
+});
+
+body.addEventListener('submit',function(e){
+  e.preventDefault();
+  var kind = e.target.dataset.form;
+  if(kind==='phone'){s.phone=(document.getElementById('lgPhone').value||'').replace(/\D/g,'');sendPhone(false);}
+  else if(kind==='cred'){
+    var em=document.getElementById('lgEmail').value.trim(),pw=document.getElementById('lgPass').value;
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)||pw.length<8){s.err='Enter your email and a password of at least 8 characters.';render();return;}
+    s.err='';s.phase='code';s.tries=0;render();
+  } else if(kind==='code'){
+    var c=(document.getElementById('lgCode').value||'').trim();
+    if(c==='123456'){
+      Auth.login(s.role, NAMES[s.role], s.phone);
+      s.step='done'; s.err=''; render();
+      setTimeout(function(){ window.location.href = Auth.routeFor(s.role); }, 1200);
+      return;
+    }
+    s.tries++;
+    if(s.tries>=3){s.locked=true;s.err='';}
+    else{s.err='That code does not match. '+(3-s.tries)+' tr'+(3-s.tries===1?'y':'ies')+' left.';}
+    render();
+  }
+});
+
+function sendPhone(voice){
+  var inp = document.getElementById('lgPhone');
+  if(inp) s.phone=(inp.value||'').replace(/\D/g,'');
+  if(!/^[6-9]\d{9}$/.test(s.phone)){s.err='Enter a 10-digit mobile number starting with 6, 7, 8 or 9.';render();return;}
+  s.err='';s.voice=voice;s.phase='code';s.tries=0;render();
+}
+
+// Language toggle
+document.querySelectorAll('[data-lang]').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    s.lang=btn.dataset.lang;
+    Auth.setLang(s.lang);
+    document.querySelectorAll('[data-lang]').forEach(function(o){o.setAttribute('aria-pressed',o===btn?'true':'false');});
+    render();
+  });
+});
+
+render();
+
+// Register service worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(function(){});
+}
+</script>
+</body>
+</html>

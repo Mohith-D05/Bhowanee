@@ -1,0 +1,80 @@
+/* ============================================================
+   Bhowanee — Design Tokens
+   One file imported by every dashboard. Do not add layout
+   rules here; keep it strictly to custom properties.
+   ============================================================ */
+
+:root {
+  /* --- Surfaces --- */
+  --paper:      #EEF1EC;
+  --sheet:      #F9FAF7;
+  --sheet-alt:  #F1F4EF;
+
+  /* --- Core ink --- */
+  --ink:        #1C2452;
+  --ink-soft:   #4B5375;
+  --ink-faint:  #8A91AA;
+  --rule:       #C7CDD8;
+  --rule-light: #E2E6EE;
+
+  /* --- Brand accents --- */
+  --turmeric:      #D99A06;
+  --turmeric-text: #8A5F00;
+  --turmeric-bg:   #FDF3D5;
+  --soil:          #6B4E3A;
+  --soil-light:    #C4A882;
+  --field:         #4C7A34;
+  --field-light:   #D8ECC9;
+  --brick:         #B3362E;
+  --brick-light:   #FAE0DE;
+
+  /* --- Contract stage colours --- */
+  --st-notsown:  #C9D0DE;
+  --st-growing:  #B7D29F;
+  --st-harvest:  #F0C860;
+  --st-bids:     #AEB8E4;
+  --st-issue:    #DCADCB;
+  --st-closed:   #A3B89A;
+  --st-paid:     #7DAA6C;
+
+  /* --- Typography --- */
+  --font-slab: "Zilla Slab", Rockwell, "Roboto Slab", Georgia, serif;
+  --font-body: Mukta, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* --- Scale --- */
+  --text-xs:   13.5px;
+  --text-sm:   15px;
+  --text-base: 17px;
+  --text-md:   19px;
+  --text-lg:   22px;
+  --text-xl:   28px;
+  --text-2xl:  36px;
+  --text-3xl:  48px;
+
+  /* --- Spacing --- */
+  --sp-xs:  4px;
+  --sp-sm:  8px;
+  --sp-md:  16px;
+  --sp-lg:  28px;
+  --sp-xl:  48px;
+
+  /* --- Controls --- */
+  --ctrl-h:    52px;
+  --ctrl-h-sm: 40px;
+  --ctrl-h-lg: 58px;
+  --radius:    3px;
+  --border:    2px solid var(--ink-soft);
+
+  /* --- Shadows --- */
+  --shadow-sm: 0 1px 3px rgba(28,36,82,.10);
+  --shadow-md: 0 4px 14px rgba(28,36,82,.14);
+  --shadow-lg: 0 8px 28px rgba(28,36,82,.18);
+
+  /* --- Motion --- */
+  --ease:     cubic-bezier(.25,.46,.45,.94);
+  --duration: 180ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+}

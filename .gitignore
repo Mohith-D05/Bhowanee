@@ -1,0 +1,14 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor directories
+.vscode/
+.idea/
+
+# Antigravity / agent tooling
+.agents/
+.gemini/
+
+# No build artefacts — this is a pure static site

@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bhowanee — Investor Dashboard</title>
+<meta name="description" content="Agricultural production investment dashboard: compare plans, diversify crop risk, invest inline, and manage payout schedules.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600&family=Zilla+Slab:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+.kpi-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:20px; }
+.kpi-card { background:var(--sheet); border:1px solid var(--rule); padding:16px; }
+.kpi-card .num { font-family:var(--font-slab); font-size:26px; font-weight:700; color:var(--ink); line-height:1.1; margin-bottom:4px; }
+.kpi-card .lbl { font-size:13.5px; color:var(--ink-soft); font-weight:500; }
+.risk-mix-banner { background:var(--tint); border:1px solid var(--rule); padding:12px 18px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; font-size:14.5px; }
+.plan-detail-box { background:#F8FAFC; border-left:3px solid var(--ink); padding:14px 18px; margin:8px 0; font-size:13.5px; line-height:1.6; }
+.stat-pill { display:inline-flex; align-items:center; gap:6px; padding:3px 8px; border-radius:12px; font-size:12.5px; font-weight:600; }
+.pill-green { background:#E6F4EA; color:#137333; }
+.pill-amber { background:#FEF7E0; color:#B06000; }
+.pill-red { background:#FCE8E6; color:#C5221F; }
+.compare-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px; margin-top:16px; }
+.compare-col { background:var(--sheet); border:1px solid var(--rule); padding:16px; }
+.compare-col h3 { font-family:var(--font-slab); font-size:18px; margin:0 0 10px; }
+.invest-panel { background:var(--sheet); border:1px solid var(--rule); padding:20px; border-radius:4px; }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- Topbar -->
+  <header class="topbar" role="banner">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="topbar-brand">Bhowanee</span>
+      <span class="chip sm" style="background:var(--turmeric);color:var(--ink);font-weight:600">Agricultural Capital</span>
+    </div>
+    <div class="topbar-tools">
+      <span id="tb-inv-user" style="font-size:14.5px;font-weight:500">Investor Demo (Tier 1 Accredited)</span>
+      <span id="sync-badge" class="sync-badge">Live Portfolio</span>
+      <button class="ghost" onclick="Auth.logout()">Sign out</button>
+    </div>
+  </header>
+
+  <!-- Sidenav -->
+  <nav class="sidenav" aria-label="Investor navigation">
+    <button class="sidenav-item active" data-section="plans">Open Plans</button>
+    <button class="sidenav-item" data-section="compare">Compare Plans <span id="comp-count-badge" class="chip sm" style="margin-left:4px;display:none">0</span></button>
+    <button class="sidenav-item" data-section="portfolio">My Investments</button>
+    <button class="sidenav-item" data-section="payouts">Payout Schedule</button>
+    <button class="sidenav-item" data-section="documents">Documents & KYC</button>
+  </nav>
+
+  <!-- Main -->
+  <main class="main-area" id="main-area">
+
+    <!-- ── 1. OPEN PLANS ───────────────────────────────────── -->
+    <section id="s-plans">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title">Direct Agricultural Production Plans</h1>
+          <p class="page-sub">Directly fund verified farming seasons with pre-contracted institutional buyer demand.</p>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn sm secondary" id="btn-open-compare" onclick="switchSection('compare')" disabled>Compare Selected (0)</button>
+        </div>
+      </div>
+
+      <!-- Risk Mix Banner -->
+      <div class="risk-mix-banner">
+        <div>
+          <b>Portfolio Risk Balance:</b> <span style="color:var(--forest);font-weight:600">62% Multi-Crop Diversified</span>, <span style="color:var(--ink)">38% Single-Crop High Yield</span>.
+        </div>
+        <div style="font-size:13px;color:var(--ink-soft)">
+          All plans backstopped by signed land leases and forward buyer commitments.
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="num" id="kpi-inv-deployed">₹2,25,000</div>
+          <div class="lbl">Your Total Invested Capital</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--forest)" id="kpi-inv-projected">₹2,48,750</div>
+          <div class="lbl">Projected Payout Realization</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">12.4%</div>
+          <div class="lbl">Weighted Expected Return (IRR)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">4 Plans</div>
+          <div class="lbl">Production Plans Available</div>
+        </div>
+      </div>
+
+      <!-- Plans Table -->
+      <div class="tablewrap">
+        <table id="tbl-plans">
+          <thead>
+            <tr>
+              <th style="width:40px">Select</th>
+              <th onclick="sortPlans('name')" style="cursor:pointer">Plan Name ▾</th>
+              <th onclick="sortPlans('termMonths')" style="cursor:pointer">Term ▾</th>
+              <th onclick="sortPlans('riskScore')" style="cursor:pointer">Risk Profile ▾</th>
+              <th onclick="sortPlans('demandSold')" style="cursor:pointer">Pre-Sold Demand ▾</th>
+              <th onclick="sortPlans('expectedReturnPct')" style="cursor:pointer">Expected Return ▾</th>
+              <th onclick="sortPlans('min')" style="cursor:pointer">Min Investment ▾</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="plans-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 2. COMPARE PLANS ────────────────────────────────── -->
+    <section id="s-compare" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <div>
+          <h1 class="page-title">Compare Agricultural Plans</h1>
+          <p class="page-sub">Side-by-side risk, agronomical specs, buyer commitments, and expected harvest schedules.</p>
+        </div>
+        <button class="btn sm secondary" onclick="switchSection('plans')">Back to All Plans</button>
+      </div>
+
+      <div id="compare-container" class="compare-grid"></div>
+    </section>
+
+    <!-- ── 3. MY INVESTMENTS (PORTFOLIO) ───────────────────── -->
+    <section id="s-portfolio" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Active Investment Portfolio</h1>
+        <p class="page-sub">Track standing crop progress, lease terms, and capital appreciation.</p>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Investment ID</th>
+              <th>Plan Name</th>
+              <th>Invested Capital</th>
+              <th>Investment Date</th>
+              <th>Production Stage</th>
+              <th>Projected Return</th>
+              <th>Actual Return</th>
+              <th>Target Payout Date</th>
+            </tr>
+          </thead>
+          <tbody id="my-investments-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 4. PAYOUT SCHEDULE & REINVESTMENT ───────────────── -->
+    <section id="s-payouts" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Payout Schedule & Reinvestment Desk</h1>
+        <p class="page-sub">Post-harvest escrow settlements. Ready payouts can be wired to your account or rolled over into upcoming plans.</p>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Investment Ref</th>
+              <th>Plan</th>
+              <th>Disbursement Amount</th>
+              <th>Settlement Date</th>
+              <th>Status</th>
+              <th>Reinvestment / Action</th>
+            </tr>
+          </thead>
+          <tbody id="payouts-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 5. DOCUMENTS & KYC ──────────────────────────────── -->
+    <section id="s-documents" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Investor Documentation & Regulatory Verification</h1>
+        <p class="page-sub">Executed tripartite production agreements, land verification proofs, and tax invoices.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="kpi-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <h3 style="font-family:var(--font-slab);font-size:18px;margin:0">Accredited Investor Profile</h3>
+            <span class="chip sm" style="background:#E6F4EA;color:#137333">KYC Verified ✓</span>
+          </div>
+          <div style="font-size:13.5px;line-height:1.7;color:var(--ink-soft)">
+            <div><b>Investor Legal Entity:</b> Investor Demo Ltd</div>
+            <div><b>PAN Card:</b> ABCDE1234F (Verified)</div>
+            <div><b>SEBI / RBI Exemption:</b> Direct Crop Production Joint Venture</div>
+            <div><b>Escrow Bank:</b> State Bank of India, Nashik Agri Hub</div>
+            <div><b>Assigned Relationship Manager:</b> Rahul Sharma (Super Admin)</div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <h3 style="font-family:var(--font-slab);font-size:18px;margin-bottom:12px">Executed Agreements</h3>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--rule)">
+              <span><b>P2</b> — Mixed Pulses Agronomical JV Agreement</span>
+              <button class="btn sm secondary" onclick="alert('Downloading signed PDF agreement #JV-2025-P2...')">Download PDF</button>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--rule)">
+              <span><b>P3</b> — Tomato & Soybean Risk-Share Contract</span>
+              <button class="btn sm secondary" onclick="alert('Downloading signed PDF agreement #JV-2026-P3...')">Download PDF</button>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
+              <span><b>P4</b> — Sugarcane Payout & Escrow Discharge Deed</span>
+              <button class="btn sm secondary" onclick="alert('Downloading deed #DEED-2025-P4...')">Download PDF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Modal: Invest in Plan -->
+<div id="modal-invest" class="modal-overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="inv-m-title">
+    <h3 id="inv-m-title" style="font-family:var(--font-slab)">Invest in Agricultural Plan</h3>
+    <p id="inv-m-sub" class="modal-sub"></p>
+    
+    <div style="background:var(--tint);padding:12px 14px;border-radius:4px;margin:14px 0;font-size:13.5px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span>Minimum Ticket:</span> <b id="inv-m-min">₹25,000</b>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span>Target Term:</span> <b id="inv-m-term">5 months</b>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span>Expected Return Rate:</span> <b id="inv-m-return" style="color:var(--forest)">14 to 18%</b>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="input-inv-amount">Investment Amount (₹)</label>
+      <input type="number" id="input-inv-amount" step="5000" oninput="calculateProjectedInvestReturn()">
+      <p id="inv-amt-err" class="field-msg err"></p>
+    </div>
+
+    <div style="background:#F0FDF4;border:1px solid #BBF7D0;padding:10px 14px;border-radius:4px;margin-bottom:16px;font-size:13.5px">
+      <div style="display:flex;justify-content:space-between">
+        <span>Projected Gross Payout:</span>
+        <b id="inv-calc-payout" style="font-family:var(--font-slab);font-size:18px;color:#15803D">₹29,000</b>
+      </div>
+      <small style="color:var(--ink-soft)">Principal + projected yield based on pre-sold buyer contracts.</small>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn" type="button" onclick="confirmInvestmentSubmit()">Confirm & Transfer to Escrow</button>
+      <button class="btn secondary" type="button" onclick="closeInvestModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Reinvest Payout -->
+<div id="modal-reinvest" class="modal-overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reinv-m-title">
+    <h3 id="reinv-m-title" style="font-family:var(--font-slab)">Reinvest Matured Payout</h3>
+    <p class="modal-sub">Rollover your matured capital directly into a new seasonal plan without withdrawal delays.</p>
+    <div style="background:var(--tint);padding:12px;margin:12px 0;font-size:13.5px">
+      Matured Return to Reinvest: <b id="reinv-amount-display" style="font-family:var(--font-slab);font-size:18px">₹82,500</b>
+    </div>
+    <div class="field">
+      <label for="reinv-target-plan">Select Destination Plan</label>
+      <select id="reinv-target-plan">
+        <option value="p1">Onion, rabi season (14–18% return • 5 months)</option>
+        <option value="p2">Mixed pulses and grains (9–11% return • 18 months)</option>
+        <option value="p3">Tomato and soybean (11–14% return • 10 months)</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" type="button" onclick="submitReinvestment()">Execute Reinvestment</button>
+      <button class="btn secondary" type="button" onclick="closeReinvestModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="auth.js"></script>
+<script src="market.js"></script>
+<script src="data.js"></script>
+<script src="components.js"></script>
+<script>
+/* ============================================================
+   Investor Dashboard Logic
+   ============================================================ */
+
+// 1. Auth Guard
+Auth.requireRole('investor');
+var session = Auth.getSession();
+if (session && session.name) {
+  document.getElementById('tb-inv-user').textContent = session.name + ' (Tier 1 Accredited)';
+}
+
+// 2. Navigation
+var navBtns = document.querySelectorAll('.sidenav-item');
+navBtns.forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var sec = btn.getAttribute('data-section');
+    switchSection(sec);
+  });
+});
+
+function switchSection(sec) {
+  navBtns.forEach(function (b) {
+    b.classList.toggle('active', b.getAttribute('data-section') === sec);
+  });
+  document.querySelectorAll('main > section').forEach(function (s) {
+    s.style.display = s.id === 's-' + sec ? 'block' : 'none';
+  });
+  if (sec === 'compare') {
+    renderCompareView();
+  }
+}
+
+// 3. Open Plans Table & Expansion
+var selectedPlanIds = [];
+var sortKey = 'expectedReturnPct';
+var sortAsc = false;
+var expandedPlanIds = {};
+
+window.sortPlans = function (key) {
+  if (sortKey === key) sortAsc = !sortAsc;
+  else { sortKey = key; sortAsc = false; }
+  renderPlansTable();
+};
+
+function renderPlansTable() {
+  var plans = BD.getPlans();
+  plans.sort(function (a, b) {
+    var valA = a[sortKey], valB = b[sortKey];
+    if (typeof valA === 'string') return sortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+    return sortAsc ? (valA - valB) : (valB - valA);
+  });
+
+  var tbody = document.getElementById('plans-tbody');
+  var html = '';
+
+  plans.forEach(function (p) {
+    var isChecked = selectedPlanIds.indexOf(p.id) !== -1;
+    var isExpanded = !!expandedPlanIds[p.id];
+    var isFull = p.status === 'Full';
+
+    html += '<tr>';
+    html += '<td><input type="checkbox" ' + (isChecked ? 'checked' : '') + ' onchange="togglePlanSelection(\'' + p.id + '\', this.checked)"></td>';
+    html += '<td>';
+    html += '<b>' + p.name + '</b>';
+    html += '<br><button class="ghost" style="padding:0;font-size:12.5px;color:var(--ink-soft)" onclick="toggleExpandPlan(\'' + p.id + '\')">' + (isExpanded ? '▲ Hide agronomical details' : '▼ View soil, water & timeline') + '</button>';
+    html += '</td>';
+    html += '<td>' + p.term + '</td>';
+    html += '<td><span class="stat-pill ' + (p.risk === 'Lower' ? 'pill-green' : (p.risk === 'Medium' ? 'pill-amber' : 'pill-red')) + '">' + p.risk + '</span></td>';
+    html += '<td><b>' + p.demandSold + '%</b> pre-contracted</td>';
+    html += '<td style="color:var(--forest);font-weight:700">' + p.expectedReturn + '</td>';
+    html += '<td>' + BD.fmt(p.min) + '</td>';
+    html += '<td><span class="chip sm ' + (isFull ? 'stage-notsown' : (p.status === 'Closing soon' ? 'stage-bids' : 'stage-growing')) + '">' + p.status + '</span></td>';
+    html += '<td>';
+    if (isFull) {
+      html += '<button class="btn sm secondary" disabled>Full</button>';
+    } else {
+      html += '<button class="btn sm" onclick="openInvestModal(\'' + p.id + '\')">Invest Inline</button>';
+    }
+    html += '</td>';
+    html += '</tr>';
+
+    if (isExpanded) {
+      html += '<tr>';
+      html += '<td colspan="9" style="padding:0">';
+      html += '<div class="plan-detail-box">';
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
+      html += '<div>';
+      html += '<div><b>Soil & Irrigation:</b> ' + p.soil + ' | ' + p.water + '</div>';
+      html += '<div><b>Crop History:</b> ' + p.cropHistory + '</div>';
+      html += '<div><b>Committed Off-takers:</b> ' + p.buyers.join(', ') + '</div>';
+      html += '</div>';
+      html += '<div>';
+      html += '<div><b>Sowing:</b> ' + p.timeline.sow + ' | <b>Harvest:</b> ' + p.timeline.harvest + '</div>';
+      html += '<div><b>Anticipated Payout:</b> ' + p.timeline.payout + '</div>';
+      html += '<div style="margin-top:4px;font-style:italic;color:var(--ink-soft)">"' + p.note + '"</div>';
+      html += '</div>';
+      html += '</div>';
+      html += '</div>';
+      html += '</td>';
+      html += '</tr>';
+    }
+  });
+
+  tbody.innerHTML = html;
+  updateCompareButton();
+}
+
+window.toggleExpandPlan = function (pid) {
+  expandedPlanIds[pid] = !expandedPlanIds[pid];
+  renderPlansTable();
+};
+
+window.togglePlanSelection = function (pid, checked) {
+  if (checked) {
+    if (selectedPlanIds.length >= 3) {
+      alert("You can compare at most 3 plans simultaneously.");
+      renderPlansTable();
+      return;
+    }
+    if (selectedPlanIds.indexOf(pid) === -1) selectedPlanIds.push(pid);
+  } else {
+    selectedPlanIds = selectedPlanIds.filter(function (id) { return id !== pid; });
+  }
+  updateCompareButton();
+};
+
+function updateCompareButton() {
+  var count = selectedPlanIds.length;
+  var btn = document.getElementById('btn-open-compare');
+  var badge = document.getElementById('comp-count-badge');
+  btn.disabled = count === 0;
+  btn.textContent = 'Compare Selected (' + count + ')';
+  if (count > 0) {
+    badge.style.display = 'inline-block';
+    badge.textContent = count;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// 4. Compare View
+function renderCompareView() {
+  var container = document.getElementById('compare-container');
+  if (selectedPlanIds.length === 0) {
+    container.innerHTML = '<p style="color:var(--ink-soft);font-size:15px">No plans selected. Go back to <a href="javascript:switchSection(\'plans\')">Open Plans</a> and check up to 3 plans to compare.</p>';
+    return;
+  }
+
+  var html = '';
+  selectedPlanIds.forEach(function (pid) {
+    var p = BD.getPlan(pid);
+    if (!p) return;
+
+    html += '<div class="compare-col">';
+    html += '<h3>' + p.name + '</h3>';
+    html += '<p style="font-size:13px;color:var(--ink-soft);margin-bottom:12px">' + p.note + '</p>';
+    html += '<div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px">';
+    html += '<div><b>Term:</b> ' + p.term + '</div>';
+    html += '<div><b>Risk Profile:</b> <span class="stat-pill ' + (p.risk === 'Lower' ? 'pill-green' : (p.risk === 'Medium' ? 'pill-amber' : 'pill-red')) + '">' + p.risk + '</span></div>';
+    html += '<div><b>Expected Return:</b> <b style="color:var(--forest)">' + p.expectedReturn + '</b></div>';
+    html += '<div><b>Pre-Sold Demand:</b> ' + p.demandSold + '% pre-contracted</div>';
+    html += '<div><b>Minimum Investment:</b> ' + BD.fmt(p.min) + '</div>';
+    html += '<hr style="border:none;border-top:1px solid var(--rule);margin:6px 0">';
+    html += '<div><b>Soil & Irrigation:</b> ' + p.soil + ', ' + p.water + '</div>';
+    html += '<div><b>Historical Crop:</b> ' + p.cropHistory + '</div>';
+    html += '<div><b>Off-takers:</b> ' + p.buyers.join(', ') + '</div>';
+    html += '<div><b>Target Payout:</b> ' + p.timeline.payout + '</div>';
+    html += '</div>';
+    html += '<button class="btn sm" style="width:100%;margin-top:16px" onclick="openInvestModal(\'' + p.id + '\')" ' + (p.status === 'Full' ? 'disabled' : '') + '>' + (p.status === 'Full' ? 'Plan Full' : 'Invest Now') + '</button>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+// 5. Invest Modal & Calculation
+var activeInvestPlanId = null;
+
+window.openInvestModal = function (pid) {
+  var p = BD.getPlan(pid);
+  if (!p) return;
+  activeInvestPlanId = pid;
+
+  document.getElementById('inv-m-title').textContent = 'Invest in ' + p.name;
+  document.getElementById('inv-m-sub').textContent = p.note;
+  document.getElementById('inv-m-min').textContent = BD.fmt(p.min);
+  document.getElementById('inv-m-term').textContent = p.term;
+  document.getElementById('inv-m-return').textContent = p.expectedReturn;
+  document.getElementById('input-inv-amount').value = p.min;
+  document.getElementById('inv-amt-err').textContent = '';
+
+  calculateProjectedInvestReturn();
+  document.getElementById('modal-invest').removeAttribute('hidden');
+};
+
+window.closeInvestModal = function () {
+  document.getElementById('modal-invest').setAttribute('hidden', '');
+  activeInvestPlanId = null;
+};
+
+window.calculateProjectedInvestReturn = function () {
+  var amt = parseInt(document.getElementById('input-inv-amount').value, 10) || 0;
+  var p = BD.getPlan(activeInvestPlanId);
+  var pct = p ? p.expectedReturnPct : 12;
+  var gross = Math.round(amt * (1 + pct / 100));
+  document.getElementById('inv-calc-payout').textContent = BD.fmt(gross);
+};
+
+window.confirmInvestmentSubmit = function () {
+  var amt = parseInt(document.getElementById('input-inv-amount').value, 10);
+  var p = BD.getPlan(activeInvestPlanId);
+  var errEl = document.getElementById('inv-amt-err');
+
+  if (!amt || amt < p.min) {
+    errEl.textContent = 'Minimum investment for this plan is ' + BD.fmt(p.min) + '.';
+    return;
+  }
+
+  var res = BD.invest(activeInvestPlanId, amt);
+  if (!res.ok) {
+    errEl.textContent = res.msg;
+    return;
+  }
+
+  BD.writeAudit('Invested ' + BD.fmt(amt) + ' into plan ' + p.name, 'Investor Demo', 'Agricultural Escrow', 'Investor Mandate');
+  BhComp.toast('Investment confirmed! Funds transferred to Escrow.', 'info');
+  closeInvestModal();
+  renderPortfolio();
+  renderPlansTable();
+};
+
+// 6. Portfolio & Payouts
+function renderPortfolio() {
+  var invs = BD.getInvestments();
+  var tbody = document.getElementById('my-investments-tbody');
+  var pbody = document.getElementById('payouts-tbody');
+
+  var totalDeployed = 0;
+  var totalProjected = 0;
+
+  var h1 = '', h2 = '';
+  invs.forEach(function (inv) {
+    var p = BD.getPlan(inv.planId);
+    var pName = p ? p.name : inv.planId;
+    totalDeployed += inv.amount;
+    totalProjected += (inv.actualReturn || inv.projectedReturn);
+
+    // Row for Portfolio
+    h1 += '<tr>';
+    h1 += '<td><b>' + inv.id.toUpperCase() + '</b></td>';
+    h1 += '<td>' + pName + '</td>';
+    h1 += '<td><b>' + BD.fmt(inv.amount) + '</b></td>';
+    h1 += '<td>' + inv.date + '</td>';
+    h1 += '<td><span class="chip sm ' + (inv.stage === 'Closed' ? 'stage-growing' : 'stage-bids') + '">' + inv.stage + '</span></td>';
+    h1 += '<td>' + BD.fmt(inv.projectedReturn) + '</td>';
+    h1 += '<td>' + (inv.actualReturn ? '<b>' + BD.fmt(inv.actualReturn) + '</b>' : '<span style="color:var(--ink-soft)">Pending harvest</span>') + '</td>';
+    h1 += '<td>' + inv.nextPayout + '</td>';
+    h1 += '</tr>';
+
+    // Row for Payouts
+    var isReady = inv.actualReturn !== null;
+    h2 += '<tr>';
+    h2 += '<td><b>' + inv.id.toUpperCase() + '</b></td>';
+    h2 += '<td>' + pName + '</td>';
+    h2 += '<td><b>' + BD.fmt(inv.actualReturn || inv.projectedReturn) + '</b></td>';
+    h2 += '<td>' + inv.nextPayout + '</td>';
+    h2 += '<td><span class="stat-pill ' + (isReady ? 'pill-green' : 'pill-amber') + '">' + (isReady ? 'Matured & Settled' : 'Scheduled') + '</span></td>';
+    h2 += '<td>';
+    if (isReady) {
+      h2 += '<button class="btn sm" onclick="openReinvestModal(\'' + inv.id + '\',' + inv.actualReturn + ')">Reinvest into Plan</button>';
+    } else {
+      h2 += '<span style="font-size:13px;color:var(--ink-soft)">Awaiting maturity</span>';
+    }
+    h2 += '</td>';
+    h2 += '</tr>';
+  });
+
+  tbody.innerHTML = h1;
+  pbody.innerHTML = h2;
+
+  document.getElementById('kpi-inv-deployed').textContent = BD.fmt(totalDeployed);
+  document.getElementById('kpi-inv-projected').textContent = BD.fmt(totalProjected);
+}
+
+// 7. Reinvestment Flow
+var activeReinvestInvId = null;
+window.openReinvestModal = function (invId, amount) {
+  activeReinvestInvId = invId;
+  document.getElementById('reinv-amount-display').textContent = BD.fmt(amount);
+  document.getElementById('modal-reinvest').removeAttribute('hidden');
+};
+
+window.closeReinvestModal = function () {
+  document.getElementById('modal-reinvest').setAttribute('hidden', '');
+  activeReinvestInvId = null;
+};
+
+window.submitReinvestment = function () {
+  var targetPlanId = document.getElementById('reinv-target-plan').value;
+  var res = BD.reinvest(activeReinvestInvId, targetPlanId);
+  if (!res.ok) {
+    alert(res.msg);
+    return;
+  }
+  var p = BD.getPlan(targetPlanId);
+  BD.writeAudit('Reinvested matured payout from ' + activeReinvestInvId + ' into plan ' + (p ? p.name : targetPlanId), 'Investor Demo', 'Rollover Escrow', 'Investor Mandate');
+  BhComp.toast('Reinvestment executed into ' + (p ? p.name : targetPlanId) + '!', 'info');
+  closeReinvestModal();
+  renderPortfolio();
+};
+
+// Initial calls
+renderPlansTable();
+renderPortfolio();
+</script>
+</body>
+</html>

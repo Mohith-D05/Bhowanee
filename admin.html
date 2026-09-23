@@ -1,0 +1,1965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bhowanee — Super Admin (Maharashtra)</title>
+<meta name="description" content="Super admin oversight dashboard for Bhowanee. See every contract across Maharashtra and intervene where stuck.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600&family=Zilla+Slab:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+/* Admin-specific overrides (cadastral shared styles are in shared.css) */
+.admin-grid { display:grid; grid-template-columns:1fr 390px; min-height:520px; border:none; }
+.admin-panel { display:none; }
+.admin-panel.open { display:block; }
+.kpi-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:20px; }
+.kpi-card { background:var(--sheet); border:1px solid var(--rule); padding:16px; }
+.kpi-card .num { font-family:var(--font-slab); font-size:26px; font-weight:700; color:var(--ink); line-height:1.1; margin-bottom:4px; }
+.kpi-card .lbl { font-size:13.5px; color:var(--ink-soft); font-weight:500; }
+.flag-alert { background:#FFF3F0; border-left:4px solid var(--brick); padding:8px 12px; font-size:13px; color:var(--brick); font-weight:600; }
+.filter-bar { display:flex; flex-wrap:wrap; gap:12px; align-items:center; background:var(--sheet); border:1px solid var(--rule); padding:12px 16px; margin-bottom:16px; }
+.chart-box { background:var(--sheet); border:1px solid var(--rule); padding:18px; margin-bottom:16px; }
+.stat-pill { display:inline-flex; align-items:center; gap:6px; padding:3px 8px; border-radius:12px; font-size:12.5px; font-weight:600; }
+.pill-green { background:#E6F4EA; color:#137333; }
+.pill-red { background:#FCE8E6; color:#C5221F; }
+.pill-amber { background:#FEF7E0; color:#B06000; }
+.tablewrap th { background:var(--tint); }
+.dist-tooltip { background:var(--sheet); border:1px solid var(--ink); padding:8px 12px; font-family:var(--font-sans); font-size:13px; box-shadow:0 3px 8px rgba(0,0,0,0.12); }
+/* contract-panel is same as admin-panel for cadastral view */
+.contract-panel { display:none; }
+.contract-panel.open { display:block; }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- Topbar -->
+  <header class="topbar" role="banner">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="topbar-brand">Bhowanee</span>
+      <span class="chip sm" style="background:var(--turmeric);color:var(--ink);font-weight:600">Super Admin</span>
+    </div>
+    <div class="topbar-tools">
+      <span id="tb-user" style="font-size:14.5px;font-weight:500">Maharashtra State Oversight</span>
+      <span id="offline-badge" class="offline-badge">Offline</span>
+      <span id="sync-badge" class="sync-badge">Live</span>
+      <button class="ghost" onclick="Auth.logout()">Sign out</button>
+    </div>
+  </header>
+
+  <!-- Sidenav -->
+  <nav class="sidenav" aria-label="Super admin sections">
+    <button class="sidenav-item active" data-section="map">State Map</button>
+    <button class="sidenav-item" data-section="pipeline">Land Pipeline</button>
+    <button class="sidenav-item" data-section="demand">Demand & Supply</button>
+    <button class="sidenav-item" data-section="bids">Bid Oversight</button>
+    <button class="sidenav-item" data-section="ledger">Settlement Ledger</button>
+    <button class="sidenav-item" data-section="disputes">Dispute Queue</button>
+    <button class="sidenav-item" data-section="compliance">Compliance</button>
+    <button class="sidenav-item" data-section="kyc">Onboarding & KYC</button>
+    <button class="sidenav-item" data-section="audit">Audit Trail</button>
+    <button class="sidenav-item" data-section="analytics">Analytics</button>
+  </nav>
+
+  <!-- Main -->
+  <main class="main-area" id="main-area">
+
+    <!-- ── 1. STATE MAP (Cadastral Revenue Map View) ──────────────── -->
+    <section id="s-map">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title">Cadastral Revenue Map — Maharashtra Operations</h1>
+          <p class="trail" id="admin-trail"><b>Maharashtra</b> <span>/</span> <b>Nashik</b> <span>/</span> <b>Dindori</b> <span>/</span> <span id="trail-level">Pimpalgaon Baswant (Gat Nakasha)</span></p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div class="seg" role="group" aria-label="View switch">
+            <button class="seg-btn" aria-pressed="true" data-view="map" id="btn-view-map">Map</button>
+            <button class="seg-btn" aria-pressed="false" data-view="table" id="btn-view-table">Table</button>
+          </div>
+          <button class="btn sm secondary" id="btn-reset-zoom" onclick="resetCadastralMap()">State View</button>
+        </div>
+      </div>
+
+      <div id="view-map-container">
+        <!-- Cadastral Map Header -->
+        <div class="cmap-banner">
+          <div class="cmap-banner-top">
+            <div class="cmap-brand">
+              <div class="cmap-emblem" title="Cadastral Revenue Map">
+                <svg width="24" height="24" viewBox="0 0 36 36"><circle cx="18" cy="18" r="16" fill="#fff" stroke="#D99A06" stroke-width="2"/><path d="M10 24 L18 8 L26 24 Z" fill="#0070FF"/><circle cx="18" cy="20" r="4" fill="#E53935"/></svg>
+              </div>
+              <div>
+                <span class="cmap-name">Cadastral Map</span>
+                <span class="cmap-sub">Maharashtra State Oversight (Dindori Survey Map)</span>
+              </div>
+            </div>
+            
+            <div class="cmap-top-controls">
+              <div class="cmap-layer-pills" role="group" aria-label="Base Map Layer">
+                <button class="cmap-layer-pill-btn active" id="btn-mode-sat" type="button">🛰️ Satellite Aerial</button>
+                <button class="cmap-layer-pill-btn" id="btn-mode-vec" type="button">🗺️ Cadastral Vector</button>
+              </div>
+              <div class="cmap-badge">V-1.30</div>
+            </div>
+          </div>
+          
+          <div class="cmap-search-row">
+            <div class="cmap-search-input-wrap">
+              <span class="cmap-search-icon">🔍</span>
+              <input id="cmap-gat-search" type="text" placeholder="Click on the map or search Sy No. / Gat No. (e.g. 125, 123, 66)..." autocomplete="off">
+              <button class="btn sm" id="cmap-search-btn" type="button">Search Sy No.</button>
+            </div>
+            <div class="cmap-quick-chips">
+              <span style="font-size:12px;opacity:0.9;align-self:center">Select Gat:</span>
+              <button class="cmap-chip active" type="button" data-gat="125">Gat 125 (Active)</button>
+              <button class="cmap-chip" type="button" data-gat="124">Gat 124</button>
+              <button class="cmap-chip" type="button" data-gat="123">Gat 123</button>
+              <button class="cmap-chip" type="button" data-gat="122">Gat 122</button>
+              <button class="cmap-chip" type="button" data-gat="121">Gat 121</button>
+              <button class="cmap-chip" type="button" data-gat="120/B">Gat 120/B</button>
+              <button class="cmap-chip" type="button" data-gat="128">Gat 128</button>
+              <button class="cmap-chip" type="button" data-gat="129">Gat 129</button>
+              <button class="cmap-chip" type="button" data-gat="131">Gat 131</button>
+              <button class="cmap-chip" type="button" data-gat="135">Gat 135</button>
+              <button class="cmap-chip" type="button" data-gat="134">Gat 134</button>
+              <button class="cmap-chip" type="button" data-gat="133">Gat 133</button>
+              <button class="cmap-chip" type="button" data-gat="146">Gat 146</button>
+              <button class="cmap-chip" type="button" data-gat="103">Gat 103</button>
+              <button class="cmap-chip" type="button" data-gat="66">Gat 66</button>
+              <button class="cmap-chip" type="button" data-gat="47">Gat 47</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Map & Contract Detail Grid -->
+        <div class="admin-grid">
+          <div style="position:relative;display:flex;flex-direction:column;overflow:hidden">
+            <div id="admin-map" style="min-height:520px;flex:1"></div>
+            
+            <!-- Floating Purple Layer Button -->
+            <button class="cmap-floating-layer-btn" id="cmap-floating-layer-btn" type="button" title="Switch between Satellite and Cadastral Vector view">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="3" width="7.5" height="7.5" rx="1.5" fill="#ffffff" fill-opacity="0.95"/>
+                <rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5" fill="#ffffff" fill-opacity="0.95"/>
+                <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5" fill="#ffffff" fill-opacity="0.95"/>
+                <rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" fill="#ffffff" fill-opacity="0.95"/>
+              </svg>
+            </button>
+
+            <!-- Esri Attribution Footer -->
+            <div class="cmap-esri-footer">
+              <span>Esri, TomTom, Garmin</span>
+              <span>Designed and developed by KSRSAC / Mahabhumi · V-1.30</span>
+              <span>Powered by Esri</span>
+            </div>
+            
+            <!-- Bottom Action Toolbar -->
+            <div class="cmap-bottom-bar">
+              <button class="cmap-tool-btn" id="tool-measure" type="button" title="Click two boundary points to measure distance">
+                <span class="tool-icon">📏</span>
+                <span id="measure-label">Measurement Tools</span>
+              </button>
+              <div class="tool-divider"></div>
+              <button class="cmap-tool-btn" id="tool-search" type="button">
+                <span class="tool-icon">🔍</span>
+                <span>Search Sy No.</span>
+              </button>
+              <div class="tool-divider"></div>
+              <button class="cmap-tool-btn" id="tool-stage-toggle" type="button">
+                <span class="tool-icon">🎨</span>
+                <span id="stage-toggle-label">Crop Stage Tint: On</span>
+              </button>
+              <div class="tool-divider"></div>
+              <button class="cmap-tool-btn" id="tool-reset-view" type="button">
+                <span class="tool-icon">🎯</span>
+                <span>Reset Extent</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="admin-panel open" id="admin-panel">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <h3 style="font-size:18px;font-family:var(--font-slab)" id="panel-title">Contract & 7/12 Extract</h3>
+              <button class="btn sm secondary" onclick="closeAdminPanel()">✕ Close</button>
+            </div>
+            <div id="panel-content"></div>
+            <div class="action-buttons" id="panel-actions"></div>
+            <div id="panel-bid-board" style="margin-top:20px;display:none">
+              <h4 style="font-size:16px;margin-bottom:8px">Bid board</h4>
+              <svg id="panel-bb-svg" viewBox="0 0 480 260" class="bb-svg"></svg>
+              <p id="panel-bb-say" class="bb-say" style="font-size:14px;margin-top:6px"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cadastral Legend -->
+        <div class="cadastral-legend-bar">
+          <div class="legend-group">
+            <span class="legend-title">Cadastral Revenue Layers:</span>
+            <span class="legend-item"><i class="leg-box leg-selected"></i> <b>Selected Parcel (Gat 125)</b></span>
+            <span class="legend-item"><i class="leg-box leg-parcel"></i> Survey Parcel Boundary</span>
+            <span class="legend-item"><i class="leg-box leg-road"></i> Village Road</span>
+            <span class="legend-item"><i class="leg-box leg-water"></i> Water Stream / Nala</span>
+            <span class="legend-item"><i class="leg-box leg-settlement"></i> Gaothan Settlement</span>
+            <span class="legend-item"><i class="leg-box leg-pond"></i> Farm Pond</span>
+          </div>
+          <div class="legend-group" style="margin-top:8px">
+            <span class="legend-title">Crop Stage Tint:</span>
+            <span class="legend-item" style="--c:var(--st-notsown)"><i style="background:var(--st-notsown)"></i> Not sown</span>
+            <span class="legend-item" style="--c:var(--st-growing)"><i style="background:var(--st-growing)"></i> Growing</span>
+            <span class="legend-item" style="--c:var(--st-harvest)"><i style="background:var(--st-harvest)"></i> Harvest ready</span>
+            <span class="legend-item" style="--c:var(--st-bids)"><i style="background:var(--st-bids)"></i> Bids open</span>
+            <span class="legend-item" style="--c:var(--st-issue)"><i style="background:var(--st-issue)"></i> Issue flagged</span>
+            <span class="legend-item" style="--c:var(--st-closed)"><i style="background:var(--st-closed)"></i> Closed / Pasture</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table View (Hidden by default) -->
+      <div id="view-table-container" style="display:none">
+        <div class="tablewrap" style="margin-top:14px">
+          <table id="tbl-state-contracts">
+            <thead>
+              <tr>
+                <th>Contract ID</th>
+                <th>District / Village</th>
+                <th>Farmer</th>
+                <th>Crop</th>
+                <th>Area</th>
+                <th>Stage</th>
+                <th>Latest Action</th>
+                <th>Admin Action</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 2. LAND PIPELINE ────────────────────────────────── -->
+    <section id="s-pipeline" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <div>
+          <h1 class="page-title">Land Acquisition & Lease Pipeline</h1>
+          <p class="page-sub">Land under farmer negotiation vs active executed leases across Maharashtra.</p>
+        </div>
+        <button class="btn" onclick="openAddLandModal()">+ Add Land Parcel</button>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="num" id="pipe-total-negotiating">4 Parcels</div>
+          <div class="lbl">In Farmer Negotiation</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" id="pipe-total-leases">6 Executed</div>
+          <div class="lbl">Active Leases Signed</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">11.9 Acres</div>
+          <div class="lbl">Total Active Acreage</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--forest)">94.2%</div>
+          <div class="lbl">Farmer Agreement Rate</div>
+        </div>
+      </div>
+
+      <div class="tablewrap">
+        <table id="tbl-pipeline">
+          <thead>
+            <tr>
+              <th>Gat / Plot</th>
+              <th>District & Village</th>
+              <th>Farmer Name</th>
+              <th>Area (Acres)</th>
+              <th>Proposed Crop</th>
+              <th>Soil / Water</th>
+              <th>Status</th>
+              <th>Next Step</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Gat 118</b></td>
+              <td>Nashik / Pimpalgaon</td>
+              <td>Prakash Sonawane</td>
+              <td>2.4</td>
+              <td>Onion</td>
+              <td>Black cotton, Canal</td>
+              <td><span class="chip sm" style="background:#E6F4EA;color:#137333">Lease Executed</span></td>
+              <td>Bidding in progress</td>
+              <td><button class="btn sm secondary" onclick="inspectContract('c1')">View Contract</button></td>
+            </tr>
+            <tr>
+              <td><b>Gat 147</b></td>
+              <td>Nashik / Pimpalgaon</td>
+              <td>Sushila Ahire</td>
+              <td>1.8</td>
+              <td>Onion</td>
+              <td>Loam, Borewell</td>
+              <td><span class="chip sm" style="background:#E6F4EA;color:#137333">Lease Executed</span></td>
+              <td>Harvest & Lot prep</td>
+              <td><button class="btn sm secondary" onclick="inspectContract('c2')">View Contract</button></td>
+            </tr>
+            <tr>
+              <td><b>Gat 212</b></td>
+              <td>Nashik / Wadgaon</td>
+              <td>Raju Patil</td>
+              <td>1.2</td>
+              <td>Tomato</td>
+              <td>Alluvial, Canal</td>
+              <td><span class="chip sm" style="background:#E6F4EA;color:#137333">Lease Executed</span></td>
+              <td>Vegetative growth</td>
+              <td><button class="btn sm secondary" onclick="inspectContract('c3')">View Contract</button></td>
+            </tr>
+            <tr>
+              <td><b>Gat 289</b></td>
+              <td>Nashik / Wadgaon</td>
+              <td>Meena Bhosale</td>
+              <td>3.0</td>
+              <td>Soybean</td>
+              <td>Black cotton, Rain-fed</td>
+              <td><span class="chip sm" style="background:#E6F4EA;color:#137333">Lease Executed</span></td>
+              <td>Pod formation</td>
+              <td><button class="btn sm secondary" onclick="inspectContract('c4')">View Contract</button></td>
+            </tr>
+            <tr>
+              <td><b>Gat 332</b></td>
+              <td>Nashik / Pimpalgaon</td>
+              <td>Dnyaneshwar Jadhav</td>
+              <td>2.0</td>
+              <td>Onion</td>
+              <td>Sandy loam, Well</td>
+              <td><span class="chip sm" style="background:#FCE8E6;color:#C5221F">Issue Flagged</span></td>
+              <td>Insurance adjustment</td>
+              <td><button class="btn sm secondary" onclick="inspectContract('c5')">View Contract</button></td>
+            </tr>
+            <tr>
+              <td><b>Gat 401</b></td>
+              <td>Nashik / Wadgaon</td>
+              <td>Savita Gaikwad</td>
+              <td>1.5</td>
+              <td>Pulses</td>
+              <td>Black soil, Canal</td>
+              <td><span class="chip sm" style="background:#FEF7E0;color:#B06000">Signed, Unplowed</span></td>
+              <td>Sowing preparation</td>
+              <td><button class="btn sm secondary" onclick="inspectContract('c6')">View Contract</button></td>
+            </tr>
+            <tr style="background:#FAFBFC">
+              <td><b>Gat 505</b></td>
+              <td>Pune / Baramati</td>
+              <td>Tanaji Shinde</td>
+              <td>4.5</td>
+              <td>Sugarcane</td>
+              <td>Alluvial, Drip</td>
+              <td><span class="chip sm" style="background:#E8F0FE;color:#1967D2">In Negotiation</span></td>
+              <td>Farmer review of lease term</td>
+              <td><button class="btn sm" onclick="signLeaseMock('Gat 505','Tanaji Shinde')">Approve Lease</button></td>
+            </tr>
+            <tr style="background:#FAFBFC">
+              <td><b>Gat 612</b></td>
+              <td>Sambhajinagar / Paithan</td>
+              <td>Kavita More</td>
+              <td>2.8</td>
+              <td>Cotton</td>
+              <td>Black soil, Canal</td>
+              <td><span class="chip sm" style="background:#E8F0FE;color:#1967D2">Title Verification</span></td>
+              <td>Land record 7/12 check</td>
+              <td><button class="btn sm" onclick="signLeaseMock('Gat 612','Kavita More')">Verify 7/12</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 3. DEMAND & SUPPLY ──────────────────────────────── -->
+    <section id="s-demand" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Demand & Supply Balance</h1>
+        <p class="page-sub">Pre-committed institutional buyer orders vs contracted platform harvest by district.</p>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="num">74,200 Qt</div>
+          <div class="lbl">Statewide Buyer Demand</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">63,100 Qt</div>
+          <div class="lbl">Contracted Supply Capacity</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:#B06000">85.0%</div>
+          <div class="lbl">Demand Coverage Ratio</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">11,100 Qt</div>
+          <div class="lbl">Unmet Buyer Demand Gap</div>
+        </div>
+      </div>
+
+      <div class="tablewrap">
+        <table id="tbl-demand-supply">
+          <thead>
+            <tr>
+              <th>District</th>
+              <th>Buyer Demand (Qt)</th>
+              <th>Contracted Output (Qt)</th>
+              <th>Variance (Gap)</th>
+              <th>Coverage %</th>
+              <th>Dominant Crops</th>
+              <th>Strategic Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Nashik</b></td>
+              <td>18,000</td>
+              <td>14,200</td>
+              <td style="color:#C5221F">-3,800 Qt</td>
+              <td><span class="stat-pill pill-amber">78.9%</span></td>
+              <td>Onion, Tomato, Grapes</td>
+              <td><button class="btn sm secondary" onclick="switchSection('pipeline')">Expand Leases in Dindori</button></td>
+            </tr>
+            <tr>
+              <td><b>Pune</b></td>
+              <td>15,000</td>
+              <td>11,800</td>
+              <td style="color:#C5221F">-3,200 Qt</td>
+              <td><span class="stat-pill pill-amber">78.7%</span></td>
+              <td>Sugarcane, Vegetables</td>
+              <td><button class="btn sm secondary" onclick="switchSection('pipeline')">Enroll FPO Clusters</button></td>
+            </tr>
+            <tr>
+              <td><b>Kolhapur</b></td>
+              <td>10,500</td>
+              <td>9,200</td>
+              <td style="color:#C5221F">-1,300 Qt</td>
+              <td><span class="stat-pill pill-green">87.6%</span></td>
+              <td>Sugarcane, Jaggery, Soy</td>
+              <td>Balanced — maintain pace</td>
+            </tr>
+            <tr>
+              <td><b>Sambhajinagar</b></td>
+              <td>9,000</td>
+              <td>7,800</td>
+              <td style="color:#C5221F">-1,200 Qt</td>
+              <td><span class="stat-pill pill-amber">86.7%</span></td>
+              <td>Cotton, Maize, Pulses</td>
+              <td>Promote Rabi pulse plans</td>
+            </tr>
+            <tr>
+              <td><b>Solapur</b></td>
+              <td>7,500</td>
+              <td>6,800</td>
+              <td style="color:#C5221F">-700 Qt</td>
+              <td><span class="stat-pill pill-green">90.7%</span></td>
+              <td>Pomegranate, Jowar</td>
+              <td>Near parity</td>
+            </tr>
+            <tr>
+              <td><b>Latur</b></td>
+              <td>6,000</td>
+              <td>5,200</td>
+              <td style="color:#C5221F">-800 Qt</td>
+              <td><span class="stat-pill pill-green">86.7%</span></td>
+              <td>Soybean, Tur Dal</td>
+              <td>Sync with Latur Mandi</td>
+            </tr>
+            <tr>
+              <td><b>Amravati</b></td>
+              <td>4,500</td>
+              <td>4,200</td>
+              <td style="color:#C5221F">-300 Qt</td>
+              <td><span class="stat-pill pill-green">93.3%</span></td>
+              <td>Soybean, Cotton, Orange</td>
+              <td>Well covered</td>
+            </tr>
+            <tr>
+              <td><b>Nagpur</b></td>
+              <td>2,800</td>
+              <td>2,200</td>
+              <td style="color:#C5221F">-600 Qt</td>
+              <td><span class="stat-pill pill-amber">78.6%</span></td>
+              <td>Citrus, Pulses, Wheat</td>
+              <td>Cold storage tie-ups needed</td>
+            </tr>
+            <tr>
+              <td><b>Thane</b></td>
+              <td>1,200</td>
+              <td>900</td>
+              <td style="color:#C5221F">-300 Qt</td>
+              <td><span class="stat-pill pill-amber">75.0%</span></td>
+              <td>Paddy, Coastal veg</td>
+              <td>Peri-urban distribution</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 4. BID OVERSIGHT ────────────────────────────────── -->
+    <section id="s-bids" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div>
+          <h1 class="page-title">Live Bid Oversight & Anti-Price Manipulation</h1>
+          <p class="page-sub">Monitoring statewide lots against Mandi reference benchmark. Flagging outliers (>15% variance).</p>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="num" id="bids-active-lots">2 Lots</div>
+          <div class="lbl">Currently Active Lots</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">₹2,040 /qt</div>
+          <div class="lbl">Highest Active Bid (Gat 118)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--forest)">+8.5%</div>
+          <div class="lbl">Spread over Mandi Reference</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--brick)">0</div>
+          <div class="lbl">Suspicious / Flagged Bids</div>
+        </div>
+      </div>
+
+      <div class="tablewrap">
+        <table id="tbl-bids-oversight">
+          <thead>
+            <tr>
+              <th>Lot ID</th>
+              <th>Contract & Village</th>
+              <th>Farmer</th>
+              <th>Crop & Grade</th>
+              <th>Weight</th>
+              <th>Farmer Target</th>
+              <th>Mandi Benchmark</th>
+              <th>Highest Bid</th>
+              <th>Top Bidder</th>
+              <th>Status</th>
+              <th>Oversight Flag</th>
+            </tr>
+          </thead>
+          <tbody id="bids-oversight-tbody"></tbody>
+        </table>
+      </div>
+
+      <h3 style="margin:24px 0 12px;font-family:var(--font-slab)">Recent Bids Log</h3>
+      <div class="tablewrap">
+        <table id="tbl-all-bids">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Lot</th>
+              <th>Buyer</th>
+              <th>Bid Price</th>
+              <th>vs Mandi</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="all-bids-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 5. SETTLEMENT LEDGER ────────────────────────────── -->
+    <section id="s-ledger" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div>
+          <h1 class="page-title">Settlement Ledger & Escrow Reconciliations</h1>
+          <p class="page-sub">Every rupee moving between institutional buyers, escrow accounts, and farmer bank accounts.</p>
+        </div>
+        <div style="display:flex;gap:10px">
+          <select id="filter-ledger-status" onchange="renderLedger()" style="padding:6px 10px;font-size:14px">
+            <option value="all">All Settlements</option>
+            <option value="Settled">Settled Only</option>
+            <option value="Pending">Pending Escrow Only</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="num" id="led-total-settled">₹24,480</div>
+          <div class="lbl">Disbursed to Farmers</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" id="led-total-pending" style="color:var(--brick)">₹8,400</div>
+          <div class="lbl">Awaiting Admin Release</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">₹32,880</div>
+          <div class="lbl">Total Trade Value</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--forest)">100%</div>
+          <div class="lbl">Bank Reconciliation Rate</div>
+        </div>
+      </div>
+
+      <div class="tablewrap">
+        <table id="tbl-ledger">
+          <thead>
+            <tr>
+              <th>Payment ID</th>
+              <th>Timestamp</th>
+              <th>Contract / Lot</th>
+              <th>Payer (From)</th>
+              <th>Payee (Farmer)</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="ledger-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 6. DISPUTE QUEUE ────────────────────────────────── -->
+    <section id="s-disputes" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div>
+          <h1 class="page-title">Grievances & Dispute Resolution</h1>
+          <p class="page-sub">Super admin arbitration for harvest discrepancies, hailstorm claims, and quality disputes.</p>
+        </div>
+      </div>
+
+      <div class="tablewrap">
+        <table id="tbl-disputes">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Date</th>
+              <th>Contract</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th>Raised By</th>
+              <th>Current Owner</th>
+              <th>Status</th>
+              <th>Arbitration</th>
+            </tr>
+          </thead>
+          <tbody id="disputes-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 7. COMPLIANCE ───────────────────────────────────── -->
+    <section id="s-compliance" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Statutory Compliance & Land Ceilings</h1>
+        <p class="page-sub">Tracking Maharashtra Agricultural Land (Ceiling on Holdings) Act limits, renewals, and crop insurance filing deadlines.</p>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="num">0</div>
+          <div class="lbl">Ceiling Violations</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--brick)">1</div>
+          <div class="lbl">Urgent Insurance Action (&le; 15 Days)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">1</div>
+          <div class="lbl">Pending District Verification</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">100%</div>
+          <div class="lbl">Leases with Revenue Stamp</div>
+        </div>
+      </div>
+
+      <div class="tablewrap">
+        <table id="tbl-compliance">
+          <thead>
+            <tr>
+              <th>Compliance ID</th>
+              <th>Contract ID</th>
+              <th>Regulation / Type</th>
+              <th>Statutory Due Date</th>
+              <th>Status</th>
+              <th>Notes / Deadlines</th>
+              <th>Admin Action</th>
+            </tr>
+          </thead>
+          <tbody id="compliance-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 8. ONBOARDING & KYC ──────────────────────────────── -->
+    <section id="s-kyc" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Participant Onboarding & KYC Approval</h1>
+        <p class="page-sub">Verification queue for institutional buyers and registered platform investors.</p>
+      </div>
+
+      <div class="tablewrap">
+        <table id="tbl-kyc">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Entity / Name</th>
+              <th>Role</th>
+              <th>Contact Email</th>
+              <th>Submission Date</th>
+              <th>Status</th>
+              <th>Review & Decide</th>
+            </tr>
+          </thead>
+          <tbody id="kyc-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 9. AUDIT TRAIL ──────────────────────────────────── -->
+    <section id="s-audit" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div>
+          <h1 class="page-title">Platform Audit Trail</h1>
+          <p class="page-sub">Cryptographically logged timeline of every admin action, farmer confirmation, and financial transaction.</p>
+        </div>
+        <div class="field" style="margin:0;min-width:240px">
+          <input type="search" id="search-audit" placeholder="Search by farmer, ID, or action..." oninput="renderAuditTrail()" style="padding:6px 12px;font-size:14px">
+        </div>
+      </div>
+
+      <div class="tablewrap">
+        <table id="tbl-audit">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Action Recorded</th>
+              <th>Authorized By</th>
+              <th>Target Farmer / Lot</th>
+              <th>Proof / Confirmation Method</th>
+            </tr>
+          </thead>
+          <tbody id="audit-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 10. ANALYTICS ───────────────────────────────────── -->
+    <section id="s-analytics" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Executive Performance & Volume Analytics</h1>
+        <p class="page-sub">Statewide agricultural indices, trade throughput, and revenue realization across all 9 operational districts.</p>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="num">1,259</div>
+          <div class="lbl">Total Active Contracts</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">5,880</div>
+          <div class="lbl">Acres Farmed</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">2,885</div>
+          <div class="lbl">Enrolled Smallholders</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">₹14.8 Cr</div>
+          <div class="lbl">Platform GMV (Season)</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+        <div class="chart-box">
+          <h3 style="font-family:var(--font-slab);font-size:17px;margin-bottom:8px">Cumulative Monthly Trade Volume (₹ Lakhs)</h3>
+          <p style="font-size:13px;color:var(--ink-soft);margin-bottom:16px">Nov 2025 – Mar 2026</p>
+          <svg viewBox="0 0 450 180" style="width:100%;height:auto">
+            <!-- Grid lines -->
+            <line x1="40" y1="20" x2="430" y2="20" stroke="#EAECEF"/>
+            <line x1="40" y1="60" x2="430" y2="60" stroke="#EAECEF"/>
+            <line x1="40" y1="100" x2="430" y2="100" stroke="#EAECEF"/>
+            <line x1="40" y1="140" x2="430" y2="140" stroke="#1C2452" stroke-width="1.5"/>
+            <!-- Labels -->
+            <text x="35" y="24" text-anchor="end" font-size="11" fill="#4B5375">150L</text>
+            <text x="35" y="64" text-anchor="end" font-size="11" fill="#4B5375">100L</text>
+            <text x="35" y="104" text-anchor="end" font-size="11" fill="#4B5375">50L</text>
+            <text x="35" y="144" text-anchor="end" font-size="11" fill="#4B5375">0</text>
+            <!-- X axis months -->
+            <text x="70" y="160" text-anchor="middle" font-size="11" fill="#4B5375">Nov</text>
+            <text x="150" y="160" text-anchor="middle" font-size="11" fill="#4B5375">Dec</text>
+            <text x="230" y="160" text-anchor="middle" font-size="11" fill="#4B5375">Jan</text>
+            <text x="310" y="160" text-anchor="middle" font-size="11" fill="#4B5375">Feb</text>
+            <text x="390" y="160" text-anchor="middle" font-size="11" fill="#4B5375">Mar</text>
+            <!-- Trend line -->
+            <polyline fill="none" stroke="#D99A06" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+              points="70,128 150,110 230,85 310,50 390,26" />
+            <!-- Area fill -->
+            <polygon fill="#D99A06" fill-opacity="0.12"
+              points="70,128 150,110 230,85 310,50 390,26 390,140 70,140" />
+            <!-- Dots -->
+            <circle cx="70" cy="128" r="4" fill="#1C2452"/>
+            <circle cx="150" cy="110" r="4" fill="#1C2452"/>
+            <circle cx="230" cy="85" r="4" fill="#1C2452"/>
+            <circle cx="310" cy="50" r="4" fill="#1C2452"/>
+            <circle cx="390" cy="26" r="5" fill="#D99A06"/>
+          </svg>
+        </div>
+
+        <div class="chart-box">
+          <h3 style="font-family:var(--font-slab);font-size:17px;margin-bottom:8px">Crop Acreage Distribution</h3>
+          <p style="font-size:13px;color:var(--ink-soft);margin-bottom:16px">Top crops under active management</p>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px">
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span><b>Onion (Rabi)</b> — Nashik & Pune</span>
+                <span>2,150 Acres (36.5%)</span>
+              </div>
+              <div style="background:#EAECEF;height:10px;width:100%"><div style="background:#B86B14;width:36.5%;height:100%"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span><b>Soybean</b> — Amravati & Latur</span>
+                <span>1,420 Acres (24.1%)</span>
+              </div>
+              <div style="background:#EAECEF;height:10px;width:100%"><div style="background:#D99A06;width:24.1%;height:100%"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span><b>Sugarcane</b> — Kolhapur & Pune</span>
+                <span>1,180 Acres (20.1%)</span>
+              </div>
+              <div style="background:#EAECEF;height:10px;width:100%"><div style="background:#2C6E49;width:20.1%;height:100%"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span><b>Pulses & Grains</b> — Sambhajinagar</span>
+                <span>710 Acres (12.1%)</span>
+              </div>
+              <div style="background:#EAECEF;height:10px;width:100%"><div style="background:#4B5375;width:12.1%;height:100%"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span><b>Tomato & Vegetables</b> — Dindori</span>
+                <span>420 Acres (7.2%)</span>
+              </div>
+              <div style="background:#EAECEF;height:10px;width:100%"><div style="background:#9B2226;width:7.2%;height:100%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Modal: Resolve Dispute -->
+<div id="modal-dispute" class="modal-overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="disp-m-title">
+    <h3 id="disp-m-title" style="font-family:var(--font-slab)">Arbitrate Dispute</h3>
+    <p id="disp-m-desc" class="modal-sub"></p>
+    <div class="field" style="margin-top:14px">
+      <label for="disp-resolution">Official Resolution Decision</label>
+      <textarea id="disp-resolution" rows="3" placeholder="State findings, adjustments, or insurance claim authorization..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" type="button" onclick="submitDisputeResolution()">Confirm Resolution</button>
+      <button class="btn secondary" type="button" onclick="closeDisputeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Land Parcel -->
+<div id="modal-land" class="modal-overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="land-m-title">
+    <h3 id="land-m-title" style="font-family:var(--font-slab)">Add New Land Parcel to Pipeline</h3>
+    <p class="modal-sub">Register land scouted for upcoming seasonal contracts.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+      <div class="field">
+        <label for="lp-gat">Gat / Survey Number</label>
+        <input id="lp-gat" placeholder="e.g. Gat 720">
+      </div>
+      <div class="field">
+        <label for="lp-district">District</label>
+        <select id="lp-district">
+          <option value="nashik">Nashik</option>
+          <option value="pune">Pune</option>
+          <option value="sambhajinagar">Sambhajinagar</option>
+          <option value="kolhapur">Kolhapur</option>
+          <option value="solapur">Solapur</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="lp-farmer">Farmer Name</label>
+        <input id="lp-farmer" placeholder="e.g. Ramesh Kadam">
+      </div>
+      <div class="field">
+        <label for="lp-acres">Area (Acres)</label>
+        <input id="lp-acres" type="number" step="0.1" placeholder="e.g. 2.5">
+      </div>
+      <div class="field" style="grid-column:span 2">
+        <label for="lp-crop">Proposed Crop</label>
+        <input id="lp-crop" placeholder="e.g. Onion or Soybean">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" type="button" onclick="saveNewLandParcel()">Add to Pipeline</button>
+      <button class="btn secondary" type="button" onclick="closeLandModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="auth.js"></script>
+<script src="market.js"></script>
+<script src="data.js"></script>
+<script src="geo.js"></script>
+<script src="components.js"></script>
+<script>
+/* ============================================================
+   Super Admin Dashboard Logic
+   ============================================================ */
+
+// 1. Auth Guard
+Auth.requireRole('team'); // or 'admin'
+var session = Auth.getSession();
+if (session && session.name) {
+  document.getElementById('tb-user').textContent = session.name + ' (Super Admin)';
+}
+
+// 2. Navigation
+var navBtns = document.querySelectorAll('.sidenav-item');
+navBtns.forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var sec = btn.getAttribute('data-section');
+    switchSection(sec);
+  });
+});
+
+function switchSection(sec) {
+  navBtns.forEach(function (b) {
+    b.classList.toggle('active', b.getAttribute('data-section') === sec);
+  });
+  document.querySelectorAll('main > section').forEach(function (s) {
+    s.style.display = s.id === 's-' + sec ? 'block' : 'none';
+  });
+  if (sec === 'map' && map) {
+    setTimeout(function () { map.invalidateSize(); }, 200);
+  }
+}
+
+// 3. Cadastral Revenue Map Setup (Matching Block Admin)
+var map = null; // Leaflet map instance
+var leafletMap = null;
+var mapInited = false;
+var CONTRACT_COLORS = { notsown:'#C9D0DE', growing:'#B7D29F', harvest:'#F0C860', bids:'#AEB8E4', issue:'#DCADCB', closed:'#A3B89A', paid:'#7DAA6C' };
+var STAGE_PASTEL = { notsown:'#E2E8F0', growing:'#DCFCE7', harvest:'#FEF08A', bids:'#E0E7FF', issue:'#FCE7F3', closed:'#F1F5F9' };
+
+var activeMapMode = 'satellite'; // 'satellite' or 'vector'
+var satelliteTileLayer = null;
+var vectorBackdropLayer = null;
+var cartoTileLayer = null;
+
+var selectedGat = "125";
+var showCropStageTint = true;
+var highlightLayer = null;
+var parcelLayers = {};
+var measureMode = false;
+var measurePoints = [];
+var measureLayers = [];
+
+function initAdminMap() {
+  if (mapInited) return;
+  mapInited = true;
+
+  var cad = window.DINDORI_CADASTRAL;
+  var mapCenter = cad ? cad.center : [20.2046, 73.8360];
+  var mapEl = document.getElementById('admin-map');
+
+  if (typeof L === 'undefined') {
+    mapEl.innerHTML = '<p style="padding:20px;color:var(--ink-soft)">Leaflet.js not loaded. Map requires an internet connection.</p>';
+    return;
+  }
+
+  map = L.map(mapEl, {
+    zoomControl: true,
+    attributionControl: false
+  }).setView(mapCenter, 16);
+  leafletMap = map;
+
+  // 1. Satellite Aerial Photography Layer (Esri World Imagery)
+  satelliteTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19
+  });
+
+  // 2. Light Base Tile Layer for paper cadastral view
+  cartoTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+    subdomains: 'abcd'
+  });
+
+  // 3. Cadastral Vector Backdrop Polygon
+  var villageBounds = [
+    [20.1920, 73.8220], [20.1920, 73.8490],
+    [20.2160, 73.8490], [20.2160, 73.8220]
+  ];
+  vectorBackdropLayer = L.polygon(villageBounds, {
+    color: 'transparent',
+    fillColor: '#FAF7D4',
+    fillOpacity: 0.96,
+    interactive: false
+  });
+
+  satelliteTileLayer.addTo(map);
+
+  renderCadastralMap();
+  setupCadastralControls();
+
+  setTimeout(function() {
+    selectCadastralParcel("125");
+  }, 100);
+}
+
+function setMapMode(mode) {
+  activeMapMode = mode;
+  var isSat = (mode === 'satellite');
+
+  var btnSat = document.getElementById('btn-mode-sat');
+  var btnVec = document.getElementById('btn-mode-vec');
+  if (btnSat) btnSat.classList.toggle('active', isSat);
+  if (btnVec) btnVec.classList.toggle('active', !isSat);
+
+  if (map) {
+    if (isSat) {
+      if (map.hasLayer(vectorBackdropLayer)) map.removeLayer(vectorBackdropLayer);
+      if (map.hasLayer(cartoTileLayer)) map.removeLayer(cartoTileLayer);
+      if (!map.hasLayer(satelliteTileLayer)) satelliteTileLayer.addTo(map);
+    } else {
+      if (map.hasLayer(satelliteTileLayer)) map.removeLayer(satelliteTileLayer);
+      if (!map.hasLayer(cartoTileLayer)) cartoTileLayer.addTo(map);
+      if (!map.hasLayer(vectorBackdropLayer)) vectorBackdropLayer.addTo(map);
+    }
+  }
+
+  refreshParcelStyles();
+  BhComp.toast(isSat ? 'Switched to Satellite Aerial view' : 'Switched to Cadastral Vector view');
+}
+
+function refreshParcelStyles() {
+  var isSat = (activeMapMode === 'satellite');
+  var cad = window.DINDORI_CADASTRAL;
+  if (!cad) return;
+
+  cad.parcels.forEach(function(p) {
+    var pl = parcelLayers[p.gat];
+    if (!pl) return;
+
+    var isSel = (p.gat === selectedGat);
+    var fillColor = showCropStageTint ? (STAGE_PASTEL[p.stage] || '#FEFCE8') : '#FEFCE8';
+
+    pl.poly.setStyle({
+      color: isSat ? '#000000' : '#262626',
+      weight: isSat ? 2 : 1.8,
+      fillColor: fillColor,
+      fillOpacity: isSat ? (showCropStageTint ? 0.22 : 0.04) : 0.85
+    });
+
+    if (pl.marker) {
+      var labelClass = 'cadastral-sy-label ' + (isSat ? 'satellite-mode' : 'vector-mode') + (isSel ? ' active-label' : '');
+      var syIcon = L.divIcon({
+        className: labelClass,
+        html: pl.data.gat,
+        iconSize: [46, 24],
+        iconAnchor: [23, 12]
+      });
+      pl.marker.setIcon(syIcon);
+    }
+  });
+
+  if (selectedGat) {
+    selectCadastralParcel(selectedGat, true);
+  }
+}
+
+function renderCadastralMap() {
+  var cad = window.DINDORI_CADASTRAL;
+  if (!cad || !map) return;
+
+  var isSat = (activeMapMode === 'satellite');
+
+  if (cad.road) {
+    var roadPoly = L.polygon(cad.road.coords, {
+      color: '#4B5563', weight: 1.6, fillColor: '#9CA3AF', fillOpacity: 0.90
+    }).addTo(map);
+    roadPoly.bindTooltip('<b>' + cad.road.name + '</b><br>Village Cart Track / Shetrasta', { sticky: true });
+    
+    var roadIcon = L.divIcon({
+      className: 'cadastral-feature-label road-label',
+      html: '<div style="display:flex;align-items:center;gap:4px"><span class="road-badge-icon">69</span><span>ROAD · Village Track</span></div>',
+      iconSize: [140, 24], iconAnchor: [70, 12]
+    });
+    L.marker(cad.road.labelCoords, { icon: roadIcon, interactive: false }).addTo(map);
+  }
+
+  if (cad.stream) {
+    var streamPoly = L.polygon(cad.stream.coords, {
+      color: '#004DB3', weight: 2, fillColor: '#0066E0', fillOpacity: 0.95
+    }).addTo(map);
+    streamPoly.bindTooltip('<b>' + cad.stream.name + '</b><br>Natural Irrigation & Drainage Channel', { sticky: true });
+
+    var waterIcon = L.divIcon({
+      className: 'cadastral-feature-label water-label',
+      html: 'Water / NALA', iconSize: [90, 20], iconAnchor: [45, 10]
+    });
+    L.marker(cad.stream.labelCoords, { icon: waterIcon, interactive: false }).addTo(map);
+  }
+
+  if (cad.settlement) {
+    var settlementPoly = L.polygon(cad.settlement.coords, {
+      color: '#00E676', weight: 3, fillColor: '#ECFDF5', fillOpacity: isSat ? 0.18 : 0.40
+    }).addTo(map);
+    settlementPoly.bindTooltip('<b>' + cad.settlement.name + '</b><br>Village Gaothan & Habitation Area', { sticky: true });
+
+    var settIcon = L.divIcon({
+      className: 'cadastral-feature-label settlement-label',
+      html: 'SETTLEMENT / Gaothan', iconSize: [150, 24], iconAnchor: [75, 12]
+    });
+    L.marker(cad.settlement.labelCoords, { icon: settIcon, interactive: false }).addTo(map);
+  }
+
+  if (cad.pond) {
+    var pondPoly = L.polygon(cad.pond.coords, {
+      color: '#0284C7', weight: 1.6, fillColor: '#38BDF8', fillOpacity: 0.88, dashArray: '4, 3'
+    }).addTo(map);
+    pondPoly.bindTooltip('<b>' + cad.pond.name + '</b><br>Community Farm Irrigation Pond', { sticky: true });
+
+    var pondIcon = L.divIcon({
+      className: 'cadastral-feature-label pond-label',
+      html: 'Farm / POND', iconSize: [80, 18], iconAnchor: [40, 9]
+    });
+    L.marker(cad.pond.labelCoords, { icon: pondIcon, interactive: false }).addTo(map);
+  }
+
+  if (cad.locality) {
+    var locIcon = L.divIcon({
+      className: 'locality-label-box',
+      html: '📍 ' + cad.locality.name, iconSize: [100, 22], iconAnchor: [50, 11]
+    });
+    L.marker(cad.locality.coords, { icon: locIcon, interactive: false }).addTo(map);
+  }
+
+  cad.parcels.forEach(function(p) {
+    var fillColor = showCropStageTint ? (STAGE_PASTEL[p.stage] || '#FEFCE8') : '#FEFCE8';
+    var isSel = (p.gat === selectedGat);
+
+    var poly = L.polygon(p.coords, {
+      color: isSat ? '#000000' : '#262626',
+      weight: isSat ? 2 : 1.8,
+      fillColor: fillColor,
+      fillOpacity: isSat ? (showCropStageTint ? 0.22 : 0.04) : 0.85
+    }).addTo(map);
+
+    parcelLayers[p.gat] = { poly: poly, data: p };
+    if (p.aliasGats) {
+      p.aliasGats.forEach(function(ag) { parcelLayers[ag] = { poly: poly, data: p }; });
+    }
+
+    var labelClass = 'cadastral-sy-label ' + (isSat ? 'satellite-mode' : 'vector-mode') + (isSel ? ' active-label' : '');
+    var syIcon = L.divIcon({
+      className: labelClass, html: p.gat, iconSize: [46, 24], iconAnchor: [23, 12]
+    });
+    var marker = L.marker(p.centroid, { icon: syIcon, interactive: false }).addTo(map);
+    parcelLayers[p.gat].marker = marker;
+
+    if (p.sublines) {
+      p.sublines.forEach(function(sl) {
+        L.polyline(sl, {
+          color: isSat ? '#E5E7EB' : '#FFFFFF', weight: 2.2, opacity: 0.9, dashArray: isSat ? '3, 4' : null, interactive: false
+        }).addTo(map);
+      });
+    }
+
+    var ttContent = '<b>Gat ' + p.gat + '</b> (Hissa ' + (p.hissa || '1') + ')<br>' +
+      p.farmer + '<br>' + p.crop + ' · ' + p.area + ' ' + (p.unit || 'Acres') + '<br>' +
+      '<span style="font-size:11px;color:#4B5563">' + (p.water || 'Well') + '</span>';
+    poly.bindTooltip(ttContent, { sticky: true, className: 'leaflet-bhowanee-tip' });
+
+    poly.on('click', function(e) {
+      if (measureMode) { handleMeasureClick(e.latlng); return; }
+      selectCadastralParcel(p.gat);
+    });
+  });
+
+  map.on('click', function(e) {
+    if (measureMode) { handleMeasureClick(e.latlng); }
+  });
+}
+
+function selectCadastralParcel(gatStr, skipPanel) {
+  var cad = window.DINDORI_CADASTRAL;
+  if (!cad) return;
+
+  var p = cad.parcels.find(function(item) {
+    return item.gat === gatStr || (item.aliasGats && item.aliasGats.indexOf(gatStr) >= 0);
+  });
+  if (!p) return;
+
+  selectedGat = p.gat;
+  var isSat = (activeMapMode === 'satellite');
+
+  if (highlightLayer && map) {
+    map.removeLayer(highlightLayer);
+  }
+
+  highlightLayer = L.polygon(p.coords, {
+    color: '#FF1744', weight: 4, opacity: 1, fillColor: '#FF1744', fillOpacity: isSat ? 0.12 : 0.35, interactive: false
+  }).addTo(map);
+
+  Object.keys(parcelLayers).forEach(function(g) {
+    var pl = parcelLayers[g];
+    if (pl && pl.marker) {
+      var isActive = (pl.data.gat === p.gat);
+      var labelClass = 'cadastral-sy-label ' + (isSat ? 'satellite-mode' : 'vector-mode') + (isActive ? ' active-label' : '');
+      var icon = L.divIcon({
+        className: labelClass, html: pl.data.gat, iconSize: [46, 24], iconAnchor: [23, 12]
+      });
+      pl.marker.setIcon(icon);
+    }
+  });
+
+  document.querySelectorAll('.cmap-chip').forEach(function(chip) {
+    chip.classList.toggle('active', chip.dataset.gat === p.gat);
+  });
+
+  var searchInput = document.getElementById('cmap-gat-search');
+  if (searchInput) searchInput.value = 'Gat ' + p.gat + ' — ' + p.farmer;
+
+  var trailEl = document.getElementById('admin-trail');
+  if (trailEl) {
+    trailEl.innerHTML = '<b>Maharashtra</b> <span>/</span> <b>Nashik</b> <span>/</span> <b>Dindori</b> <span>/</span> <b style="color:#D32F2F">Gat ' + p.gat + ' (' + p.farmer + ')</b>';
+  }
+
+  if (!skipPanel) {
+    openCadastralPanel(p);
+  }
+}
+
+var activeLotId = null;
+var currentCadastralParcel = null;
+var activeAgriTab = 'contract';
+
+function updateCadastralPanelView() {
+  var p = currentCadastralParcel;
+  if (!p) return;
+
+  var c = p.contractId ? BD.getContract(p.contractId) : null;
+  if (!c) {
+    var contracts = BD.getContracts();
+    c = contracts.find(function (con) { return con.gat === p.gat || (p.aliasGats && p.aliasGats.indexOf(con.gat) >= 0); });
+  }
+
+  var pane = document.getElementById('agri-tab-pane');
+  var panelActions = document.getElementById('panel-actions');
+  var panelBB = document.getElementById('panel-bid-board');
+  if (!pane) return;
+
+  var agriProfile = BD.getAgriProfile(p.gat, p);
+
+  if (activeAgriTab === 'soil') {
+    pane.innerHTML = BhComp.soilAnalysisHTML(agriProfile.soil);
+    if (panelActions) panelActions.style.display = 'none';
+    if (panelBB) panelBB.style.display = 'none';
+  } else if (activeAgriTab === 'climate') {
+    pane.innerHTML = BhComp.climateHTML(agriProfile.climate);
+    if (panelActions) panelActions.style.display = 'none';
+    if (panelBB) panelBB.style.display = 'none';
+  } else if (activeAgriTab === 'cycles') {
+    pane.innerHTML = BhComp.cropCyclesHTML(agriProfile.cropCycles);
+    if (panelActions) panelActions.style.display = 'none';
+    if (panelBB) panelBB.style.display = 'none';
+  } else {
+    // 'contract' tab
+    if (panelActions) panelActions.style.display = 'flex';
+
+    if (c) {
+      var lots = BD.getLotsByContract(c.id);
+      var bids = lots.length ? BD.getBidsByLot(lots[0].id) : [];
+      var mandiPrice = Market.getPrice(c.crop).price;
+
+      pane.innerHTML = BhComp.contractCardHTML(c, lots, bids);
+
+      // Action buttons (including Super Admin override actions)
+      var actions = '';
+      actions += '<button class="btn sm" onclick="adminOverrideStage(\'' + c.id + '\')">Update Stage</button>';
+      actions += '<button class="btn sm secondary" onclick="adminExpediteTasks(\'' + c.id + '\')">Expedite Tasks</button>';
+      actions += '<button class="btn sm secondary" onclick="adminFlagEmergency(\'' + c.id + '\')">Flag Dispute</button>';
+      if (panelActions) panelActions.innerHTML = actions;
+
+      if (lots.length && panelBB) {
+        panelBB.style.display = 'block';
+        var svg = document.getElementById('panel-bb-svg');
+        BhComp.renderBidBoard(svg, { farmerPrice: lots[0].farmerPrice, mandiPrice: mandiPrice, bids: bids, width: 480, height: 260 });
+        var best = BD.getHighestBid(lots[0].id);
+        document.getElementById('panel-bb-say').textContent = Market.bidBoardNote(lots[0].farmerPrice, best ? best.price : 0, c.crop);
+      } else if (panelBB) {
+        panelBB.style.display = 'none';
+      }
+    } else {
+      pane.innerHTML = '<div style="padding:14px;border:1px solid var(--rule);background:#fafafa;margin-top:10px">' +
+        '<h4 style="font-size:15px;margin-bottom:6px">Standing Crop: ' + (p.crop || 'Standing Crop') + '</h4>' +
+        '<p style="font-size:13px;color:var(--ink-soft);line-height:1.4">This Gat is in the Dindori Cadastral Registry. No active contract currently bound for this rabi cycle.</p>' +
+        '<div style="margin-top:12px;display:flex;gap:8px">' +
+          '<button class="btn sm" id="btn-enroll-parcel">+ Enlist in Bhowanee Contract</button>' +
+        '</div>' +
+      '</div>';
+
+      if (panelActions) {
+        panelActions.innerHTML = '';
+        panelActions.style.display = 'none';
+      }
+      if (panelBB) panelBB.style.display = 'none';
+
+      var enrollBtn = document.getElementById('btn-enroll-parcel');
+      if (enrollBtn) {
+        enrollBtn.addEventListener('click', function () {
+          var phone = prompt('Enter farmer phone number for OTP:', '9822001122');
+          if (phone) {
+            BhComp.toast('Enrollment request initiated for Gat ' + p.gat + ' (' + p.farmer + ').', 'ok');
+          }
+        });
+      }
+    }
+  }
+}
+
+function openCadastralPanel(p) {
+  currentCadastralParcel = p;
+
+  var panelContent = document.getElementById('panel-content');
+  var panelTitle = document.getElementById('panel-title');
+
+  panelTitle.innerHTML = 'Gat ' + p.gat + ' · <span style="font-size:14px;color:var(--ink-soft)">Hissa ' + (p.hissa || '1') + '</span>';
+
+  var satbaraHTML = '<div class="satbara-card">' +
+    '<div class="satbara-header">' +
+      '<span>Land Record Extract (7/12)</span>' +
+      '<span class="badge" style="background:#FEF3C7;color:#92400E;font-size:11px">Verified Khatedar</span>' +
+    '</div>' +
+    '<div class="satbara-grid">' +
+      '<div class="satbara-item"><label>Khatedar (Farmer):</label><span>' + p.farmer + '</span></div>' +
+      '<div class="satbara-item"><label>Survey No:</label><span>' + p.gat + ' / ' + (p.hissa || '1') + '</span></div>' +
+      '<div class="satbara-item"><label>Total Area:</label><span>' + p.area + ' ' + (p.unit || 'Acres') + '</span></div>' +
+      '<div class="satbara-item"><label>Soil Type:</label><span>' + (p.soil || 'Medium Black') + '</span></div>' +
+      '<div class="satbara-item"><label>Water Source:</label><span>' + (p.water || 'Borewell') + '</span></div>' +
+      '<div class="satbara-item"><label>Village / Taluka:</label><span>Pimpalgaon Baswant, Niphad</span></div>' +
+    '</div>' +
+  '</div>';
+
+  panelContent.innerHTML = satbaraHTML + BhComp.agriTabBarHTML(activeAgriTab) + '<div id="agri-tab-pane"></div>';
+
+  var tabBtns = panelContent.querySelectorAll('.agri-tab-btn');
+  tabBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      activeAgriTab = btn.dataset.agritab;
+      tabBtns.forEach(function (b) { b.classList.toggle('active', b === btn); });
+      updateCadastralPanelView();
+    });
+  });
+
+  updateCadastralPanelView();
+  document.getElementById('admin-panel').classList.add('open');
+}
+
+function setupCadastralControls() {
+  var btnSat = document.getElementById('btn-mode-sat');
+  var btnVec = document.getElementById('btn-mode-vec');
+  if (btnSat) btnSat.addEventListener('click', function() { setMapMode('satellite'); });
+  if (btnVec) btnVec.addEventListener('click', function() { setMapMode('vector'); });
+
+  var floatingBtn = document.getElementById('cmap-floating-layer-btn');
+  if (floatingBtn) {
+    floatingBtn.addEventListener('click', function() {
+      setMapMode(activeMapMode === 'satellite' ? 'vector' : 'satellite');
+    });
+  }
+
+  var searchInput = document.getElementById('cmap-gat-search');
+  var searchBtn = document.getElementById('cmap-search-btn');
+
+  function doSearch() {
+    var q = searchInput.value.trim().toLowerCase().replace(/gat|no|sy|\.|\s/g, '');
+    if (!q) return;
+
+    var cad = window.DINDORI_CADASTRAL;
+    var match = cad.parcels.find(function(p) {
+      return p.gat.toLowerCase() === q ||
+        (p.aliasGats && p.aliasGats.indexOf(q) >= 0) ||
+        p.farmer.toLowerCase().indexOf(q) >= 0;
+    });
+
+    if (match) {
+      selectCadastralParcel(match.gat);
+      if (map) map.setView(match.centroid, 17, { animate: true });
+      BhComp.toast('Found Gat ' + match.gat + ' (' + match.farmer + ')', 'ok');
+    } else {
+      BhComp.toast('No matching Gat found for "' + searchInput.value + '"', 'warn');
+    }
+  }
+
+  if (searchBtn) searchBtn.addEventListener('click', doSearch);
+  if (searchInput) searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doSearch();
+  });
+
+  document.querySelectorAll('.cmap-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      selectCadastralParcel(chip.dataset.gat);
+      var cad = window.DINDORI_CADASTRAL;
+      var match = cad.parcels.find(function(p) { return p.gat === chip.dataset.gat; });
+      if (match && map) map.setView(match.centroid, 17, { animate: true });
+    });
+  });
+
+  var measureBtn = document.getElementById('tool-measure');
+  var measureLabel = document.getElementById('measure-label');
+  if (measureBtn) {
+    measureBtn.addEventListener('click', function() {
+      measureMode = !measureMode;
+      measureBtn.classList.toggle('active', measureMode);
+      if (measureMode) {
+        measurePoints = [];
+        clearMeasureLayers();
+        measureLabel.textContent = 'Measuring… (Click 2 points)';
+        BhComp.toast('Measure tool active: click two boundary corners to measure distance.', 'ok');
+        document.getElementById('admin-map').style.cursor = 'crosshair';
+      } else {
+        measureLabel.textContent = 'Measurement Tools';
+        clearMeasureLayers();
+        document.getElementById('admin-map').style.cursor = '';
+      }
+    });
+  }
+
+  var searchToolBtn = document.getElementById('tool-search');
+  if (searchToolBtn) {
+    searchToolBtn.addEventListener('click', function() {
+      if (searchInput) { searchInput.focus(); searchInput.select(); }
+    });
+  }
+
+  var stageToggleBtn = document.getElementById('tool-stage-toggle');
+  var stageToggleLabel = document.getElementById('stage-toggle-label');
+  if (stageToggleBtn) {
+    stageToggleBtn.addEventListener('click', function() {
+      showCropStageTint = !showCropStageTint;
+      stageToggleLabel.textContent = 'Crop Stage Tint: ' + (showCropStageTint ? 'On' : 'Off');
+      refreshParcelStyles();
+      BhComp.toast('Crop stage tint ' + (showCropStageTint ? 'enabled' : 'disabled'), 'ok');
+    });
+  }
+
+  var resetViewBtn = document.getElementById('tool-reset-view');
+  if (resetViewBtn) {
+    resetViewBtn.addEventListener('click', function() {
+      resetCadastralMap();
+    });
+  }
+}
+
+function resetCadastralMap() {
+  var cad = window.DINDORI_CADASTRAL;
+  if (map && cad) {
+    map.setView(cad.center, cad.defaultZoom, { animate: true });
+    BhComp.toast('Reset map view to Pimpalgaon Baswant', 'ok');
+  }
+}
+
+function handleMeasureClick(latlng) {
+  measurePoints.push(latlng);
+
+  var pin = L.circleMarker(latlng, {
+    radius: 5, color: '#D32F2F', fillColor: '#FFCDD2', fillOpacity: 1, weight: 2
+  }).addTo(map);
+  measureLayers.push(pin);
+
+  if (measurePoints.length === 2) {
+    var d = measurePoints[0].distanceTo(measurePoints[1]);
+    var line = L.polyline(measurePoints, { color: '#D32F2F', weight: 3, dashArray: '6, 6' }).addTo(map);
+    measureLayers.push(line);
+
+    var mid = L.latLng((measurePoints[0].lat + measurePoints[1].lat)/2, (measurePoints[0].lng + measurePoints[1].lng)/2);
+    var labelText = (d > 1000) ? (d/1000).toFixed(2) + ' km' : Math.round(d) + ' m';
+    var pop = L.popup({ autoClose: false, closeOnClick: false })
+      .setLatLng(mid)
+      .setContent('<b>Distance: ' + labelText + '</b>')
+      .openOn(map);
+    measureLayers.push(pop);
+
+    BhComp.toast('Measured distance: ' + labelText, 'ok');
+  }
+}
+
+function clearMeasureLayers() {
+  measureLayers.forEach(function(l) { if (map) map.removeLayer(l); });
+  measureLayers = [];
+  measurePoints = [];
+}
+
+function resetStateMap() { resetCadastralMap(); }
+
+function closeAdminPanel() {
+  document.getElementById('admin-panel').classList.remove('open');
+}
+
+// View Toggle (Map ↔ Table)
+var btnMap = document.getElementById('btn-view-map');
+var btnTable = document.getElementById('btn-view-table');
+if (btnMap && btnTable) {
+  btnMap.addEventListener('click', function () {
+    btnMap.setAttribute('aria-pressed', 'true');
+    btnTable.setAttribute('aria-pressed', 'false');
+    document.getElementById('view-map-container').style.display = 'block';
+    document.getElementById('view-table-container').style.display = 'none';
+    if (map) setTimeout(function () { map.invalidateSize(); }, 200);
+  });
+  btnTable.addEventListener('click', function () {
+    btnMap.setAttribute('aria-pressed', 'false');
+    btnTable.setAttribute('aria-pressed', 'true');
+    document.getElementById('view-map-container').style.display = 'none';
+    document.getElementById('view-table-container').style.display = 'block';
+    renderStateContractsTable();
+  });
+}
+
+function renderStateContractsTable() {
+  var tbody = document.querySelector('#tbl-state-contracts tbody');
+  var contracts = BD.getContracts();
+
+  var html = '';
+  contracts.forEach(function (c) {
+    html += '<tr>';
+    html += '<td><b>' + c.id.toUpperCase() + '</b> (Gat ' + c.gat + ')</td>';
+    html += '<td>' + (c.district ? c.district.toUpperCase() : 'NASHIK') + ' / ' + c.village + '</td>';
+    html += '<td>' + c.farmer.name + ' (' + c.farmer.phone + ')</td>';
+    html += '<td>' + c.crop + '</td>';
+    html += '<td>' + c.area + ' Acres</td>';
+    html += '<td><span class="chip sm ' + BD.stageClass(c.stage) + '">' + BD.stageLabel(c.stage) + '</span></td>';
+    html += '<td style="font-size:13px">' + (c.tasks.find(function(t){return !t.done;}) ? c.tasks.find(function(t){return !t.done;}).label : 'All done') + '</td>';
+    html += '<td><button class="btn sm secondary" onclick="inspectContract(\'' + c.id + '\')">Intervene</button></td>';
+    html += '</tr>';
+  });
+  tbody.innerHTML = html || '<tr><td colspan="8" style="text-align:center;color:var(--ink-soft)">No matching contracts</td></tr>';
+}
+
+// Contract Inspection & Intervention Modal / Panel
+window.inspectContract = function (cid) {
+  var c = BD.getContract(cid);
+  if (!c) return;
+  switchSection('map');
+  var p = document.getElementById('admin-panel');
+  p.classList.add('open');
+  document.getElementById('panel-title').textContent = 'Intervene: Gat ' + c.gat + ' (' + c.crop + ')';
+
+  var html = '<div style="font-size:13.5px;line-height:1.6">';
+  html += '<p><b>Farmer:</b> ' + c.farmer.name + ' (' + c.farmer.phone + ')</p>';
+  html += '<p><b>Location:</b> ' + c.village + ', Taluka ' + c.block + ', ' + c.district.toUpperCase() + '</p>';
+  html += '<p><b>Acreage:</b> ' + c.area + ' Acres | <b>Stage:</b> <span class="chip sm ' + BD.stageClass(c.stage) + '">' + BD.stageLabel(c.stage) + '</span></p>';
+  html += '<p><b>Lease Term:</b> ' + c.leaseDates.start + ' to ' + c.leaseDates.end + '</p>';
+  if (c.notes) html += '<p class="flag-alert" style="margin:10px 0">' + c.notes + '</p>';
+
+  html += '<h4 style="font-family:var(--font-slab);margin:14px 0 8px">Super Admin Actions</h4>';
+  html += '<div style="display:flex;flex-direction:column;gap:8px">';
+  html += '<button class="btn sm" onclick="adminOverrideStage(\'' + c.id + '\')">Force Update Stage</button>';
+  html += '<button class="btn sm secondary" onclick="adminExpediteTasks(\'' + c.id + '\')">Mark All Tasks Complete</button>';
+  html += '<button class="btn sm secondary" onclick="adminFlagEmergency(\'' + c.id + '\')">Flag Urgent Dispute</button>';
+  html += '</div>';
+
+  var lots = BD.getLotsByContract(c.id);
+  html += '<h4 style="font-family:var(--font-slab);margin:14px 0 8px">Lots & Bids (' + lots.length + ')</h4>';
+  lots.forEach(function (l) {
+    var bids = BD.getBidsByLot(l.id);
+    var highest = BD.getHighestBid(l.id);
+    html += '<div style="background:var(--tint);padding:8px 10px;margin-bottom:6px">';
+    html += '<b>Lot ' + l.id.toUpperCase() + '</b> (' + l.grade + ' grade, ' + l.weightQt + ' Qt)<br>';
+    html += 'Farmer Price: ' + BD.fmt(l.farmerPrice) + ' | Bids: ' + bids.length + '<br>';
+    if (highest) html += '<b>High Bid:</b> ' + BD.fmt(highest.price) + ' (' + highest.buyer + ')';
+    html += '</div>';
+  });
+
+  html += '</div>';
+  // Write to panel-content (matches new cadastral panel structure)
+  var panelContent = document.getElementById('panel-content');
+  if (panelContent) {
+    panelContent.innerHTML = html;
+  } else {
+    // Fallback for old panel-body
+    var panelBody = document.getElementById('panel-body');
+    if (panelBody) panelBody.innerHTML = html;
+  }
+};
+
+window.adminOverrideStage = function (cid) {
+  var next = prompt("Enter new stage for contract (notsown, growing, harvest, bids, issue, closed):", "harvest");
+  if (!next) return;
+  var c = BD.getContract(cid);
+  if (c) {
+    c.stage = next;
+    BD.writeAudit('Super Admin forced contract ' + cid + ' stage to ' + next, 'Super Admin', c.farmer.name, 'Administrative Override');
+    BhComp.toast('Stage updated to ' + next, 'info');
+    inspectContract(cid);
+    renderStateContractsTable();
+  }
+};
+
+window.adminExpediteTasks = function (cid) {
+  var c = BD.getContract(cid);
+  if (!c) return;
+  c.tasks.forEach(function (t) { t.done = true; });
+  BD.writeAudit('Super Admin expedited and marked all tasks complete for ' + cid, 'Super Admin', c.farmer.name, 'Admin Action');
+  BhComp.toast('All tasks marked done.', 'info');
+  inspectContract(cid);
+};
+
+window.adminFlagEmergency = function (cid) {
+  var reason = prompt("Enter dispute / issue details:", "Quality disagreement on standing crop");
+  if (!reason) return;
+  BD.flagIssue(cid, reason);
+  BD.writeAudit('Urgent issue flagged on contract ' + cid + ': ' + reason, 'Super Admin', '—', 'Dispute Desk');
+  BhComp.toast('Dispute logged and routed to arbitration.', 'warn');
+  renderDisputes();
+  inspectContract(cid);
+};
+
+// 4. Bids Oversight Table
+function renderBidsOversight() {
+  var openLots = BD.getOpenLots();
+  document.getElementById('bids-active-lots').textContent = openLots.length + ' Lots';
+  var tbody = document.getElementById('bids-oversight-tbody');
+
+  var html = '';
+  openLots.forEach(function (l) {
+    var c = BD.getContract(l.contractId);
+    var bids = BD.getBidsByLot(l.id);
+    var highest = BD.getHighestBid(l.id);
+    var mandi = BD.mandiPrice(c ? c.crop : 'Onion');
+    var isOutlier = highest && (highest.price < mandi * 0.85 || highest.price > mandi * 1.25);
+
+    html += '<tr>';
+    html += '<td><b>' + l.id.toUpperCase() + '</b></td>';
+    html += '<td>' + (c ? c.district.toUpperCase() + ' / ' + c.village : '—') + '</td>';
+    html += '<td>' + (c ? c.farmer.name : '—') + '</td>';
+    html += '<td>' + (c ? c.crop : '—') + ' (' + l.grade + ')</td>';
+    html += '<td>' + l.weightQt + ' Qt</td>';
+    html += '<td>' + BD.fmt(l.farmerPrice) + '</td>';
+    html += '<td>' + BD.fmt(mandi) + '</td>';
+    html += '<td><b>' + (highest ? BD.fmt(highest.price) : 'No bids') + '</b></td>';
+    html += '<td>' + (highest ? highest.buyer : '—') + '</td>';
+    html += '<td><span class="chip sm ' + (l.status === 'open' ? 'stage-bids' : 'stage-notsown') + '">' + l.status + '</span></td>';
+    html += '<td>' + (isOutlier ? '<span class="flag-alert">Variance >15%</span>' : '<span class="stat-pill pill-green">Normal</span>') + '</td>';
+    html += '</tr>';
+  });
+  tbody.innerHTML = html || '<tr><td colspan="11" style="text-align:center">No active lots</td></tr>';
+
+  // All recent bids
+  var allBidsBody = document.getElementById('all-bids-tbody');
+  var bHtml = '';
+  var recentBids = BD.getBidsByLot('l1').concat(BD.getBidsByLot('l2')).slice(-6).reverse();
+  recentBids.forEach(function (b) {
+    var lot = BD.getLot(b.lotId);
+    var c = lot ? BD.getContract(lot.contractId) : null;
+    var mandi = BD.mandiPrice(c ? c.crop : 'Onion');
+    var diff = Math.round(((b.price - mandi) / mandi) * 100);
+    var diffText = (diff >= 0 ? '+' : '') + diff + '%';
+
+    bHtml += '<tr>';
+    bHtml += '<td>' + new Date(b.timestamp).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }) + '</td>';
+    bHtml += '<td>' + b.lotId.toUpperCase() + '</td>';
+    bHtml += '<td><b>' + b.buyer + '</b></td>';
+    bHtml += '<td>' + BD.fmt(b.price) + '</td>';
+    bHtml += '<td><span class="stat-pill ' + (diff >= 0 ? 'pill-green' : 'pill-amber') + '">' + diffText + '</span></td>';
+    bHtml += '<td><button class="btn sm secondary" onclick="inspectContract(\'' + (c ? c.id : 'c1') + '\')">Inspect</button></td>';
+    bHtml += '</tr>';
+  });
+  allBidsBody.innerHTML = bHtml;
+}
+
+// 5. Settlement Ledger
+window.renderLedger = function () {
+  var filter = document.getElementById('filter-ledger-status').value;
+  var payments = BD.getPayments();
+  var tbody = document.getElementById('ledger-tbody');
+
+  var settledSum = 0, pendingSum = 0;
+  payments.forEach(function (p) {
+    if (p.status === 'Settled') settledSum += p.amount;
+    else pendingSum += p.amount;
+  });
+
+  document.getElementById('led-total-settled').textContent = BD.fmt(settledSum);
+  document.getElementById('led-total-pending').textContent = BD.fmt(pendingSum);
+
+  var html = '';
+  payments.filter(function (p) {
+    return filter === 'all' || p.status === filter;
+  }).forEach(function (p) {
+    html += '<tr>';
+    html += '<td><b>' + p.id.toUpperCase() + '</b></td>';
+    html += '<td>' + new Date(p.timestamp).toLocaleDateString('en-IN') + '</td>';
+    html += '<td>' + (p.lotId ? p.lotId.toUpperCase() : (p.contractId ? p.contractId.toUpperCase() : 'General')) + '</td>';
+    html += '<td>' + p.from + '</td>';
+    html += '<td><b>' + p.to + '</b></td>';
+    html += '<td><b>' + BD.fmt(p.amount) + '</b></td>';
+    html += '<td>' + p.method + '</td>';
+    html += '<td><span class="stat-pill ' + (p.status === 'Settled' ? 'pill-green' : 'pill-red') + '">' + p.status + '</span></td>';
+    html += '<td>';
+    if (p.status === 'Pending') {
+      html += '<button class="btn sm" onclick="settlePaymentAdmin(\'' + p.id + '\')">Authorize Release</button>';
+    } else {
+      html += '<span style="font-size:13px;color:var(--ink-soft)">Reconciled</span>';
+    }
+    html += '</td>';
+    html += '</tr>';
+  });
+
+  tbody.innerHTML = html || '<tr><td colspan="9" style="text-align:center">No settlements match filter</td></tr>';
+};
+
+window.settlePaymentAdmin = function (payId) {
+  if (confirm("Authorize release of funds from Escrow to farmer account?")) {
+    BD.settlePayment(payId);
+    BhComp.toast("Disbursement authorized and funds settled.", "info");
+    renderLedger();
+    renderAuditTrail();
+  }
+};
+
+// 6. Dispute Queue
+var selectedDisputeId = null;
+function renderDisputes() {
+  var disputes = BD.getDisputes();
+  var tbody = document.getElementById('disputes-tbody');
+  var html = '';
+
+  disputes.forEach(function (d) {
+    html += '<tr>';
+    html += '<td><b>' + d.id.toUpperCase() + '</b></td>';
+    html += '<td>' + new Date(d.raisedAt).toLocaleDateString('en-IN') + '</td>';
+    html += '<td>' + (d.contractId ? d.contractId.toUpperCase() : '—') + '</td>';
+    html += '<td><span class="chip sm" style="background:#FFF3F0;color:var(--brick)">' + d.type + '</span></td>';
+    html += '<td>' + d.description + (d.resolution ? '<br><i style="color:var(--forest);font-size:13px">Resolution: ' + d.resolution + '</i>' : '') + '</td>';
+    html += '<td>' + d.raisedBy + '</td>';
+    html += '<td>' + d.owner + '</td>';
+    html += '<td><span class="stat-pill ' + (d.status === 'Resolved' ? 'pill-green' : 'pill-red') + '">' + d.status + '</span></td>';
+    html += '<td>';
+    if (d.status === 'Open') {
+      html += '<button class="btn sm" onclick="openDisputeModal(\'' + d.id + '\',\'' + d.description.replace(/'/g, "\\'") + '\')">Resolve</button>';
+    } else {
+      html += '<span style="font-size:13px;color:var(--ink-soft)">Closed</span>';
+    }
+    html += '</td>';
+    html += '</tr>';
+  });
+
+  tbody.innerHTML = html || '<tr><td colspan="9" style="text-align:center">No disputes registered</td></tr>';
+}
+
+window.openDisputeModal = function (id, desc) {
+  selectedDisputeId = id;
+  document.getElementById('disp-m-desc').textContent = desc;
+  document.getElementById('disp-resolution').value = '';
+  document.getElementById('modal-dispute').removeAttribute('hidden');
+};
+
+window.closeDisputeModal = function () {
+  document.getElementById('modal-dispute').setAttribute('hidden', '');
+  selectedDisputeId = null;
+};
+
+window.submitDisputeResolution = function () {
+  var res = document.getElementById('disp-resolution').value.trim();
+  if (!res) { alert("Please enter resolution details."); return; }
+  BD.resolveDispute(selectedDisputeId, res);
+  BD.writeAudit('Super Admin resolved dispute ' + selectedDisputeId + ': ' + res, 'Super Admin', '—', 'Dispute Arbitration');
+  BhComp.toast("Dispute resolved successfully.", "info");
+  closeDisputeModal();
+  renderDisputes();
+  renderAuditTrail();
+};
+
+// 7. Compliance
+function renderCompliance() {
+  var comp = BD.getCompliance();
+  var tbody = document.getElementById('compliance-tbody');
+  var html = '';
+
+  comp.forEach(function (c) {
+    var isUrgent = c.status === 'Urgent';
+    html += '<tr style="' + (isUrgent ? 'background:#FFF9F8' : '') + '">';
+    html += '<td><b>' + c.id.toUpperCase() + '</b></td>';
+    html += '<td>' + c.contractId.toUpperCase() + '</td>';
+    html += '<td><b>' + c.type + '</b></td>';
+    html += '<td>' + c.dueDate + '</td>';
+    html += '<td><span class="stat-pill ' + (c.status === 'Active' ? 'pill-green' : (c.status === 'Urgent' ? 'pill-red' : 'pill-amber')) + '">' + c.status + '</span></td>';
+    html += '<td>' + c.notes + '</td>';
+    html += '<td>';
+    if (c.status === 'Urgent') {
+      html += '<button class="btn sm" onclick="fileInsuranceClaim(\'' + c.id + '\')">File Claim</button>';
+    } else {
+      html += '<button class="btn sm secondary" onclick="verifyComplianceRow(\'' + c.id + '\')">Verify</button>';
+    }
+    html += '</td>';
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+window.fileInsuranceClaim = function (cid) {
+  var c = BD.getCompliance().find(function (x) { return x.id === cid; });
+  if (c) {
+    c.status = 'Active';
+    c.notes = 'Claim filed with Agricultural Insurance Company of India (Ref #AIC-8942)';
+    BD.writeAudit('Filed crop insurance claim for ' + c.contractId, 'Super Admin', '—', 'Statutory Filing');
+    BhComp.toast('Insurance claim lodged with AIC.', 'info');
+    renderCompliance();
+    renderAuditTrail();
+  }
+};
+
+window.verifyComplianceRow = function (cid) {
+  var c = BD.getCompliance().find(function (x) { return x.id === cid; });
+  if (c) {
+    c.status = 'Active';
+    BhComp.toast('Compliance requirements verified.', 'info');
+    renderCompliance();
+  }
+};
+
+// 8. KYC Queue
+function renderKYC() {
+  var kyc = BD.getKYCQueue();
+  var tbody = document.getElementById('kyc-tbody');
+  var html = '';
+
+  kyc.forEach(function (k) {
+    html += '<tr>';
+    html += '<td><b>' + k.id.toUpperCase() + '</b></td>';
+    html += '<td><b>' + k.name + '</b></td>';
+    html += '<td><span class="chip sm">' + k.role + '</span></td>';
+    html += '<td>' + k.email + '</td>';
+    html += '<td>' + new Date(k.submittedAt).toLocaleDateString('en-IN') + '</td>';
+    html += '<td><span class="stat-pill ' + (k.status === 'Approved' ? 'pill-green' : (k.status === 'Rejected' ? 'pill-red' : 'pill-amber')) + '">' + k.status + '</span></td>';
+    html += '<td>';
+    if (k.status === 'Pending') {
+      html += '<button class="btn sm" style="margin-right:6px" onclick="approveKYCAdmin(\'' + k.id + '\')">Approve</button>';
+      html += '<button class="btn sm secondary" onclick="rejectKYCAdmin(\'' + k.id + '\')">Reject</button>';
+    } else {
+      html += '<span style="font-size:13px;color:var(--ink-soft)">Completed</span>';
+    }
+    html += '</td>';
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+window.approveKYCAdmin = function (id) {
+  BD.approveKYC(id);
+  BhComp.toast('KYC approved and credentials dispatched.', 'info');
+  renderKYC();
+  renderAuditTrail();
+};
+
+window.rejectKYCAdmin = function (id) {
+  var reason = prompt("Enter reason for rejection:", "GST certificate mismatch with ROC records");
+  if (!reason) return;
+  BD.rejectKYC(id, reason);
+  BhComp.toast('KYC application rejected.', 'warn');
+  renderKYC();
+  renderAuditTrail();
+};
+
+// 9. Audit Trail
+window.renderAuditTrail = function () {
+  var q = (document.getElementById('search-audit').value || '').toLowerCase().trim();
+  var audit = BD.getAuditTrail();
+  var tbody = document.getElementById('audit-tbody');
+  var html = '';
+
+  var filtered = audit.filter(function (a) {
+    if (!q) return true;
+    return (a.action && a.action.toLowerCase().indexOf(q) !== -1) ||
+           (a.forFarmer && a.forFarmer.toLowerCase().indexOf(q) !== -1) ||
+           (a.by && a.by.toLowerCase().indexOf(q) !== -1);
+  });
+
+  filtered.forEach(function (a) {
+    html += '<tr>';
+    html += '<td style="font-family:monospace;font-size:13px"><b>' + a.ts + '</b></td>';
+    html += '<td>' + a.action + '</td>';
+    html += '<td>' + a.by + '</td>';
+    html += '<td>' + a.forFarmer + '</td>';
+    html += '<td><span class="chip sm" style="background:#F0F4F8;color:var(--ink)">' + a.confirmed + '</span></td>';
+    html += '</tr>';
+  });
+  tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center">No audit entries found</td></tr>';
+};
+
+// 10. Land Modal
+window.openAddLandModal = function () {
+  document.getElementById('modal-land').removeAttribute('hidden');
+};
+window.closeLandModal = function () {
+  document.getElementById('modal-land').setAttribute('hidden', '');
+};
+window.saveNewLandParcel = function () {
+  var gat = document.getElementById('lp-gat').value.trim();
+  var farmer = document.getElementById('lp-farmer').value.trim();
+  var acres = parseFloat(document.getElementById('lp-acres').value) || 2.0;
+  var crop = document.getElementById('lp-crop').value.trim() || 'Onion';
+  var dist = document.getElementById('lp-district').value;
+
+  if (!gat || !farmer) { alert("Please provide Gat number and Farmer name."); return; }
+
+  var tbody = document.querySelector('#tbl-pipeline tbody');
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<td><b>' + gat + '</b></td><td>' + dist.toUpperCase() + ' / In Survey</td><td>' + farmer + '</td><td>' + acres + '</td><td>' + crop + '</td><td>Black soil, Tested</td><td><span class="chip sm" style="background:#E8F0FE;color:#1967D2">In Negotiation</span></td><td>Lease drafting</td><td><button class="btn sm" onclick="signLeaseMock(\'' + gat + '\',\'' + farmer + '\')">Approve Lease</button></td>';
+  tbody.insertBefore(tr, tbody.firstChild);
+
+  BD.writeAudit('Registered new scouted land parcel ' + gat + ' (' + acres + ' ac) for ' + farmer, 'Super Admin', farmer, 'Field Survey');
+  BhComp.toast('Land parcel added to negotiation pipeline.', 'info');
+  closeLandModal();
+  renderAuditTrail();
+};
+
+window.signLeaseMock = function (gat, farmer) {
+  BD.writeAudit('Approved and executed lease agreement on ' + gat + ' with ' + farmer, 'Super Admin', farmer, 'Farmer OTP Confirmed');
+  BhComp.toast('Lease agreement executed and stamped.', 'info');
+  renderAuditTrail();
+};
+
+// Initial calls
+initAdminMap();
+renderBidsOversight();
+renderLedger();
+renderDisputes();
+renderCompliance();
+renderKYC();
+renderAuditTrail();
+
+// Listen to bus events
+BD.on('bidPlaced', renderBidsOversight);
+BD.on('priceChanged', renderBidsOversight);
+BD.on('paymentSettled', renderLedger);
+BD.on('disputeResolved', renderDisputes);
+BD.on('auditUpdated', renderAuditTrail);
+</script>
+</body>
+</html>

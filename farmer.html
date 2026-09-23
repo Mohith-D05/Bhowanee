@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bhowanee — Farmer</title>
+<meta name="description" content="Set your price, watch the offers, say yes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600&family=Zilla+Slab:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+/* Phone-sized layout centred on desktop */
+.phone-shell { background:var(--sheet); box-shadow:var(--shadow-lg); }
+.mandi-ref { margin-top:14px; padding:10px 14px; border:1px dashed var(--soil); color:var(--soil); font-weight:600; font-size:17px; display:flex; justify-content:space-between; align-items:center; }
+.price-prompt { margin-top:12px; font-size:16px; min-height:52px; line-height:1.5; }
+.price-prompt.warn { color:var(--brick); }
+.accept-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
+.accept-row .btn { font-size:18px; min-height:58px; }
+.payment-list { list-style:none; margin:0; padding:0; }
+.payment-list li { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--rule); font-size:16px; }
+.payment-list li:first-child { border-top:1px solid var(--rule); }
+.lot-meta { margin-top:6px; font-size:17px; color:var(--ink-soft); }
+.set-msg { margin-top:10px; font-size:16px; min-height:1.4em; }
+.change-note { margin-top:10px; font-size:14px; color:var(--ink-soft); }
+.bb-say-farmer { margin-top:10px; font-size:18px; font-weight:500; line-height:1.5; }
+.no-bids { color:var(--ink-soft); margin-top:16px; font-size:16px; }
+#closed-banner { display:none; }
+#closed-banner.visible { display:block; }
+</style>
+</head>
+<body>
+<div class="phone-shell" id="shell">
+  <div class="phone-topbar">
+    <span class="phone-topbar-brand">Bhowanee</span>
+    <div style="display:flex;gap:12px;align-items:center">
+      <span id="offline-badge" class="offline-badge">Offline</span>
+      <span id="sync-badge" class="sync-badge">Sync</span>
+      <div class="seg" role="group" aria-label="Language" style="border-color:rgba(255,255,255,.4)">
+        <button class="seg-btn" data-flang="en" aria-pressed="true" style="color:#fff">EN</button>
+        <button class="seg-btn" data-flang="mr" aria-pressed="false" style="color:#fff" lang="mr">मर</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: Sell ── -->
+  <div class="phone-content" id="tab-sell">
+    <h1 id="f-hello" style="font-size:22px;font-family:var(--font-slab)">Your onion lot</h1>
+    <p class="lot-meta" id="f-lot">Onion · 12 quintal · Grade A · Gat 118</p>
+    <div class="mandi-ref" id="f-mandi">
+      <span>Today's mandi price</span>
+      <span id="f-mandi-val">₹1,880</span>
+    </div>
+    <label for="f-price" id="f-label" style="display:block;font-weight:600;font-size:18px;margin-top:18px">Your price per quintal</label>
+    <div class="stepper" style="margin-top:8px">
+      <button type="button" id="f-minus" aria-label="Lower by 10">−10</button>
+      <input id="f-price" inputmode="numeric" value="2100" aria-describedby="f-prompt">
+      <button type="button" id="f-plus"  aria-label="Raise by 10">+10</button>
+    </div>
+    <p class="price-prompt" id="f-prompt" aria-live="polite" role="status"></p>
+    <button class="btn lg block" type="button" id="f-set" style="margin-top:4px">Set my price</button>
+    <p class="set-msg text-ok" id="f-setmsg" aria-live="polite"></p>
+    <p class="change-note" id="f-changenote"></p>
+
+    <!-- Closed banner -->
+    <div id="closed-banner" class="alert ok" style="margin-top:16px">
+      <b>Lot closed!</b> A buyer matched your price. Your block administrator will contact you for pickup details.
+    </div>
+  </div>
+
+  <!-- ── TAB: Offers ── -->
+  <div class="phone-content" id="tab-offers" hidden>
+    <h2 style="font-size:22px;font-family:var(--font-slab);margin-bottom:4px" id="o-title">Offers on your lot</h2>
+    <p class="lot-meta" id="o-lot">Onion · 12 quintal · Grade A</p>
+
+    <svg id="bb-svg" viewBox="0 0 540 300" role="img" aria-label="Bid graph" class="bb-svg" style="margin-top:14px"></svg>
+    <p class="bb-say-farmer" id="bb-say" aria-live="polite"></p>
+
+    <div class="accept-row" id="accept-row">
+      <button class="btn success" type="button" id="btn-accept">Accept best offer</button>
+      <button class="btn secondary" type="button" id="btn-wait">Wait for more</button>
+    </div>
+    <p class="text-soft text-sm" id="accept-note" style="margin-top:10px"></p>
+  </div>
+
+  <!-- ── TAB: Call ── -->
+  <div class="phone-content" id="tab-call" hidden>
+    <h2 style="font-size:22px;font-family:var(--font-slab);margin-bottom:16px">Your administrator</h2>
+    <p style="font-size:17px;margin-bottom:20px">Your block administrator handles your lease, storage and payments on your behalf. Every action they take on your behalf is confirmed by you first.</p>
+    <a href="tel:+919876543000" class="btn lg block" id="btn-call" style="text-decoration:none;text-align:center">📞 Call block administrator</a>
+
+    <h3 style="font-family:var(--font-slab);font-size:19px;margin:28px 0 12px">Payment messages</h3>
+    <ul class="payment-list" id="payment-list"></ul>
+
+    <h3 style="font-family:var(--font-slab);font-size:19px;margin:24px 0 10px">What your administrator handles</h3>
+    <ul style="padding-left:20px;font-size:15px;color:var(--ink-soft);line-height:1.8">
+      <li>Lease and plot records</li>
+      <li>Price trends and mandi alerts</li>
+      <li>Storage booking</li>
+      <li>Payment records</li>
+    </ul>
+    <p style="margin-top:12px;font-size:14px;color:var(--ink-soft)">You get an SMS or voice message for every action taken on your behalf.</p>
+
+    <button class="btn secondary block" style="margin-top:20px" type="button" onclick="Auth.logout()">Sign out</button>
+  </div>
+
+  <!-- ── TAB: Field (Soil, Climate, Crop Cycles) ── -->
+  <div class="phone-content" id="tab-field" hidden>
+    <h2 style="font-size:22px;font-family:var(--font-slab);margin-bottom:4px" id="f-field-title">Field & Weather</h2>
+    <p class="lot-meta" id="f-field-sub">Gat 118 / 125 · 2.4 Acres · Medium Black Soil</p>
+    <div id="farmer-field-content" style="margin-top:12px"></div>
+  </div>
+
+  <!-- Bottom tab bar -->
+  <nav class="phone-tabs" style="grid-template-columns:repeat(4,1fr)">
+    <button class="phone-tab active" type="button" data-tab="sell" id="nav-sell">Sell</button>
+    <button class="phone-tab" type="button" data-tab="offers" id="nav-offers">Offers</button>
+    <button class="phone-tab" type="button" data-tab="field" id="nav-field">Field</button>
+    <button class="phone-tab" type="button" data-tab="call" id="nav-call">Call</button>
+  </nav>
+</div>
+
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script src="market.js"></script>
+<script src="components.js"></script>
+<script>
+var session = Auth.require(['farmer']);
+
+/* ── State ─────────────────────────────────────────────────── */
+var LOT_ID     = 'l1';
+var CROP       = 'Onion';
+var MANDI      = Market.getPrice(CROP).price;
+var priceSet   = false;
+var closedBid  = null;
+
+/* ── Language strings ───────────────────────────────────────── */
+var LANG = {
+  en: {
+    hello: 'Your onion lot', lot: 'Onion · 12 quintal · Grade A · Gat 118',
+    mandi: 'Today\'s mandi price', label: 'Your price per quintal',
+    set: 'Set my price', update: 'Update my price',
+    done: 'Price set. Buyers can see it now.',
+    updated: 'Price updated.',
+    warnHigh: function(p){ return 'Your price is '+p+'% above today\'s mandi price. Buyers may wait.'; },
+    warnLow:  function(p){ return 'Your price is '+p+'% below today\'s mandi price. Want to raise it?'; },
+    offers: 'Offers on your lot',
+    noOffers: 'No bids yet. Buyers can see your price.',
+    fieldTitle: 'Field & Weather',
+    fieldSub: 'Gat 118 / 125 · 2.4 Acres · Medium Black Soil',
+    nav: ['Sell','Offers','Field','Call'],
+    changeNote: 'Change the number above to update your price.'
+  },
+  mr: {
+    hello: 'तुमचा कांदा लॉट', lot: 'कांदा · 12 क्विंटल · ग्रेड A · गट 118',
+    mandi: 'आजचा मंडी भाव', label: 'तुमची किंमत (प्रति क्विंटल)',
+    set: 'माझी किंमत ठरवा', update: 'किंमत बदला',
+    done: 'किंमत ठरली. खरेदीदारांना दिसत आहे.',
+    updated: 'किंमत बदलली.',
+    warnHigh: function(p){ return 'तुमची किंमत मंडी भावापेक्षा '+p+'% जास्त आहे.'; },
+    warnLow:  function(p){ return 'तुमची किंमत मंडी भावापेक्षा '+p+'% कमी आहे.'; },
+    offers: 'तुमच्या लॉटवर ऑफर', noOffers: 'अजून बोली नाही.',
+    fieldTitle: 'शेत आणि हवामान',
+    fieldSub: 'गट 118 / 125 · 2.4 एकर · मध्यम काळी माती',
+    nav: ['विका','ऑफर','शेत','फोन'],
+    changeNote: 'किंमत बदलण्यासाठी वरील नंबर बदला.'
+  }
+};
+var lang = Auth.getLang() === 'mr' ? 'mr' : 'en';
+
+function applyLang() {
+  var t = LANG[lang];
+  document.getElementById('f-hello').textContent  = t.hello;
+  document.getElementById('f-lot').textContent    = t.lot;
+  document.getElementById('f-mandi').querySelector('span:first-child').textContent = t.mandi;
+  document.getElementById('f-label').textContent  = t.label;
+  document.getElementById('f-set').textContent    = priceSet ? t.update : t.set;
+  document.getElementById('nav-sell').textContent   = t.nav[0];
+  document.getElementById('nav-offers').textContent = t.nav[1];
+  document.getElementById('nav-field').textContent  = t.nav[2];
+  document.getElementById('nav-call').textContent   = t.nav[3];
+  document.getElementById('f-field-title').textContent = t.fieldTitle;
+  document.getElementById('f-field-sub').textContent   = t.fieldSub;
+  if(priceSet) document.getElementById('f-changenote').textContent = t.changeNote;
+  refreshPrompt();
+}
+
+/* ── Prompt ─────────────────────────────────────────────────── */
+function refreshPrompt() {
+  var v = parseInt(document.getElementById('f-price').value.replace(/\D/g,''), 10);
+  var p = document.getElementById('f-prompt');
+  p.className = 'price-prompt';
+  p.textContent = '';
+  if (!v) return;
+  var diff = Math.round((v - MANDI) / MANDI * 100);
+  var t = LANG[lang];
+  if (diff > 10)  { p.textContent = t.warnHigh(diff); p.className = 'price-prompt warn'; }
+  else if (diff < -10) { p.textContent = t.warnLow(Math.abs(diff)); p.className = 'price-prompt warn'; }
+}
+
+document.getElementById('f-price').addEventListener('input', refreshPrompt);
+document.getElementById('f-minus').addEventListener('click', function(){
+  var v = parseInt(document.getElementById('f-price').value.replace(/\D/g,''),10)||MANDI;
+  document.getElementById('f-price').value = Math.max(10, v-10); refreshPrompt();
+});
+document.getElementById('f-plus').addEventListener('click', function(){
+  var v = parseInt(document.getElementById('f-price').value.replace(/\D/g,''),10)||MANDI;
+  document.getElementById('f-price').value = v+10; refreshPrompt();
+});
+
+/* ── Set price ──────────────────────────────────────────────── */
+document.getElementById('f-set').addEventListener('click', function(){
+  var v = parseInt(document.getElementById('f-price').value.replace(/\D/g,''),10);
+  if (!v) { BhComp.toast('Enter a price first.','warn'); return; }
+  BD.setFarmerPrice(LOT_ID, v);
+  var t = LANG[lang];
+  document.getElementById('f-setmsg').textContent = priceSet ? t.updated : t.done;
+  document.getElementById('f-set').textContent = t.update;
+  document.getElementById('f-changenote').textContent = t.changeNote;
+  priceSet = true;
+  BhComp.toast('Price set — ₹'+Number(v).toLocaleString('en-IN'),'ok');
+  refreshBidBoard();
+});
+
+/* ── Bid board ──────────────────────────────────────────────── */
+function refreshBidBoard() {
+  var lot  = BD.getLot(LOT_ID);
+  var bids = BD.getBidsByLot(LOT_ID);
+  var best = BD.getHighestBid(LOT_ID);
+  var svg  = document.getElementById('bb-svg');
+  var res  = BhComp.renderBidBoard(svg, { farmerPrice: lot ? lot.farmerPrice : 0, mandiPrice: MANDI, bids: bids });
+  var say  = document.getElementById('bb-say');
+
+  if (lot && lot.status === 'closed') {
+    say.textContent = 'Lot closed! Best bid was ₹'+Number(best ? best.price : 0).toLocaleString('en-IN')+'. Payment is on its way.';
+    document.getElementById('accept-row').style.display = 'none';
+    document.getElementById('closed-banner').classList.add('visible');
+    return;
+  }
+
+  var farmerPrice = lot ? lot.farmerPrice : 0;
+  var highestBid  = best ? best.price : 0;
+  say.textContent = Market.bidBoardNote(farmerPrice, highestBid, CROP);
+
+  // Accept / wait buttons
+  var acceptRow  = document.getElementById('accept-row');
+  var acceptNote = document.getElementById('accept-note');
+  if (best) {
+    acceptRow.style.display = 'grid';
+    acceptNote.textContent  = 'Highest offer: ₹'+Number(best.price).toLocaleString('en-IN')+' from '+best.buyer;
+  } else {
+    acceptRow.style.display = 'none';
+  }
+}
+
+document.getElementById('btn-accept').addEventListener('click', function(){
+  var best = BD.getHighestBid(LOT_ID);
+  if (!best) { BhComp.toast('No bids to accept.','warn'); return; }
+  var lot = BD.getLot(LOT_ID);
+  var farmerName = session.name;
+  BD.acceptBid(LOT_ID, best.id, farmerName);
+  // acceptBid uses OTP — result comes back via event
+});
+
+document.getElementById('btn-wait').addEventListener('click', function(){
+  BhComp.toast('Waiting for more offers. Buyers can see your price.','info');
+});
+
+/* ── Auto-close event ───────────────────────────────────────── */
+BD.on('lotClosed', function(detail){
+  if (detail.lotId !== LOT_ID) return;
+  document.getElementById('closed-banner').classList.add('visible');
+  document.getElementById('accept-row').style.display = 'none';
+  BhComp.toast('Lot closed — a buyer matched your price!','ok',5000);
+  refreshBidBoard();
+});
+BD.on('bidAccepted', function(){ refreshBidBoard(); });
+BD.on('priceChanged', function(){ refreshBidBoard(); });
+
+/* ── Payments ───────────────────────────────────────────────── */
+function renderPayments() {
+  var payments = BD.getPayments().filter(function(p){ return p.to === session.name; });
+  var list = document.getElementById('payment-list');
+  if (!payments.length) {
+    list.innerHTML = '<li style="color:var(--ink-soft);font-size:15px;padding:12px 0">No payments yet.</li>';
+    return;
+  }
+  list.innerHTML = payments.map(function(p){
+    return '<li><div><b>'+BD.fmt(p.amount)+'</b><br><span style="font-size:13px;color:var(--ink-soft)">'+p.from+' · '+p.timestamp.slice(0,10)+'</span></div><span class="chip '+(p.status==='Settled'?'stage-paid':'stage-bids')+'">'+p.status+'</span></li>';
+  }).join('');
+}
+
+/* ── Field & Soil Telemetry ───────────────────────────────── */
+function renderFarmerFieldAgri() {
+  var container = document.getElementById('farmer-field-content');
+  if (!container) return;
+  var agri = BD.getAgriProfile('125');
+  container.innerHTML = BhComp.soilAnalysisHTML(agri.soil) +
+    BhComp.climateHTML(agri.climate) +
+    BhComp.cropCyclesHTML(agri.cropCycles);
+}
+
+/* ── Tabs ───────────────────────────────────────────────────── */
+function switchTab(name) {
+  ['sell','offers','field','call'].forEach(function(t){
+    document.getElementById('tab-'+t).hidden = t !== name;
+    document.getElementById('nav-'+t).classList.toggle('active', t === name);
+  });
+  if (name === 'offers') refreshBidBoard();
+  if (name === 'field')  renderFarmerFieldAgri();
+  if (name === 'call')   renderPayments();
+}
+document.querySelectorAll('[data-tab]').forEach(function(btn){
+  btn.addEventListener('click', function(){ switchTab(btn.dataset.tab); });
+});
+
+/* ── Language toggle ─────────────────────────────────────────── */
+document.querySelectorAll('[data-flang]').forEach(function(btn){
+  btn.style.color = '#fff';
+  btn.addEventListener('click', function(){
+    lang = btn.dataset.flang;
+    Auth.setLang(lang);
+    document.querySelectorAll('[data-flang]').forEach(function(b){
+      b.setAttribute('aria-pressed', b===btn?'true':'false');
+      b.style.background = b===btn ? 'rgba(255,255,255,.25)' : 'transparent';
+    });
+    applyLang();
+  });
+});
+
+/* ── Init ─────────────────────────────────────────────────────── */
+applyLang();
+refreshBidBoard();
+
+// Mandi price
+document.getElementById('f-mandi-val').textContent = '₹'+MANDI.toLocaleString('en-IN');
+</script>
+</body>
+</html>

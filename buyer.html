@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bhowanee — Buyer Dashboard</title>
+<meta name="description" content="Institutional commodity buyer portal: browse lots, bid live on harvest, track forward contracts and dock deliveries.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600&family=Zilla+Slab:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+.lot-card { background:var(--sheet); border:1px solid var(--rule); padding:18px; display:flex; flex-direction:column; justify-content:space-between; }
+.lot-card.active-selected { border:2px solid var(--ink); box-shadow:0 3px 10px rgba(0,0,0,0.08); }
+.lot-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:18px; }
+.bid-panel { background:var(--sheet); border:1px solid var(--rule); padding:20px; }
+.stepper-btn { width:38px; height:38px; font-size:18px; font-weight:700; background:var(--paper); border:1px solid var(--ink); cursor:pointer; }
+.stepper-btn:hover { background:var(--tint); }
+.bid-input-wrap { display:flex; align-items:center; gap:8px; }
+.bid-input-wrap input { font-family:var(--font-slab); font-size:22px; font-weight:600; width:140px; text-align:center; }
+.kpi-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:20px; }
+.kpi-card { background:var(--sheet); border:1px solid var(--rule); padding:16px; }
+.kpi-card .num { font-family:var(--font-slab); font-size:26px; font-weight:700; color:var(--ink); line-height:1.1; margin-bottom:4px; }
+.kpi-card .lbl { font-size:13.5px; color:var(--ink-soft); font-weight:500; }
+.delivery-track { display:flex; align-items:center; gap:10px; margin-top:10px; }
+.track-step { display:flex; flex-direction:column; align-items:center; font-size:12px; font-weight:600; flex:1; position:relative; }
+.track-dot { width:24px; height:24px; border-radius:50%; background:var(--tint); border:2px solid var(--rule); display:flex; align-items:center; justify-content:center; margin-bottom:4px; font-size:11px; }
+.track-step.done .track-dot { background:var(--forest); border-color:var(--forest); color:#FFF; }
+.track-step.current .track-dot { background:var(--turmeric); border-color:var(--ink); color:var(--ink); font-weight:bold; }
+.track-line { position:absolute; top:12px; left:50%; width:100%; height:2px; background:var(--rule); z-index:0; }
+.track-step.done .track-line { background:var(--forest); }
+.quality-spec { display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:13.5px; background:var(--tint); padding:12px; margin-top:8px; border-radius:4px; }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- Topbar -->
+  <header class="topbar" role="banner">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="topbar-brand">Bhowanee</span>
+      <span class="chip sm" style="background:var(--forest);color:#FFF;font-weight:600">Institutional Buyer</span>
+    </div>
+    <div class="topbar-tools">
+      <span id="tb-buyer-name" style="font-size:14.5px;font-weight:500">Fresh Mart Supply Co (Buyer A)</span>
+      <span id="offline-badge" class="offline-badge">Offline</span>
+      <span id="sync-badge" class="sync-badge">Live Market</span>
+      <button class="ghost" onclick="Auth.logout()">Sign out</button>
+    </div>
+  </header>
+
+  <!-- Sidenav -->
+  <nav class="sidenav" aria-label="Buyer navigation">
+    <button class="sidenav-item active" data-section="browse">Browse Lots</button>
+    <button class="sidenav-item" data-section="bidboard">Live Bid Board</button>
+    <button class="sidenav-item" data-section="forward">Forward Contracts</button>
+    <button class="sidenav-item" data-section="quality">Quality Reports</button>
+    <button class="sidenav-item" data-section="delivery">Delivery Tracker</button>
+    <button class="sidenav-item" data-section="demand">Demand Planner</button>
+    <button class="sidenav-item" data-section="invoices">Invoices & Escrow</button>
+    <button class="sidenav-item" data-section="disputes">Report Dispute</button>
+  </nav>
+
+  <!-- Main -->
+  <main class="main-area" id="main-area">
+
+    <!-- ── 1. BROWSE LOTS ──────────────────────────────────── -->
+    <section id="s-browse">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title">Active Harvest Lots for Bidding</h1>
+          <p class="page-sub">Direct farm procurement with assured grade certificates and escrow protection.</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <select id="filter-crop" onchange="renderLots()" style="padding:6px 12px;font-size:14px">
+            <option value="all">All Commodities</option>
+            <option value="Onion">Onion</option>
+            <option value="Tomato">Tomato</option>
+            <option value="Soybean">Soybean</option>
+          </select>
+          <select id="filter-grade" onchange="renderLots()" style="padding:6px 12px;font-size:14px">
+            <option value="all">All Grades</option>
+            <option value="A">Grade A (Export / Retail)</option>
+            <option value="B">Grade B (Standard Market)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="num" id="kpi-lots-available">2 Lots</div>
+          <div class="lbl">Ready for Bidding</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">20.0 Qt</div>
+          <div class="lbl">Total Available Volume</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--forest)">₹1,880</div>
+          <div class="lbl">Nashik Mandi Reference (Onion)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">100%</div>
+          <div class="lbl">Lab Quality Tested</div>
+        </div>
+      </div>
+
+      <div class="lot-grid" id="lots-container"></div>
+    </section>
+
+    <!-- ── 2. BID BOARD ────────────────────────────────────── -->
+    <section id="s-bidboard" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title" id="bb-lot-title">Live Bid Board — Lot L1 (Onion Grade A)</h1>
+          <p class="page-sub">Real-time auction. If your bid reaches the farmer's ask price, the lot automatically closes to you.</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <select id="sel-bid-lot" onchange="onSelectBidLot(this.value)" style="padding:6px 12px;font-size:14px;font-weight:600">
+            <option value="l1">Lot L1 — Onion (Gat 118, Pimpalgaon) — 12 Qt</option>
+            <option value="l2">Lot L2 — Onion (Gat 147, Pimpalgaon) — 8 Qt</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="bid-panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+          <div>
+            <span style="font-size:14px;color:var(--ink-soft)">Farmer's Reserve Ask:</span>
+            <span id="bb-ask-price" style="font-family:var(--font-slab);font-size:22px;font-weight:700;margin-left:6px;color:var(--ink)">₹2,100 /qt</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px;font-size:13.5px">
+            <span style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:14px;height:3px;background:#1C2452"></span> Farmer Ask</span>
+            <span style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:14px;height:2px;border-top:2px dashed #6B4E3A"></span> Mandi Benchmark</span>
+            <span style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:14px;height:3px;background:#D99A06"></span> Highest Bid</span>
+          </div>
+        </div>
+
+        <!-- SVG Bid Graph -->
+        <div style="background:var(--sheet);border:1px solid var(--rule);padding:14px;margin-bottom:18px">
+          <svg id="buyer-bid-board-svg" viewBox="0 0 640 300" style="width:100%;height:auto"></svg>
+        </div>
+
+        <!-- Place Bid Form -->
+        <div style="background:var(--tint);padding:18px;border:1px solid var(--rule);border-radius:4px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+            <div>
+              <h3 style="font-family:var(--font-slab);font-size:18px;margin-bottom:4px">Place Counter Bid</h3>
+              <p style="font-size:13px;color:var(--ink-soft);margin:0">Increment: ±₹10/qt. Total contract value calculates automatically.</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+              <div class="bid-input-wrap">
+                <button type="button" class="stepper-btn" onclick="stepBid(-10)">−</button>
+                <input type="number" id="input-bid-price" step="10" value="2050">
+                <button type="button" class="stepper-btn" onclick="stepBid(10)">+</button>
+              </div>
+              <div style="font-size:14px">
+                Total Value: <b id="calc-total-val" style="font-family:var(--font-slab);font-size:18px;color:var(--ink)">₹24,600</b>
+              </div>
+              <button class="btn" id="btn-submit-bid" onclick="submitBuyerBid()">Place Verified Bid</button>
+            </div>
+          </div>
+          <div id="bid-auto-close-note" style="margin-top:10px;font-size:13px;color:var(--forest);font-weight:600;display:none">
+            ⚡ Notice: This bid equals or exceeds the farmer's target price (₹2,100). If placed, the lot will auto-close and be awarded to you immediately!
+          </div>
+        </div>
+
+        <div style="margin-top:20px">
+          <h4 style="font-family:var(--font-slab);font-size:16px;margin-bottom:10px">Bid History on this Lot</h4>
+          <div class="tablewrap">
+            <table id="tbl-lot-bids">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Buyer Name</th>
+                  <th>Bid Price (₹/qt)</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="lot-bids-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 3. FORWARD CONTRACTS ────────────────────────────── -->
+    <section id="s-forward" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <div>
+          <h1 class="page-title">Forward Seasonal Procurement Contracts</h1>
+          <p class="page-sub">Lock in farm gate volumes ahead of harvest with guaranteed pricing and delivery schedules.</p>
+        </div>
+        <button class="btn" onclick="openPreOrderModal()">+ Book Forward Volume</button>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Contract ID</th>
+              <th>Commodity</th>
+              <th>Harvest Season</th>
+              <th>Origin Taluka</th>
+              <th>Booked Volume</th>
+              <th>Locked Floor Price</th>
+              <th>Escrow Deposit</th>
+              <th>Contract Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>FWD-26-01</b></td>
+              <td>Onion (Rabi)</td>
+              <td>April 2026</td>
+              <td>Dindori, Nashik</td>
+              <td>50 Quintals</td>
+              <td>₹1,950 /qt</td>
+              <td>₹19,500 (20%)</td>
+              <td><span class="chip sm" style="background:#E6F4EA;color:#137333">Confirmed / Sown</span></td>
+              <td><button class="btn sm secondary" onclick="viewForwardSpecs('FWD-26-01')">View Terms</button></td>
+            </tr>
+            <tr>
+              <td><b>FWD-26-02</b></td>
+              <td>Tomato</td>
+              <td>July 2026</td>
+              <td>Dindori, Nashik</td>
+              <td>30 Quintals</td>
+              <td>₹2,100 /qt</td>
+              <td>₹12,600 (20%)</td>
+              <td><span class="chip sm" style="background:#E6F4EA;color:#137333">Confirmed / Growing</span></td>
+              <td><button class="btn sm secondary" onclick="viewForwardSpecs('FWD-26-02')">View Terms</button></td>
+            </tr>
+            <tr>
+              <td><b>FWD-26-03</b></td>
+              <td>Soybean</td>
+              <td>October 2026</td>
+              <td>Baramati, Pune</td>
+              <td>100 Quintals</td>
+              <td>₹4,600 /qt</td>
+              <td>₹92,000 (20%)</td>
+              <td><span class="chip sm" style="background:#FEF7E0;color:#B06000">Awaiting Sowing</span></td>
+              <td><button class="btn sm secondary" onclick="viewForwardSpecs('FWD-26-03')">View Terms</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 4. QUALITY REPORTS ──────────────────────────────── -->
+    <section id="s-quality" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Commodity Grading & Quality Assay Certificates</h1>
+        <p class="page-sub">Independent inspection data by accredited agricultural quality certifiers prior to delivery.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="lot-card">
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <h3 style="font-family:var(--font-slab);font-size:18px;margin:0">Certificate #QC-ON-118</h3>
+              <span class="chip sm" style="background:#E6F4EA;color:#137333">Grade A Certified</span>
+            </div>
+            <p style="font-size:13.5px;color:var(--ink-soft);margin:4px 0 12px">Lot L1 (Gat 118, Pimpalgaon) • Assayed March 1, 2026</p>
+            
+            <div class="quality-spec">
+              <div><b>Moisture Content:</b> 11.2% (Standard &le; 13%)</div>
+              <div><b>Bulb Size Uniformity:</b> 55–65 mm (92%)</div>
+              <div><b>Defect / Sprouting:</b> 0.8% (&le; 2% allowed)</div>
+              <div><b>Color & Firmness:</b> Deep Pink / Firm globe</div>
+              <div><b>Pesticide Residue:</b> Pass (MRL compliant)</div>
+              <div><b>Certifier:</b> Agmark Nashik Lab #4</div>
+            </div>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:10px">
+            <button class="btn sm secondary" onclick="alert('Downloading signed PDF certificate #QC-ON-118...')">Download PDF Assay</button>
+            <button class="btn sm" onclick="switchSection('bidboard')">Bid on this Lot</button>
+          </div>
+        </div>
+
+        <div class="lot-card">
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <h3 style="font-family:var(--font-slab);font-size:18px;margin:0">Certificate #QC-ON-147</h3>
+              <span class="chip sm" style="background:#FEF7E0;color:#B06000">Grade B Standard</span>
+            </div>
+            <p style="font-size:13.5px;color:var(--ink-soft);margin:4px 0 12px">Lot L2 (Gat 147, Pimpalgaon) • Assayed March 3, 2026</p>
+            
+            <div class="quality-spec">
+              <div><b>Moisture Content:</b> 12.6% (Standard &le; 13%)</div>
+              <div><b>Bulb Size Uniformity:</b> 45–55 mm (84%)</div>
+              <div><b>Defect / Sprouting:</b> 1.8% (&le; 2% allowed)</div>
+              <div><b>Color & Firmness:</b> Standard Pink / Moderate</div>
+              <div><b>Pesticide Residue:</b> Pass (MRL compliant)</div>
+              <div><b>Certifier:</b> Agmark Nashik Lab #4</div>
+            </div>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:10px">
+            <button class="btn sm secondary" onclick="alert('Downloading signed PDF certificate #QC-ON-147...')">Download PDF Assay</button>
+            <button class="btn sm" onclick="switchSection('bidboard')">Bid on this Lot</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 5. DELIVERY TRACKER ─────────────────────────────── -->
+    <section id="s-delivery" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Live Dispatch & Delivery Tracker</h1>
+        <p class="page-sub">Real-time status of shipments moving from farm gates to cold stores and your receiving docks.</p>
+      </div>
+
+      <div class="lot-card" style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+          <div>
+            <h3 style="font-family:var(--font-slab);font-size:18px;margin:0">Consignment #TRK-MH-981 (Lot L1 — 12 Qt Onion)</h3>
+            <p style="font-size:13.5px;color:var(--ink-soft);margin:4px 0">Vehicle: MH-15-AB-1234 (Driver: Santosh Garud • 9822114455)</p>
+          </div>
+          <span class="chip sm" style="background:#E6F4EA;color:#137333">Cold Store Staged</span>
+        </div>
+
+        <div class="delivery-track" style="margin:24px 0">
+          <div class="track-step done">
+            <div class="track-line"></div>
+            <div class="track-dot">✓</div>
+            <span>Farm Harvest</span>
+            <small style="color:var(--ink-soft)">Gat 118</small>
+          </div>
+          <div class="track-step done">
+            <div class="track-line"></div>
+            <div class="track-dot">✓</div>
+            <span>Digital Handoff</span>
+            <small style="color:var(--ink-soft)">Weight Confirmed</small>
+          </div>
+          <div class="track-step current">
+            <div class="track-line"></div>
+            <div class="track-dot">3</div>
+            <span>Dindori Cold Store</span>
+            <small style="color:var(--ink-soft)">Staged at Dock</small>
+          </div>
+          <div class="track-step">
+            <div class="track-dot">4</div>
+            <span>Buyer Delivery</span>
+            <small style="color:var(--ink-soft)">ETA 24h</small>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--rule);padding-top:12px;font-size:13.5px">
+          <span>Destination: <b>Fresh Mart Supply Co, Vashi APMC Dock 4</b></span>
+          <button class="btn sm secondary" onclick="alert('Viewing digital proof of weight bill #PB-8821...')">View Weight Slip</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 6. DEMAND PLANNER ───────────────────────────────── -->
+    <section id="s-demand" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Seasonal Demand Planner</h1>
+        <p class="page-sub">Submit your projected procurement requirements to enable Bhowanee farmers to sow to your specific needs.</p>
+      </div>
+
+      <div style="background:var(--sheet);border:1px solid var(--rule);padding:20px;max-width:680px">
+        <h3 style="font-family:var(--font-slab);font-size:18px;margin-bottom:12px">Register Volume Requirement</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="field">
+            <label for="dp-crop">Commodity</label>
+            <select id="dp-crop">
+              <option value="Onion">Onion (Red / Nasik)</option>
+              <option value="Tomato">Tomato (Hybrid / Processing)</option>
+              <option value="Soybean">Soybean (Yellow)</option>
+              <option value="Pulses">Pulses (Tur / Moong)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="dp-vol">Required Volume (Quintals)</label>
+            <input type="number" id="dp-vol" placeholder="e.g. 250">
+          </div>
+          <div class="field">
+            <label for="dp-date">Desired Delivery Window</label>
+            <input type="month" id="dp-date" value="2026-06">
+          </div>
+          <div class="field">
+            <label for="dp-dock">Receiving Hub / Dock</label>
+            <input id="dp-dock" placeholder="e.g. Navi Mumbai Cold Chain">
+          </div>
+          <div class="field" style="grid-column:span 2">
+            <label for="dp-notes">Quality Specifications / Grade Requirements</label>
+            <textarea id="dp-notes" rows="2" placeholder="e.g. 50mm+ diameter, &le;12% moisture content, export packed."></textarea>
+          </div>
+        </div>
+        <button class="btn" style="margin-top:14px" onclick="submitDemandPlan()">Register Projected Demand</button>
+      </div>
+    </section>
+
+    <!-- ── 7. INVOICES & ESCROW ────────────────────────────── -->
+    <section id="s-invoices" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Invoices & Escrow Settlement Account</h1>
+        <p class="page-sub">Pre-funded escrow settlements for closed lots and confirmed shipments.</p>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="num">₹24,480</div>
+          <div class="lbl">Settled Disbursements</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--forest)">₹1,50,000</div>
+          <div class="lbl">Available Escrow Credit Balance</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">1 Invoice</div>
+          <div class="lbl">Paid Consignments</div>
+        </div>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Date</th>
+              <th>Lot ID</th>
+              <th>Farmer Payee</th>
+              <th>Weight</th>
+              <th>Unit Rate</th>
+              <th>Total (₹)</th>
+              <th>Escrow Status</th>
+              <th>Receipt</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>INV-2026-091</b></td>
+              <td>21 Mar 2026</td>
+              <td>L1</td>
+              <td>Prakash Sonawane</td>
+              <td>12 Qt</td>
+              <td>₹2,040 /qt</td>
+              <td><b>₹24,480</b></td>
+              <td><span class="chip sm" style="background:#E6F4EA;color:#137333">Settled / Disbursed</span></td>
+              <td><button class="btn sm secondary" onclick="alert('Downloading tax invoice INV-2026-091...')">PDF Receipt</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 8. REPORT DISPUTE ───────────────────────────────── -->
+    <section id="s-disputes" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Report Consignment Discrepancy / Dispute</h1>
+        <p class="page-sub">Report weight variance, transit spoilage, or quality deviation for Super Admin arbitration.</p>
+      </div>
+
+      <div style="background:var(--sheet);border:1px solid var(--rule);padding:20px;max-width:680px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="field">
+            <label for="rd-lot">Lot Reference</label>
+            <select id="rd-lot">
+              <option value="l1">Lot L1 (Gat 118, Pimpalgaon)</option>
+              <option value="l2">Lot L2 (Gat 147, Pimpalgaon)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="rd-type">Discrepancy Category</label>
+            <select id="rd-type">
+              <option value="Quality">Quality / Moisture Variance</option>
+              <option value="Weight">Weight Discrepancy at Receiving Dock</option>
+              <option value="Transit Damage">Transit Damage / Spoilage</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:span 2">
+            <label for="rd-desc">Detailed Description of Discrepancy</label>
+            <textarea id="rd-desc" rows="3" placeholder="Provide weighed amounts, assay deviations, or dock photos..."></textarea>
+          </div>
+        </div>
+        <button class="btn" style="margin-top:14px" onclick="submitBuyerDispute()">Submit Dispute to Arbitration</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="auth.js"></script>
+<script src="market.js"></script>
+<script src="data.js"></script>
+<script src="components.js"></script>
+<script>
+/* ============================================================
+   Buyer Dashboard Logic
+   ============================================================ */
+
+// 1. Auth Guard
+Auth.requireRole('buyer');
+var session = Auth.getSession();
+var buyerName = (session && session.name) ? session.name : 'Buyer A';
+document.getElementById('tb-buyer-name').textContent = buyerName;
+
+// 2. Navigation
+var navBtns = document.querySelectorAll('.sidenav-item');
+navBtns.forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var sec = btn.getAttribute('data-section');
+    switchSection(sec);
+  });
+});
+
+function switchSection(sec) {
+  navBtns.forEach(function (b) {
+    b.classList.toggle('active', b.getAttribute('data-section') === sec);
+  });
+  document.querySelectorAll('main > section').forEach(function (s) {
+    s.style.display = s.id === 's-' + sec ? 'block' : 'none';
+  });
+  if (sec === 'bidboard') {
+    renderBidBoardView(currentLotId);
+  }
+}
+
+// 3. Browse Lots
+function renderLots() {
+  var cropFilter = document.getElementById('filter-crop').value;
+  var gradeFilter = document.getElementById('filter-grade').value;
+  var container = document.getElementById('lots-container');
+
+  var lots = BD.getOpenLots().filter(function (l) {
+    var c = BD.getContract(l.contractId);
+    if (cropFilter !== 'all' && c && c.crop !== cropFilter) return false;
+    if (gradeFilter !== 'all' && l.grade !== gradeFilter) return false;
+    return true;
+  });
+
+  document.getElementById('kpi-lots-available').textContent = lots.length + ' Lots';
+
+  var html = '';
+  lots.forEach(function (l) {
+    var c = BD.getContract(l.contractId);
+    var highest = BD.getHighestBid(l.id);
+    var bids = BD.getBidsByLot(l.id);
+    var mandi = BD.mandiPrice(c ? c.crop : 'Onion');
+
+    html += '<div class="lot-card ' + (l.id === currentLotId ? 'active-selected' : '') + '">';
+    html += '<div>';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center">';
+    html += '<h3 style="font-family:var(--font-slab);font-size:18px;margin:0">Lot ' + l.id.toUpperCase() + ' — ' + (c ? c.crop : 'Onion') + '</h3>';
+    html += '<span class="chip sm ' + (l.grade === 'A' ? 'stage-growing' : 'stage-notsown') + '">Grade ' + l.grade + '</span>';
+    html += '</div>';
+    html += '<p style="font-size:13.5px;color:var(--ink-soft);margin:6px 0 12px">';
+    html += (c ? c.farmer.name + ' • ' + c.village + ' (Gat ' + c.gat + ')' : 'Dindori') + '<br>';
+    html += 'Available Volume: <b>' + l.weightQt + ' Quintals</b>';
+    html += '</p>';
+
+    html += '<div style="background:var(--tint);padding:10px 12px;border-radius:4px;font-size:13.5px;margin-bottom:14px">';
+    html += '<div style="display:flex;justify-content:space-between;margin-bottom:4px">';
+    html += '<span>Farmer Target Ask:</span> <b>' + BD.fmt(l.farmerPrice) + ' /qt</b>';
+    html += '</div>';
+    html += '<div style="display:flex;justify-content:space-between;margin-bottom:4px">';
+    html += '<span>Mandi Reference:</span> <span>' + BD.fmt(mandi) + ' /qt</span>';
+    html += '</div>';
+    html += '<div style="display:flex;justify-content:space-between">';
+    html += '<span>Current High Bid:</span> <b style="color:var(--ink)">' + (highest ? BD.fmt(highest.price) + ' (' + highest.buyer + ')' : 'No bids yet') + '</b>';
+    html += '</div>';
+    html += '</div>';
+    html += '</div>';
+
+    html += '<div style="display:flex;gap:10px">';
+    html += '<button class="btn sm secondary" style="flex:1" onclick="selectAndBid(\'' + l.id + '\')">Bid Live (' + bids.length + ')</button>';
+    html += '<button class="btn sm secondary" onclick="switchSection(\'quality\')">Assay</button>';
+    html += '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html || '<p style="color:var(--ink-soft)">No lots match the selected filters.</p>';
+}
+
+// 4. Live Bid Board & Placement
+var currentLotId = 'l1';
+
+window.selectAndBid = function (lid) {
+  currentLotId = lid;
+  document.getElementById('sel-bid-lot').value = lid;
+  switchSection('bidboard');
+};
+
+window.onSelectBidLot = function (lid) {
+  currentLotId = lid;
+  renderBidBoardView(lid);
+};
+
+function renderBidBoardView(lid) {
+  var lot = BD.getLot(lid);
+  if (!lot) return;
+  var c = BD.getContract(lot.contractId);
+  var crop = c ? c.crop : 'Onion';
+  var bids = BD.getBidsByLot(lid);
+  var highest = BD.getHighestBid(lid);
+  var mandi = BD.mandiPrice(crop);
+
+  document.getElementById('bb-lot-title').textContent = 'Live Bid Board — Lot ' + lid.toUpperCase() + ' (' + crop + ' Grade ' + lot.grade + ')';
+  document.getElementById('bb-ask-price').textContent = BD.fmt(lot.farmerPrice) + ' /qt';
+
+  // SVG Chart Render
+  var svg = document.getElementById('buyer-bid-board-svg');
+  BhComp.renderBidBoard(svg, {
+    farmerPrice: lot.farmerPrice,
+    mandiPrice: mandi,
+    bids: bids,
+    crop: crop,
+    width: 640,
+    height: 300
+  });
+
+  // Suggest next bid
+  var nextPrice = highest ? (highest.price + 10) : (lot.farmerPrice - 50);
+  document.getElementById('input-bid-price').value = nextPrice;
+  updateBidCalc();
+
+  // History table
+  var tbody = document.getElementById('lot-bids-tbody');
+  var html = '';
+  bids.slice().reverse().forEach(function (b) {
+    var isMe = b.buyer === buyerName;
+    html += '<tr style="' + (isMe ? 'background:#FFFDF5;font-weight:600' : '') + '">';
+    html += '<td>' + new Date(b.timestamp).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }) + '</td>';
+    html += '<td>' + b.buyer + (isMe ? ' <span class="chip sm" style="background:var(--turmeric)">You</span>' : '') + '</td>';
+    html += '<td>' + BD.fmt(b.price) + '</td>';
+    html += '<td><span class="chip sm ' + (b.price >= lot.farmerPrice ? 'stage-growing' : 'stage-bids') + '">' + (b.price >= lot.farmerPrice ? 'Met Target' : 'Active') + '</span></td>';
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+window.stepBid = function (delta) {
+  var el = document.getElementById('input-bid-price');
+  var cur = parseInt(el.value, 10) || 2000;
+  el.value = Math.max(100, cur + delta);
+  updateBidCalc();
+};
+
+document.getElementById('input-bid-price').addEventListener('input', updateBidCalc);
+
+function updateBidCalc() {
+  var p = parseInt(document.getElementById('input-bid-price').value, 10) || 0;
+  var lot = BD.getLot(currentLotId);
+  var wt = lot ? lot.weightQt : 10;
+  document.getElementById('calc-total-val').textContent = BD.fmt(p * wt);
+
+  var notice = document.getElementById('bid-auto-close-note');
+  if (lot && p >= lot.farmerPrice) {
+    notice.style.display = 'block';
+  } else {
+    notice.style.display = 'none';
+  }
+}
+
+window.submitBuyerBid = function () {
+  var price = parseInt(document.getElementById('input-bid-price').value, 10);
+  if (!price || price <= 0) {
+    alert("Please enter a valid bid price.");
+    return;
+  }
+  var lot = BD.getLot(currentLotId);
+  if (!lot) return;
+
+  var placedBid = BD.placeBid(lot.id, buyerName, price);
+  if (lot.status === 'closed') {
+    BhComp.toast("Congratulations! Your bid of " + BD.fmt(price) + " reached the farmer ask price. Lot auto-closed and awarded to you!", "info", 5000);
+  } else {
+    BhComp.toast("Your bid of " + BD.fmt(price) + " was recorded.", "info");
+  }
+
+  renderBidBoardView(currentLotId);
+  renderLots();
+};
+
+// 5. Forward Contracts Modal
+window.openPreOrderModal = function () {
+  var crop = prompt("Enter commodity (Onion, Tomato, Soybean):", "Onion");
+  if (!crop) return;
+  var qty = prompt("Enter required quintals:", "50");
+  if (!qty) return;
+  alert("Pre-order request registered for " + qty + " Qt of " + crop + ". Our block administrator will match participating farmers.");
+  BhComp.toast("Forward order request submitted.", "info");
+};
+
+window.viewForwardSpecs = function (id) {
+  alert("Contract " + id + ": 20% margin escrowed. Delivery guaranteed at farm gate with standard Agmark moisture assay.");
+};
+
+// 6. Demand Planner
+window.submitDemandPlan = function () {
+  var vol = document.getElementById('dp-vol').value;
+  if (!vol) { alert("Please enter required volume."); return; }
+  BhComp.toast("Demand projection registered. Synced with block planting calendar.", "info");
+  document.getElementById('dp-vol').value = '';
+};
+
+// 7. Dispute Reporting
+window.submitBuyerDispute = function () {
+  var lotId = document.getElementById('rd-lot').value;
+  var type = document.getElementById('rd-type').value;
+  var desc = document.getElementById('rd-desc').value.trim();
+
+  if (!desc) { alert("Please enter discrepancy description."); return; }
+
+  var lot = BD.getLot(lotId);
+  var cid = lot ? lot.contractId : 'c1';
+  BD.flagIssue(cid, type + ' discrepancy reported by ' + buyerName + ': ' + desc);
+  BhComp.toast("Dispute filed. Assigned to Super Admin for arbitration.", "warn");
+  document.getElementById('rd-desc').value = '';
+  switchSection('browse');
+};
+
+// Listen for global data changes
+BD.on('bidPlaced', function () {
+  if (document.getElementById('s-bidboard').style.display !== 'none') {
+    renderBidBoardView(currentLotId);
+  }
+  renderLots();
+});
+BD.on('lotClosed', function (e) {
+  if (e.lotId === currentLotId) {
+    BhComp.toast("Lot " + e.lotId.toUpperCase() + " has officially closed.", "info");
+  }
+  renderLots();
+});
+
+// Initial load
+renderLots();
+renderBidBoardView('l1');
+</script>
+</body>
+</html>

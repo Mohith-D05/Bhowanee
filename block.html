@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bhowanee — Block Administrator</title>
+<meta name="description" content="Run every contract in the block from one map.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600&family=Zilla+Slab:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+.contract-panel { background:var(--sheet); border-left:1px solid var(--rule); padding:20px; overflow-y:auto; display:none; }
+.contract-panel.open { display:block; }
+.map-grid { display:grid; grid-template-columns:1fr 380px; min-height:540px; border:1px solid var(--rule); }
+.village-legend { display:flex; flex-wrap:wrap; gap:8px 18px; margin-top:10px; font-size:14px; }
+.village-legend span { display:flex; align-items:center; gap:5px; }
+.village-legend i { width:13px; height:13px; border:1px solid var(--ink); display:inline-block; flex-shrink:0; background:var(--c); }
+.action-buttons { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+.task-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--rule); font-size:15px; }
+.task-item input[type=checkbox] { width:18px; height:18px; accent-color:var(--ink); flex-shrink:0; }
+.task-item.done label { text-decoration:line-through; color:var(--ink-soft); }
+.cost-total { font-family:var(--font-slab); font-size:20px; font-weight:600; margin-top:10px; }
+.farmer-card { padding:12px 0; border-bottom:1px solid var(--rule); display:flex; justify-content:space-between; align-items:center; }
+#map-view { min-height:540px; }
+
+/* ── Cadastral Map Styles ────────────────────────── */
+.cmap-banner {
+  background: linear-gradient(135deg, #1c2452 0%, #28357a 50%, #36449c 100%);
+  color: #fff;
+  border-radius: 6px 6px 0 0;
+  padding: 12px 18px 14px 18px;
+  box-shadow: 0 4px 12px rgba(28, 36, 82, 0.18);
+  border: 1px solid var(--rule);
+  border-bottom: none;
+}
+.cmap-banner-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.cmap-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cmap-emblem {
+  background: #fff;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  flex-shrink: 0;
+}
+.cmap-name {
+  font-family: var(--font-slab);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.cmap-sub {
+  display: block;
+  font-size: 12px;
+  color: #d1d8fc;
+}
+.cmap-top-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cmap-layer-pills {
+  display: flex;
+  background: rgba(0,0,0,0.3);
+  border-radius: 20px;
+  padding: 3px;
+  border: 1px solid rgba(255,255,255,0.25);
+  gap: 3px;
+}
+.cmap-layer-pill-btn {
+  background: transparent;
+  border: none;
+  color: #e0e7ff;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.cmap-layer-pill-btn:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.12);
+}
+.cmap-layer-pill-btn.active {
+  background: #ffffff;
+  color: #1e255e;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+.cmap-badge {
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 3px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+.cmap-search-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cmap-search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 3px 6px 3px 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.16);
+}
+.cmap-search-input-wrap input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #1c2452;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 8px;
+  outline: none;
+}
+.cmap-search-input-wrap input::placeholder {
+  color: #555e70;
+  font-size: 13.5px;
+}
+.cmap-search-icon {
+  font-size: 15px;
+  color: #4b5563;
+}
+.cmap-quick-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+}
+.cmap-chip {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.28);
+  color: #fff;
+  border-radius: 12px;
+  padding: 2px 9px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cmap-chip:hover, .cmap-chip.active {
+  background: #fff;
+  color: #1c2452;
+  font-weight: 700;
+}
+
+/* Floating Purple Layer Button on bottom right (matching user reference image) */
+.cmap-floating-layer-btn {
+  position: absolute;
+  bottom: 74px;
+  right: 18px;
+  z-index: 1000;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+  border: 2.5px solid rgba(255,255,255,0.85);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.45);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.cmap-floating-layer-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+}
+.cmap-floating-layer-btn:active {
+  transform: scale(0.96);
+}
+
+/* Esri Attribution Footer */
+.cmap-esri-footer {
+  background: #0f172a;
+  color: #94a3b8;
+  font-size: 11px;
+  padding: 5px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
+/* Bottom Toolbar */
+.cmap-bottom-bar {
+  display: flex;
+  align-items: center;
+  background: #1c2452;
+  color: #fff;
+  padding: 8px 12px;
+  border-top: 1px solid rgba(255,255,255,0.15);
+  gap: 6px;
+  overflow-x: auto;
+}
+.cmap-tool-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+.cmap-tool-btn:hover {
+  background: rgba(255,255,255,0.16);
+}
+.cmap-tool-btn.active {
+  background: #D32F2F;
+  color: #fff;
+  font-weight: 700;
+}
+.tool-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255,255,255,0.25);
+  margin: 0 4px;
+}
+
+/* Cadastral Survey Number Labels */
+.cadastral-sy-label {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-weight: 800;
+  pointer-events: none;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* In Satellite Aerial Mode: stark white bold numbers with solid black text-shadow matching screenshot */
+.cadastral-sy-label.satellite-mode {
+  font-size: 14.5px;
+  color: #ffffff !important;
+  text-shadow:
+    -1.5px -1.5px 0 #000,
+     1.5px -1.5px 0 #000,
+    -1.5px  1.5px 0 #000,
+     1.5px  1.5px 0 #000,
+     0px    2px 5px rgba(0,0,0,0.95);
+}
+.cadastral-sy-label.satellite-mode.active-label {
+  color: #FF5252 !important;
+  font-size: 17px;
+  font-weight: 900;
+  text-shadow:
+    -2px -2px 0 #000,
+     2px -2px 0 #000,
+    -2px  2px 0 #000,
+     2px  2px 0 #000,
+     0px 0px 10px #FF1744;
+}
+
+/* In Vector Cadastral Mode: dark numbers with white halo */
+.cadastral-sy-label.vector-mode {
+  font-size: 14px;
+  color: #111827 !important;
+  text-shadow:
+    1px  1px 0 #fff,
+   -1px -1px 0 #fff,
+    1px -1px 0 #fff,
+   -1px  1px 0 #fff,
+    0 0 6px #fff;
+}
+.cadastral-sy-label.vector-mode.active-label {
+  color: #D32F2F !important;
+  font-size: 16.5px;
+  font-weight: 900;
+  text-shadow:
+    1px  1px 0 #fff,
+   -1px -1px 0 #fff,
+    1px -1px 0 #fff,
+   -1px  1px 0 #fff,
+    0 0 10px #FFCDD2;
+}
+
+.cadastral-feature-label {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  pointer-events: none;
+  text-align: center;
+}
+.cadastral-feature-label.road-label {
+  color: #1e2430;
+  font-size: 11.5px;
+  text-shadow: 0 0 4px #fff, 0 0 8px #fff;
+}
+.cadastral-feature-label.water-label {
+  color: #0052cc;
+  font-size: 12px;
+  text-shadow: 0 0 4px #fff, 0 0 8px #fff;
+}
+.cadastral-feature-label.settlement-label {
+  color: #047857;
+  font-size: 12px;
+  text-shadow: 0 0 4px #fff, 0 0 8px #fff;
+}
+.cadastral-feature-label.pond-label {
+  color: #0284c7;
+  font-size: 11px;
+  text-shadow: 0 0 4px #fff;
+}
+
+/* Road Yellow Route Badge (e.g. 69 in reference screenshot) */
+.road-badge-icon {
+  background: #FACC15;
+  color: #713F12;
+  border: 1.5px solid #CA8A04;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+}
+
+/* Locality Marker (e.g. Navalihala in reference screenshot) */
+.locality-label-box {
+  background: rgba(255,255,255,0.92);
+  border: 1px solid #1F2937;
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #111827;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  white-space: nowrap;
+}
+
+/* Legend */
+.cadastral-legend-bar {
+  background: #fdfdfd;
+  border: 1px solid var(--rule);
+  border-top: none;
+  padding: 10px 16px;
+  font-size: 13px;
+}
+.legend-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+}
+.legend-title {
+  font-weight: 600;
+  color: var(--ink);
+  margin-right: 4px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+.leg-box {
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  border-radius: 2px;
+}
+.leg-selected {
+  border: 2.5px solid #FF1744;
+  background: #FFFDE7;
+}
+.leg-parcel {
+  border: 1.5px solid #1F2937;
+  background: #FEFCE8;
+}
+.leg-road {
+  background: #B0B4B8;
+  border: 1px solid #6B7280;
+}
+.leg-water {
+  background: #0070FF;
+  border: 1px solid #004DB3;
+}
+.leg-settlement {
+  border: 2px solid #00E676;
+  background: #ECFDF5;
+}
+.leg-pond {
+  background: #38BDF8;
+  border: 1px solid #0284C7;
+}
+
+/* 7/12 Land Record card in contract panel */
+.satbara-card {
+  background: #FFFDE7;
+  border: 1px solid #E0D4A0;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+.satbara-header {
+  font-weight: 700;
+  color: #78350F;
+  border-bottom: 1px dashed #D6CB9E;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.satbara-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.satbara-item label {
+  font-size: 11px;
+  color: #854D0E;
+  display: block;
+}
+.satbara-item span {
+  font-weight: 600;
+  color: #1F2937;
+}
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- Topbar -->
+  <header class="topbar" role="banner">
+    <span class="topbar-brand">Bhowanee</span>
+    <div class="topbar-tools">
+      <span id="tb-name">Block Administrator</span>
+      <span id="offline-badge" class="offline-badge">Offline</span>
+      <span id="sync-badge"   class="sync-badge">Synced</span>
+      <button class="ghost" onclick="Auth.logout()">Sign out</button>
+    </div>
+  </header>
+
+  <!-- Sidenav -->
+  <nav class="sidenav" aria-label="Dashboard sections">
+    <button class="sidenav-item active" data-section="map">Block map</button>
+    <button class="sidenav-item" data-section="bidboard">Bid board</button>
+    <button class="sidenav-item" data-section="tasks">Task board</button>
+    <button class="sidenav-item" data-section="costs">Cost log</button>
+    <button class="sidenav-item" data-section="issues">Issue flag</button>
+    <button class="sidenav-item" data-section="directory">Farmer directory</button>
+    <button class="sidenav-item" data-section="plan">Block vs plan</button>
+  </nav>
+
+  <!-- Main -->
+  <main class="main-area" id="main-area">
+
+    <!-- ── MAP ──────────────────────────────────────────────── -->
+    <section id="s-map">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title">Cadastral Revenue Map — Dindori, Nashik</h1>
+          <p class="trail" id="map-trail"><b>Nashik</b> <span>/</span> <b>Dindori</b> <span>/</span> <b>Pimpalgaon Baswant (Gat Nakasha)</b></p>
+        </div>
+        <div class="seg" role="group" aria-label="View">
+          <button class="seg-btn" aria-pressed="true" data-view="map">Map</button>
+          <button class="seg-btn" aria-pressed="false" data-view="table">Table</button>
+        </div>
+      </div>
+
+      <div id="map-view">
+        <!-- Cadastral Map Header -->
+        <div class="cmap-banner">
+          <div class="cmap-banner-top">
+            <div class="cmap-brand">
+              <div class="cmap-emblem" title="Cadastral Revenue Map">
+                <svg width="24" height="24" viewBox="0 0 36 36"><circle cx="18" cy="18" r="16" fill="#fff" stroke="#D99A06" stroke-width="2"/><path d="M10 24 L18 8 L26 24 Z" fill="#0070FF"/><circle cx="18" cy="20" r="4" fill="#E53935"/></svg>
+              </div>
+              <div>
+                <span class="cmap-name">Cadastral Map</span>
+                <span class="cmap-sub">Dindori Revenue Survey Map</span>
+              </div>
+            </div>
+            
+            <div class="cmap-top-controls">
+              <div class="cmap-layer-pills" role="group" aria-label="Base Map Layer">
+                <button class="cmap-layer-pill-btn active" id="btn-mode-sat" type="button">🛰️ Satellite Aerial</button>
+                <button class="cmap-layer-pill-btn" id="btn-mode-vec" type="button">🗺️ Cadastral Vector</button>
+              </div>
+              <div class="cmap-badge">V-1.30</div>
+            </div>
+          </div>
+          
+          <div class="cmap-search-row">
+            <div class="cmap-search-input-wrap">
+              <span class="cmap-search-icon">🔍</span>
+              <input id="cmap-gat-search" type="text" placeholder="Click on the map or search Sy No. / Gat No. (e.g. 125, 123, 66)..." autocomplete="off">
+              <button class="btn sm" id="cmap-search-btn" type="button">Search Sy No.</button>
+            </div>
+            <div class="cmap-quick-chips">
+              <span style="font-size:12px;opacity:0.9;align-self:center">Select Gat:</span>
+              <button class="cmap-chip active" type="button" data-gat="125">Gat 125 (Active)</button>
+              <button class="cmap-chip" type="button" data-gat="124">Gat 124</button>
+              <button class="cmap-chip" type="button" data-gat="123">Gat 123</button>
+              <button class="cmap-chip" type="button" data-gat="122">Gat 122</button>
+              <button class="cmap-chip" type="button" data-gat="121">Gat 121</button>
+              <button class="cmap-chip" type="button" data-gat="120/B">Gat 120/B</button>
+              <button class="cmap-chip" type="button" data-gat="128">Gat 128</button>
+              <button class="cmap-chip" type="button" data-gat="129">Gat 129</button>
+              <button class="cmap-chip" type="button" data-gat="131">Gat 131</button>
+              <button class="cmap-chip" type="button" data-gat="135">Gat 135</button>
+              <button class="cmap-chip" type="button" data-gat="134">Gat 134</button>
+              <button class="cmap-chip" type="button" data-gat="133">Gat 133</button>
+              <button class="cmap-chip" type="button" data-gat="146">Gat 146</button>
+              <button class="cmap-chip" type="button" data-gat="103">Gat 103</button>
+              <button class="cmap-chip" type="button" data-gat="66">Gat 66</button>
+              <button class="cmap-chip" type="button" data-gat="47">Gat 47</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Map & Contract Detail Grid -->
+        <div class="map-grid">
+          <div style="position:relative;display:flex;flex-direction:column;overflow:hidden">
+            <div id="leaflet-map" style="min-height:520px;flex:1"></div>
+            
+            <!-- Floating Purple Layer Button (matching user reference screenshot) -->
+            <button class="cmap-floating-layer-btn" id="cmap-floating-layer-btn" type="button" title="Switch between Satellite and Cadastral Vector view">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="3" width="7.5" height="7.5" rx="1.5" fill="#ffffff" fill-opacity="0.95"/>
+                <rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5" fill="#ffffff" fill-opacity="0.95"/>
+                <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5" fill="#ffffff" fill-opacity="0.95"/>
+                <rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" fill="#ffffff" fill-opacity="0.95"/>
+              </svg>
+            </button>
+
+            <!-- Esri Attribution Footer -->
+            <div class="cmap-esri-footer">
+              <span>Esri, TomTom, Garmin</span>
+              <span>Designed and developed by KSRSAC / Mahabhumi · V-1.30</span>
+              <span>Powered by Esri</span>
+            </div>
+            
+            <!-- Bottom Action Toolbar -->
+            <div class="cmap-bottom-bar">
+              <button class="cmap-tool-btn" id="tool-measure" type="button" title="Click two boundary points to measure distance">
+                <span class="tool-icon">📏</span>
+                <span id="measure-label">Measurement Tools</span>
+              </button>
+              <div class="tool-divider"></div>
+              <button class="cmap-tool-btn" id="tool-search" type="button">
+                <span class="tool-icon">🔍</span>
+                <span>Search Sy No.</span>
+              </button>
+              <div class="tool-divider"></div>
+              <button class="cmap-tool-btn" id="tool-stage-toggle" type="button">
+                <span class="tool-icon">🎨</span>
+                <span id="stage-toggle-label">Crop Stage Tint: On</span>
+              </button>
+              <div class="tool-divider"></div>
+              <button class="cmap-tool-btn" id="tool-reset-view" type="button">
+                <span class="tool-icon">🎯</span>
+                <span>Reset Extent</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="contract-panel open" id="contract-panel">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <h3 style="font-size:18px;font-family:var(--font-slab)" id="panel-title">Contract & 7/12 Extract</h3>
+              <button class="btn sm secondary" id="panel-close">✕ Close</button>
+            </div>
+            <div id="panel-content"></div>
+            <div class="action-buttons" id="panel-actions"></div>
+            <div id="panel-bid-board" style="margin-top:20px;display:none">
+              <h4 style="font-size:16px;margin-bottom:8px">Bid board</h4>
+              <svg id="panel-bb-svg" viewBox="0 0 480 260" class="bb-svg"></svg>
+              <p id="panel-bb-say" class="bb-say" style="font-size:14px;margin-top:6px"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cadastral Legend -->
+        <div class="cadastral-legend-bar">
+          <div class="legend-group">
+            <span class="legend-title">Cadastral Revenue Layers:</span>
+            <span class="legend-item"><i class="leg-box leg-selected"></i> <b>Selected Parcel (Gat 125)</b></span>
+            <span class="legend-item"><i class="leg-box leg-parcel"></i> Survey Parcel Boundary</span>
+            <span class="legend-item"><i class="leg-box leg-road"></i> Village Road</span>
+            <span class="legend-item"><i class="leg-box leg-water"></i> Water Stream / Nala</span>
+            <span class="legend-item"><i class="leg-box leg-settlement"></i> Gaothan Settlement</span>
+            <span class="legend-item"><i class="leg-box leg-pond"></i> Farm Pond</span>
+          </div>
+          <div class="legend-group" style="margin-top:8px">
+            <span class="legend-title">Crop Stage Tint:</span>
+            <span class="legend-item" style="--c:var(--st-notsown)"><i style="background:var(--st-notsown)"></i> Not sown</span>
+            <span class="legend-item" style="--c:var(--st-growing)"><i style="background:var(--st-growing)"></i> Growing</span>
+            <span class="legend-item" style="--c:var(--st-harvest)"><i style="background:var(--st-harvest)"></i> Harvest ready</span>
+            <span class="legend-item" style="--c:var(--st-bids)"><i style="background:var(--st-bids)"></i> Bids open</span>
+            <span class="legend-item" style="--c:var(--st-issue)"><i style="background:var(--st-issue)"></i> Issue flagged</span>
+            <span class="legend-item" style="--c:var(--st-closed)"><i style="background:var(--st-closed)"></i> Closed / Pasture</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="table-view" hidden>
+        <div class="tablewrap" style="margin-top:14px">
+          <table>
+            <thead><tr><th>Gat</th><th>Village</th><th>Farmer</th><th>Crop</th><th>Area</th><th>Stage</th><th>Next action</th><th></th></tr></thead>
+            <tbody id="contracts-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── BID BOARD ──────────────────────────────────────────── -->
+    <section id="s-bidboard" hidden>
+      <h1 class="page-title">Bid board</h1>
+      <p class="page-subtitle">All open lots in the block.</p>
+      <div class="field" style="max-width:280px">
+        <label for="bb-lot-select">Select lot</label>
+        <select id="bb-lot-select"></select>
+      </div>
+      <div style="margin-top:20px">
+        <svg id="bb-main-svg" viewBox="0 0 640 300" class="bb-svg" role="img" aria-label="Bid graph"></svg>
+        <p id="bb-main-say" class="bb-say" style="margin-top:10px"></p>
+      </div>
+
+      <!-- Admin actions on selected lot -->
+      <div style="margin-top:24px;padding:18px;border:1px solid var(--rule);background:var(--sheet)">
+        <h3 style="font-size:17px;margin-bottom:14px">Admin actions for this lot</h3>
+        <div class="row">
+          <div class="field" style="margin:0;flex:1;min-width:180px">
+            <label for="bb-new-price">Set new farmer price</label>
+            <input id="bb-new-price" inputmode="numeric" placeholder="Enter price">
+          </div>
+          <div style="align-self:flex-end"><button class="btn" type="button" id="bb-set-price">Set price (needs OTP)</button></div>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn success" id="bb-accept-best" type="button">Accept best offer (needs OTP)</button>
+          <button class="btn secondary" id="bb-book-storage" type="button">Book storage</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TASK BOARD ─────────────────────────────────────────── -->
+    <section id="s-tasks" hidden>
+      <h1 class="page-title">Task board</h1>
+      <p class="page-subtitle">Sowing, irrigation, fertiliser, labour and harvest per contract.</p>
+      <div class="filter-row">
+        <div class="field"><label for="task-contract">Contract</label><select id="task-contract"></select></div>
+        <div class="row" style="margin:0">
+          <button class="btn" id="add-task-btn" type="button">+ Add task</button>
+        </div>
+      </div>
+      <div id="task-list"></div>
+
+      <!-- Add task form -->
+      <div id="add-task-form" hidden style="margin-top:18px;padding:18px;border:1px solid var(--rule);background:var(--sheet);max-width:480px">
+        <h3 style="font-size:17px;margin-bottom:14px">Add a task</h3>
+        <div class="field"><label for="new-task-label">Task</label><input id="new-task-label" placeholder="e.g. Second irrigation"></div>
+        <div class="field"><label for="new-task-due">Due date</label><input id="new-task-due" type="date"></div>
+        <div class="row" style="margin-top:14px">
+          <button class="btn" id="save-task-btn" type="button">Save task</button>
+          <button class="btn secondary" id="cancel-task-btn" type="button">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── COST LOG ──────────────────────────────────────────── -->
+    <section id="s-costs" hidden>
+      <h1 class="page-title">Cost log</h1>
+      <p class="page-subtitle">Inputs, labour and transport per contract.</p>
+      <div class="filter-row">
+        <div class="field"><label for="cost-contract">Contract</label><select id="cost-contract"></select></div>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Type</th><th class="num">Amount</th><th>Date</th><th></th></tr></thead>
+          <tbody id="cost-table-body"></tbody>
+        </table>
+      </div>
+      <div class="cost-total" id="cost-total"></div>
+
+      <div style="margin-top:20px;padding:18px;border:1px solid var(--rule);background:var(--sheet);max-width:400px">
+        <h3 style="font-size:17px;margin-bottom:14px">Add a cost</h3>
+        <div class="field">
+          <label for="cost-type">Type</label>
+          <select id="cost-type"><option>Seeds</option><option>Fertiliser</option><option>Labour</option><option>Transport</option><option>Equipment</option><option>Other</option></select>
+        </div>
+        <div class="field"><label for="cost-amount">Amount (₹)</label><input id="cost-amount" inputmode="numeric" placeholder="0"></div>
+        <button class="btn" style="margin-top:14px" id="add-cost-btn" type="button">Add cost</button>
+      </div>
+    </section>
+
+    <!-- ── ISSUE FLAG ────────────────────────────────────────── -->
+    <section id="s-issues" hidden>
+      <h1 class="page-title">Issue flag</h1>
+      <p class="page-subtitle">Report crop damage or a dispute. It goes straight to head office with your location.</p>
+      <div style="max-width:520px">
+        <div class="filter-row">
+          <div class="field"><label for="issue-contract">Contract</label><select id="issue-contract"></select></div>
+        </div>
+        <div class="field"><label for="issue-desc">Description</label><textarea id="issue-desc" rows="4" placeholder="Describe the problem…"></textarea></div>
+        <div class="field">
+          <label for="issue-photo">Photo (optional)</label>
+          <input type="file" id="issue-photo" accept="image/*" style="min-height:auto;padding:8px 0;border:none;font-size:15px">
+        </div>
+        <div class="field">
+          <label for="issue-loc">Location (map pin)</label>
+          <input id="issue-loc" placeholder="e.g. 20.2018, 73.8370">
+        </div>
+        <button class="btn lg" style="margin-top:18px" id="submit-issue-btn" type="button">Report issue to head office</button>
+        <p class="field-msg ok" id="issue-msg" aria-live="polite"></p>
+      </div>
+
+      <h2 class="section-title">Open issues</h2>
+      <div class="tablewrap">
+        <table><thead><tr><th>Contract</th><th>Description</th><th>Status</th><th>Raised</th></tr></thead>
+        <tbody id="issues-table"></tbody></table>
+      </div>
+    </section>
+
+    <!-- ── FARMER DIRECTORY ──────────────────────────────────── -->
+    <section id="s-directory" hidden>
+      <h1 class="page-title">Farmer directory</h1>
+      <p class="page-subtitle">Contact details and contract status for every farmer in the block.</p>
+      <div class="filter-row">
+        <div class="field" style="flex:2"><label for="dir-search">Search by name or phone</label><input id="dir-search" placeholder="Type to filter…"></div>
+      </div>
+      <div id="farmer-cards"></div>
+    </section>
+
+    <!-- ── BLOCK VS PLAN ─────────────────────────────────────── -->
+    <section id="s-plan" hidden>
+      <h1 class="page-title">Block vs plan</h1>
+      <p class="page-subtitle">How the block is doing against its plan.</p>
+      <div class="stats-row" id="plan-stats"></div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Village</th><th class="num">Contracts</th><th class="num">Acres</th><th>Stages</th><th class="num">Total cost</th><th class="num">Payments received</th></tr></thead>
+          <tbody id="plan-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Modals (OTP is created by components.js) -->
+<div id="toast-area"></div>
+
+<!-- Storage booking modal -->
+<div class="modal-overlay" id="storage-modal" hidden>
+  <div class="modal">
+    <h3>Book storage</h3>
+    <p class="modal-sub">Select a warehouse for this lot.</p>
+    <div class="field"><label for="warehouse-select">Warehouse</label><select id="warehouse-select"></select></div>
+    <p id="warehouse-fill" class="hint" style="margin-top:8px"></p>
+    <div class="modal-actions">
+      <button class="btn" id="confirm-storage">Confirm booking</button>
+      <button class="btn secondary" id="cancel-storage">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script src="market.js"></script>
+<script src="components.js"></script>
+<script src="geo.js"></script>
+<script>
+var session = Auth.require(['block']);
+document.getElementById('tb-name').textContent = session.name;
+
+/* ── Section switching ──────────────────────────────────────── */
+function showSection(name) {
+  document.querySelectorAll('[id^="s-"]').forEach(function(el){ el.hidden = true; });
+  document.getElementById('s-'+name).hidden = false;
+  document.querySelectorAll('.sidenav-item').forEach(function(btn){
+    btn.classList.toggle('active', btn.dataset.section === name);
+  });
+  if (name === 'map')       initMap();
+  if (name === 'bidboard')  initBidBoard();
+  if (name === 'tasks')     initTasks();
+  if (name === 'costs')     initCosts();
+  if (name === 'issues')    initIssues();
+  if (name === 'directory') initDirectory();
+  if (name === 'plan')      initPlan();
+}
+document.querySelectorAll('.sidenav-item').forEach(function(btn){
+  btn.addEventListener('click', function(){ showSection(btn.dataset.section); });
+});
+
+/* == MAP (Cadastral Revenue Map) == */
+var mapInited = false, leafletMap = null;
+var CONTRACT_COLORS = { notsown:'#C9D0DE', growing:'#B7D29F', harvest:'#F0C860', bids:'#AEB8E4', issue:'#DCADCB', closed:'#A3B89A', paid:'#7DAA6C' };
+var STAGE_PASTEL = { notsown:'#E2E8F0', growing:'#DCFCE7', harvest:'#FEF08A', bids:'#E0E7FF', issue:'#FCE7F3', closed:'#F1F5F9' };
+
+var activeMapMode = 'satellite'; // 'satellite' (user ref image 1) or 'vector' (user ref image 2 & 3)
+var satelliteTileLayer = null;
+var vectorBackdropLayer = null;
+var cartoTileLayer = null;
+
+var selectedGat = "125";
+var showCropStageTint = true;
+var highlightLayer = null;
+var parcelLayers = {};
+var measureMode = false;
+var measurePoints = [];
+var measureLayers = [];
+
+function initMap() {
+  if (mapInited) return;
+  mapInited = true;
+
+  var cad = window.DINDORI_CADASTRAL;
+  var mapCenter = cad ? cad.center : [20.2046, 73.8360];
+  var mapEl = document.getElementById('leaflet-map');
+
+  if (typeof L === 'undefined') {
+    mapEl.innerHTML = '<p style="padding:20px;color:var(--ink-soft)">Leaflet.js not loaded. Map requires an internet connection.</p>';
+    return;
+  }
+
+  leafletMap = L.map(mapEl, {
+    zoomControl: true,
+    attributionControl: false
+  }).setView(mapCenter, 16);
+
+  // 1. Satellite Aerial Photography Layer (Esri World Imagery) - matches user reference screenshot 1
+  satelliteTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19
+  });
+
+  // 2. Light Base Tile Layer for paper cadastral view
+  cartoTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+    subdomains: 'abcd'
+  });
+
+  // 3. Cadastral Vector Backdrop Polygon for the authentic pale ivory background (#FAF7D4)
+  var villageBounds = [
+    [20.1920, 73.8220], [20.1920, 73.8490],
+    [20.2160, 73.8490], [20.2160, 73.8220]
+  ];
+  vectorBackdropLayer = L.polygon(villageBounds, {
+    color: 'transparent',
+    fillColor: '#FAF7D4',
+    fillOpacity: 0.96,
+    interactive: false
+  });
+
+  // Default to High-Resolution Satellite Aerial Photography (matching user reference image 1)
+  satelliteTileLayer.addTo(leafletMap);
+
+  renderCadastralMap();
+  setupCadastralControls();
+  renderContractsTable();
+
+  // Default select Gat 125 with bold red highlight 
+  setTimeout(function() {
+    selectCadastralParcel("125");
+  }, 100);
+}
+
+function setMapMode(mode) {
+  activeMapMode = mode;
+  var isSat = (mode === 'satellite');
+
+  // Update pills in banner
+  var btnSat = document.getElementById('btn-mode-sat');
+  var btnVec = document.getElementById('btn-mode-vec');
+  if (btnSat) btnSat.classList.toggle('active', isSat);
+  if (btnVec) btnVec.classList.toggle('active', !isSat);
+
+  // Switch base layers
+  if (leafletMap) {
+    if (isSat) {
+      if (leafletMap.hasLayer(vectorBackdropLayer)) leafletMap.removeLayer(vectorBackdropLayer);
+      if (leafletMap.hasLayer(cartoTileLayer)) leafletMap.removeLayer(cartoTileLayer);
+      if (!leafletMap.hasLayer(satelliteTileLayer)) satelliteTileLayer.addTo(leafletMap);
+    } else {
+      if (leafletMap.hasLayer(satelliteTileLayer)) leafletMap.removeLayer(satelliteTileLayer);
+      if (!leafletMap.hasLayer(cartoTileLayer)) cartoTileLayer.addTo(leafletMap);
+      if (!leafletMap.hasLayer(vectorBackdropLayer)) vectorBackdropLayer.addTo(leafletMap);
+    }
+  }
+
+  // Refresh styling of parcels, road, and numbers
+  refreshParcelStyles();
+
+  BhComp.toast(isSat ? 'Switched to Satellite Aerial view' : 'Switched to Cadastral Vector view');
+}
+
+function refreshParcelStyles() {
+  var isSat = (activeMapMode === 'satellite');
+  var cad = window.DINDORI_CADASTRAL;
+  if (!cad) return;
+
+  cad.parcels.forEach(function(p) {
+    var pl = parcelLayers[p.gat];
+    if (!pl) return;
+
+    var isSel = (p.gat === selectedGat);
+    var fillColor = showCropStageTint ? (STAGE_PASTEL[p.stage] || '#FEFCE8') : '#FEFCE8';
+
+    pl.poly.setStyle({
+      color: isSat ? '#000000' : '#262626',
+      weight: isSat ? 2 : 1.8,
+      fillColor: fillColor,
+      fillOpacity: isSat ? (showCropStageTint ? 0.22 : 0.04) : 0.85
+    });
+
+    if (pl.marker) {
+      var labelClass = 'cadastral-sy-label ' + (isSat ? 'satellite-mode' : 'vector-mode') + (isSel ? ' active-label' : '');
+      var syIcon = L.divIcon({
+        className: labelClass,
+        html: pl.data.gat,
+        iconSize: [46, 24],
+        iconAnchor: [23, 12]
+      });
+      pl.marker.setIcon(syIcon);
+    }
+  });
+
+  if (selectedGat) {
+    selectCadastralParcel(selectedGat, true);
+  }
+}
+
+function renderCadastralMap() {
+  var cad = window.DINDORI_CADASTRAL;
+  if (!cad || !leafletMap) return;
+
+  var isSat = (activeMapMode === 'satellite');
+
+  // 1. Village Road with Yellow route badge 69
+  if (cad.road) {
+    var roadPoly = L.polygon(cad.road.coords, {
+      color: '#4B5563',
+      weight: 1.6,
+      fillColor: '#9CA3AF',
+      fillOpacity: 0.90
+    }).addTo(leafletMap);
+    roadPoly.bindTooltip('<b>' + cad.road.name + '</b><br>Village Cart Track / Shetrasta', { sticky: true });
+    
+    // Label with yellow route badge 69
+    var roadIcon = L.divIcon({
+      className: 'cadastral-feature-label road-label',
+      html: '<div style="display:flex;align-items:center;gap:4px"><span class="road-badge-icon">69</span><span>ROAD · Village Track</span></div>',
+      iconSize: [140, 24],
+      iconAnchor: [70, 12]
+    });
+    L.marker(cad.road.labelCoords, { icon: roadIcon, interactive: false }).addTo(leafletMap);
+  }
+
+  // 2. Water Stream / Nala
+  if (cad.stream) {
+    var streamPoly = L.polygon(cad.stream.coords, {
+      color: '#004DB3',
+      weight: 2,
+      fillColor: '#0066E0',
+      fillOpacity: 0.95
+    }).addTo(leafletMap);
+    streamPoly.bindTooltip('<b>' + cad.stream.name + '</b><br>Natural Irrigation & Drainage Channel', { sticky: true });
+
+    var waterIcon = L.divIcon({
+      className: 'cadastral-feature-label water-label',
+      html: 'Water / NALA',
+      iconSize: [90, 20],
+      iconAnchor: [45, 10]
+    });
+    L.marker(cad.stream.labelCoords, { icon: waterIcon, interactive: false }).addTo(leafletMap);
+  }
+
+  // 3. Gaothan Settlement
+  if (cad.settlement) {
+    var settlementPoly = L.polygon(cad.settlement.coords, {
+      color: '#00E676',
+      weight: 3,
+      fillColor: '#ECFDF5',
+      fillOpacity: isSat ? 0.18 : 0.40
+    }).addTo(leafletMap);
+    settlementPoly.bindTooltip('<b>' + cad.settlement.name + '</b><br>Village Gaothan & Habitation Area', { sticky: true });
+
+    var settIcon = L.divIcon({
+      className: 'cadastral-feature-label settlement-label',
+      html: 'SETTLEMENT / Gaothan',
+      iconSize: [150, 24],
+      iconAnchor: [75, 12]
+    });
+    L.marker(cad.settlement.labelCoords, { icon: settIcon, interactive: false }).addTo(leafletMap);
+  }
+
+  // 4. Farm Pond / Talav
+  if (cad.pond) {
+    var pondPoly = L.polygon(cad.pond.coords, {
+      color: '#0284C7',
+      weight: 1.6,
+      fillColor: '#38BDF8',
+      fillOpacity: 0.88,
+      dashArray: '4, 3'
+    }).addTo(leafletMap);
+    pondPoly.bindTooltip('<b>' + cad.pond.name + '</b><br>Community Farm Irrigation Pond', { sticky: true });
+
+    var pondIcon = L.divIcon({
+      className: 'cadastral-feature-label pond-label',
+      html: 'Farm / POND',
+      iconSize: [80, 18],
+      iconAnchor: [40, 9]
+    });
+    L.marker(cad.pond.labelCoords, { icon: pondIcon, interactive: false }).addTo(leafletMap);
+  }
+
+  // 5. Locality Marker ("Navalihala" in user reference screenshot)
+  if (cad.locality) {
+    var locIcon = L.divIcon({
+      className: 'locality-label-box',
+      html: '📍 ' + cad.locality.name,
+      iconSize: [100, 22],
+      iconAnchor: [50, 11]
+    });
+    L.marker(cad.locality.coords, { icon: locIcon, interactive: false }).addTo(leafletMap);
+  }
+
+  // 6. Cadastral Survey Land Parcels
+  cad.parcels.forEach(function(p) {
+    var fillColor = showCropStageTint ? (STAGE_PASTEL[p.stage] || '#FEFCE8') : '#FEFCE8';
+    var isSel = (p.gat === selectedGat);
+
+    var poly = L.polygon(p.coords, {
+      color: isSat ? '#000000' : '#262626',
+      weight: isSat ? 2 : 1.8,
+      fillColor: fillColor,
+      fillOpacity: isSat ? (showCropStageTint ? 0.22 : 0.04) : 0.85
+    }).addTo(leafletMap);
+
+    // Save layer reference
+    parcelLayers[p.gat] = { poly: poly, data: p };
+    if (p.aliasGats) {
+      p.aliasGats.forEach(function(ag) { parcelLayers[ag] = { poly: poly, data: p }; });
+    }
+
+    // Centered Survey Number permanent label
+    var labelClass = 'cadastral-sy-label ' + (isSat ? 'satellite-mode' : 'vector-mode') + (isSel ? ' active-label' : '');
+    var syIcon = L.divIcon({
+      className: labelClass,
+      html: p.gat,
+      iconSize: [46, 24],
+      iconAnchor: [23, 12]
+    });
+    var marker = L.marker(p.centroid, { icon: syIcon, interactive: false }).addTo(leafletMap);
+    parcelLayers[p.gat].marker = marker;
+
+    // Sub-division hissa lines if present (rendered as authentic white subdivision strips)
+    if (p.sublines) {
+      p.sublines.forEach(function(sl) {
+        L.polyline(sl, {
+          color: isSat ? '#E5E7EB' : '#FFFFFF',
+          weight: 2.2,
+          opacity: 0.9,
+          dashArray: isSat ? '3, 4' : null,
+          interactive: false
+        }).addTo(leafletMap);
+      });
+    }
+
+    // Hover tooltip
+    var ttContent = '<b>Gat ' + p.gat + '</b> (Hissa ' + (p.hissa || '1') + ')<br>' +
+      p.farmer + '<br>' +
+      p.crop + ' · ' + p.area + ' ' + (p.unit || 'Acres') + '<br>' +
+      '<span style="font-size:11px;color:#4B5563">' + (p.water || 'Well') + '</span>';
+    poly.bindTooltip(ttContent, { sticky: true, className: 'leaflet-bhowanee-tip' });
+
+    // Click handler
+    poly.on('click', function(e) {
+      if (measureMode) {
+        handleMeasureClick(e.latlng);
+        return;
+      }
+      selectCadastralParcel(p.gat);
+    });
+  });
+
+  // Map background click for measurement tool
+  leafletMap.on('click', function(e) {
+    if (measureMode) {
+      handleMeasureClick(e.latlng);
+    }
+  });
+}
+
+function selectCadastralParcel(gatStr, skipPanel) {
+  var cad = window.DINDORI_CADASTRAL;
+  if (!cad) return;
+
+  var p = cad.parcels.find(function(item) {
+    return item.gat === gatStr || (item.aliasGats && item.aliasGats.indexOf(gatStr) >= 0);
+  });
+  if (!p) return;
+
+  selectedGat = p.gat;
+  var isSat = (activeMapMode === 'satellite');
+
+  // Remove previous highlight
+  if (highlightLayer && leafletMap) {
+    leafletMap.removeLayer(highlightLayer);
+  }
+
+  // Draw BOLD RED highlight polygon (matching parcel 125 bold red highlight)
+  highlightLayer = L.polygon(p.coords, {
+    color: '#FF1744',
+    weight: 4,
+    opacity: 1,
+    fillColor: '#FF1744',
+    fillOpacity: isSat ? 0.12 : 0.35,
+    interactive: false
+  }).addTo(leafletMap);
+
+  // Update label styles
+  Object.keys(parcelLayers).forEach(function(g) {
+    var pl = parcelLayers[g];
+    if (pl && pl.marker) {
+      var isActive = (pl.data.gat === p.gat);
+      var labelClass = 'cadastral-sy-label ' + (isSat ? 'satellite-mode' : 'vector-mode') + (isActive ? ' active-label' : '');
+      var icon = L.divIcon({
+        className: labelClass,
+        html: pl.data.gat,
+        iconSize: [46, 24],
+        iconAnchor: [23, 12]
+      });
+      pl.marker.setIcon(icon);
+    }
+  });
+
+  // Update quick chips
+  document.querySelectorAll('.cmap-chip').forEach(function(chip) {
+    chip.classList.toggle('active', chip.dataset.gat === p.gat);
+  });
+
+  // Update search input value
+  var searchInput = document.getElementById('cmap-gat-search');
+  if (searchInput) searchInput.value = 'Gat ' + p.gat + ' — ' + p.farmer;
+
+  // Update breadcrumb trail
+  document.getElementById('map-trail').innerHTML = '<b>Nashik</b> <span>/</span> <b>Dindori</b> <span>/</span> <b>Pimpalgaon Baswant</b> <span>/</span> <b style="color:#D32F2F">Gat ' + p.gat + ' (' + p.farmer + ')</b>';
+
+  // Open & populate Contract / 7/12 panel
+  if (!skipPanel) {
+    openCadastralPanel(p);
+  }
+}
+
+/* ── Cadastral Land Record & Contract Panel ─────────────────────── */
+var activeLotId = null;
+var currentCadastralParcel = null;
+var activeAgriTab = 'contract';
+
+function updateCadastralPanelView() {
+  var p = currentCadastralParcel;
+  if (!p) return;
+
+  var c = p.contractId ? BD.getContract(p.contractId) : null;
+  if (!c) {
+    var contracts = BD.getContracts();
+    c = contracts.find(function (con) { return con.gat === p.gat || (p.aliasGats && p.aliasGats.indexOf(con.gat) >= 0); });
+  }
+
+  var pane = document.getElementById('agri-tab-pane');
+  var panelActions = document.getElementById('panel-actions');
+  var panelBB = document.getElementById('panel-bid-board');
+  if (!pane) return;
+
+  var agriProfile = BD.getAgriProfile(p.gat, p);
+
+  if (activeAgriTab === 'soil') {
+    pane.innerHTML = BhComp.soilAnalysisHTML(agriProfile.soil);
+    if (panelActions) panelActions.style.display = 'none';
+    if (panelBB) panelBB.style.display = 'none';
+  } else if (activeAgriTab === 'climate') {
+    pane.innerHTML = BhComp.climateHTML(agriProfile.climate);
+    if (panelActions) panelActions.style.display = 'none';
+    if (panelBB) panelBB.style.display = 'none';
+  } else if (activeAgriTab === 'cycles') {
+    pane.innerHTML = BhComp.cropCyclesHTML(agriProfile.cropCycles);
+    if (panelActions) panelActions.style.display = 'none';
+    if (panelBB) panelBB.style.display = 'none';
+  } else {
+    // 'contract' tab (default view)
+    if (panelActions) panelActions.style.display = 'flex';
+
+    if (c) {
+      var lots = BD.getLotsByContract(c.id);
+      var bids = lots.length ? BD.getBidsByLot(lots[0].id) : [];
+      var mandiPrice = Market.getPrice(c.crop).price;
+
+      pane.innerHTML = BhComp.contractCardHTML(c, lots, bids);
+
+      // Action buttons
+      var actions = '';
+      if (!lots.length) {
+        actions += '<button class="btn sm" data-action="create-lot" data-cid="' + c.id + '">+ Create lot</button>';
+      } else {
+        activeLotId = lots[0].id;
+        actions += '<button class="btn sm" data-action="set-price" data-cid="' + c.id + '">Set price (OTP)</button>';
+        if (lots[0].status === 'open') actions += '<button class="btn sm success" data-action="accept-bid" data-cid="' + c.id + '">Accept best bid</button>';
+        actions += '<button class="btn sm secondary" data-action="book-storage" data-cid="' + c.id + '">Book storage</button>';
+        actions += '<button class="btn sm secondary" data-action="log-harvest" data-cid="' + c.id + '">Log harvest</button>';
+        actions += '<button class="btn sm secondary" data-action="record-payment" data-cid="' + c.id + '">Record payment</button>';
+      }
+      if (panelActions) panelActions.innerHTML = actions;
+
+      // Bid board in panel
+      if (lots.length && panelBB) {
+        panelBB.style.display = 'block';
+        var svg = document.getElementById('panel-bb-svg');
+        var res = BhComp.renderBidBoard(svg, { farmerPrice: lots[0].farmerPrice, mandiPrice: mandiPrice, bids: bids, width: 480, height: 260 });
+        var best = BD.getHighestBid(lots[0].id);
+        document.getElementById('panel-bb-say').textContent = Market.bidBoardNote(lots[0].farmerPrice, best ? best.price : 0, c.crop);
+      } else if (panelBB) {
+        panelBB.style.display = 'none';
+      }
+    } else {
+      // Neighboring parcel (without active contract)
+      pane.innerHTML = '<div style="padding:14px;border:1px solid var(--rule);background:#fafafa;margin-top:10px">' +
+        '<h4 style="font-size:15px;margin-bottom:6px">Standing Crop: ' + (p.crop || 'Standing Crop') + '</h4>' +
+        '<p style="font-size:13px;color:var(--ink-soft);line-height:1.4">This Gat is in the Dindori Cadastral Registry. No active contract currently bound for this rabi cycle.</p>' +
+        '<div style="margin-top:12px;display:flex;gap:8px">' +
+          '<button class="btn sm" id="btn-enroll-parcel">+ Enlist in Bhowanee Contract</button>' +
+        '</div>' +
+      '</div>';
+
+      if (panelActions) {
+        panelActions.innerHTML = '';
+        panelActions.style.display = 'none';
+      }
+      if (panelBB) panelBB.style.display = 'none';
+
+      var enrollBtn = document.getElementById('btn-enroll-parcel');
+      if (enrollBtn) {
+        enrollBtn.addEventListener('click', function () {
+          var phone = prompt('Enter farmer phone number for OTP:', '9822001122');
+          if (phone) {
+            BhComp.toast('Enrollment request initiated for Gat ' + p.gat + ' (' + p.farmer + ').', 'ok');
+          }
+        });
+      }
+    }
+  }
+}
+
+function openCadastralPanel(p) {
+  currentCadastralParcel = p;
+
+  var panelContent = document.getElementById('panel-content');
+  var panelTitle = document.getElementById('panel-title');
+
+  panelTitle.innerHTML = 'Gat ' + p.gat + ' · <span style="font-size:14px;color:var(--ink-soft)">Hissa ' + (p.hissa || '1') + '</span>';
+
+  // 1. Authentic 7/12 Extract Header Card
+  var satbaraHTML = '<div class="satbara-card">' +
+    '<div class="satbara-header">' +
+      '<span>Land Record Extract (7/12)</span>' +
+      '<span class="badge" style="background:#FEF3C7;color:#92400E;font-size:11px">Verified Khatedar</span>' +
+    '</div>' +
+    '<div class="satbara-grid">' +
+      '<div class="satbara-item"><label>Khatedar (Farmer):</label><span>' + p.farmer + '</span></div>' +
+      '<div class="satbara-item"><label>Survey No:</label><span>' + p.gat + ' / ' + (p.hissa || '1') + '</span></div>' +
+      '<div class="satbara-item"><label>Total Area:</label><span>' + p.area + ' ' + (p.unit || 'Acres') + '</span></div>' +
+      '<div class="satbara-item"><label>Soil Type:</label><span>' + (p.soil || 'Medium Black') + '</span></div>' +
+      '<div class="satbara-item"><label>Water Source:</label><span>' + (p.water || 'Borewell') + '</span></div>' +
+      '<div class="satbara-item"><label>Village / Taluka:</label><span>Pimpalgaon Baswant, Niphad</span></div>' +
+    '</div>' +
+  '</div>';
+
+  panelContent.innerHTML = satbaraHTML + BhComp.agriTabBarHTML(activeAgriTab) + '<div id="agri-tab-pane"></div>';
+
+  var tabBtns = panelContent.querySelectorAll('.agri-tab-btn');
+  tabBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      activeAgriTab = btn.dataset.agritab;
+      tabBtns.forEach(function (b) { b.classList.toggle('active', b === btn); });
+      updateCadastralPanelView();
+    });
+  });
+
+  updateCadastralPanelView();
+
+  document.getElementById('contract-panel').classList.add('open');
+}
+
+function setupCadastralControls() {
+  // 1. Layer switcher pills (Satellite vs Cadastral Vector)
+  var btnSat = document.getElementById('btn-mode-sat');
+  var btnVec = document.getElementById('btn-mode-vec');
+  if (btnSat) btnSat.addEventListener('click', function() { setMapMode('satellite'); });
+  if (btnVec) btnVec.addEventListener('click', function() { setMapMode('vector'); });
+
+  // 2. Floating Purple Layer Button (matching user reference screenshot)
+  var floatingBtn = document.getElementById('cmap-floating-layer-btn');
+  if (floatingBtn) {
+    floatingBtn.addEventListener('click', function() {
+      setMapMode(activeMapMode === 'satellite' ? 'vector' : 'satellite');
+    });
+  }
+
+  // 3. Search Bar
+  var searchInput = document.getElementById('cmap-gat-search');
+  var searchBtn = document.getElementById('cmap-search-btn');
+
+  function doSearch() {
+    var q = searchInput.value.trim().toLowerCase().replace(/gat|no|sy|\.|\s/g, '');
+    if (!q) return;
+
+    var cad = window.DINDORI_CADASTRAL;
+    var match = cad.parcels.find(function(p) {
+      return p.gat.toLowerCase() === q ||
+        (p.aliasGats && p.aliasGats.indexOf(q) >= 0) ||
+        p.farmer.toLowerCase().indexOf(q) >= 0;
+    });
+
+    if (match) {
+      selectCadastralParcel(match.gat);
+      if (leafletMap) leafletMap.setView(match.centroid, 17, { animate: true });
+      BhComp.toast('Found Gat ' + match.gat + ' (' + match.farmer + ')', 'ok');
+    } else {
+      BhComp.toast('No matching Gat found for "' + searchInput.value + '"', 'warn');
+    }
+  }
+
+  if (searchBtn) searchBtn.addEventListener('click', doSearch);
+  if (searchInput) searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doSearch();
+  });
+
+  // 4. Quick chips
+  document.querySelectorAll('.cmap-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      selectCadastralParcel(chip.dataset.gat);
+      var cad = window.DINDORI_CADASTRAL;
+      var match = cad.parcels.find(function(p) { return p.gat === chip.dataset.gat; });
+      if (match && leafletMap) leafletMap.setView(match.centroid, 17, { animate: true });
+    });
+  });
+
+  // 5. Measurement Tool Toggle
+  var measureBtn = document.getElementById('tool-measure');
+  var measureLabel = document.getElementById('measure-label');
+  if (measureBtn) {
+    measureBtn.addEventListener('click', function() {
+      measureMode = !measureMode;
+      measureBtn.classList.toggle('active', measureMode);
+      if (measureMode) {
+        measurePoints = [];
+        clearMeasureLayers();
+        measureLabel.textContent = 'Measuring… (Click 2 points)';
+        BhComp.toast('Measure tool active: click two boundary corners to measure distance.', 'ok');
+        document.getElementById('leaflet-map').style.cursor = 'crosshair';
+      } else {
+        measureLabel.textContent = 'Measurement Tools';
+        clearMeasureLayers();
+        document.getElementById('leaflet-map').style.cursor = '';
+      }
+    });
+  }
+
+  // 6. Search Sy No button in toolbar
+  var searchToolBtn = document.getElementById('tool-search');
+  if (searchToolBtn) {
+    searchToolBtn.addEventListener('click', function() {
+      if (searchInput) {
+        searchInput.focus();
+        searchInput.select();
+      }
+    });
+  }
+
+  // 7. Crop Stage Tint Toggle
+  var stageToggleBtn = document.getElementById('tool-stage-toggle');
+  var stageToggleLabel = document.getElementById('stage-toggle-label');
+  if (stageToggleBtn) {
+    stageToggleBtn.addEventListener('click', function() {
+      showCropStageTint = !showCropStageTint;
+      stageToggleLabel.textContent = 'Crop Stage Tint: ' + (showCropStageTint ? 'On' : 'Off');
+      refreshParcelStyles();
+      BhComp.toast('Crop stage tint ' + (showCropStageTint ? 'enabled' : 'disabled'), 'ok');
+    });
+  }
+
+  // 8. Reset Extent
+  var resetViewBtn = document.getElementById('tool-reset-view');
+  if (resetViewBtn) {
+    resetViewBtn.addEventListener('click', function() {
+      var cad = window.DINDORI_CADASTRAL;
+      if (leafletMap && cad) {
+        leafletMap.setView(cad.center, cad.defaultZoom, { animate: true });
+        BhComp.toast('Reset map view to Pimpalgaon Baswant', 'ok');
+      }
+    });
+  }
+}
+
+function handleMeasureClick(latlng) {
+  measurePoints.push(latlng);
+
+  var pin = L.circleMarker(latlng, {
+    radius: 5,
+    color: '#D32F2F',
+    fillColor: '#FFCDD2',
+    fillOpacity: 1,
+    weight: 2
+  }).addTo(leafletMap);
+  measureLayers.push(pin);
+
+  if (measurePoints.length === 2) {
+    var p1 = measurePoints[0], p2 = measurePoints[1];
+    var distMeters = leafletMap.distance(p1, p2);
+    var distFeet = distMeters * 3.28084;
+    var gunthaEstimate = ((distMeters * distMeters) / 101.17).toFixed(2);
+
+    var line = L.polyline([p1, p2], {
+      color: '#D32F2F',
+      weight: 2.5,
+      dashArray: '5, 5'
+    }).addTo(leafletMap);
+    measureLayers.push(line);
+
+    var mid = [(p1.lat + p2.lat) / 2, (p1.lng + p2.lng) / 2];
+    var msg = '<b>' + distMeters.toFixed(1) + ' m</b> (' + distFeet.toFixed(0) + ' ft)<br>~' + gunthaEstimate + ' Guntha span';
+    
+    var tt = L.tooltip({ permanent: true, direction: 'top', className: 'leaflet-bhowanee-tip' })
+      .setLatLng(mid)
+      .setContent(msg)
+      .addTo(leafletMap);
+    measureLayers.push(tt);
+
+    BhComp.toast('Boundary distance: ' + distMeters.toFixed(1) + ' meters', 'ok');
+    measurePoints = []; // reset for next measurement
+  }
+}
+
+function clearMeasureLayers() {
+  measureLayers.forEach(function(l) {
+    if (leafletMap) leafletMap.removeLayer(l);
+  });
+  measureLayers = [];
+  measurePoints = [];
+}
+
+function openContractPanel(contractId) {
+  var c = BD.getContract(contractId);
+  if (!c) return;
+  selectCadastralParcel(c.gat);
+}
+
+document.getElementById('panel-close').addEventListener('click', function(){
+  document.getElementById('contract-panel').classList.remove('open');
+});
+
+document.getElementById('panel-actions').addEventListener('click', function(e){
+  var btn = e.target.closest('[data-action]'); if (!btn) return;
+  var action = btn.dataset.action, cid = btn.dataset.cid;
+  var c = BD.getContract(cid);
+
+  if (action === 'create-lot') {
+    var grade = prompt('Grade (A/B/C):','A');
+    var qty   = parseInt(prompt('Weight in quintal:','10'),10);
+    if (grade && qty) BD.createLot(cid, grade, qty);
+
+  } else if (action === 'set-price') {
+    var price = parseInt(prompt('Enter new farmer price per quintal:','2100'),10);
+    if (price) BD.setFarmerPriceByAdmin(activeLotId, price, c.farmer.name);
+
+  } else if (action === 'accept-bid') {
+    var best = BD.getHighestBid(activeLotId);
+    if (best) BD.acceptBid(activeLotId, best.id, c.farmer.name);
+    else BhComp.toast('No bids yet.','warn');
+
+  } else if (action === 'book-storage') {
+    openStorageModal(activeLotId);
+
+  } else if (action === 'log-harvest') {
+    BD.addCost(cid, 'Labour (harvest)', 3500);
+    BhComp.toast('Harvest logged.','ok');
+
+  } else if (action === 'record-payment') {
+    var amt = parseInt(prompt('Payment amount (₹):',''),10);
+    if (amt) { BD.writeAudit('Recorded payment ₹'+amt+' for '+c.farmer.name, 'Block Administrator', c.farmer.name, 'Auto'); BhComp.toast('Payment recorded.','ok'); }
+  }
+});
+
+/* ── Map / Table toggle ──────────────────────────────────────── */
+document.querySelectorAll('[data-view]').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var v = btn.dataset.view;
+    document.querySelectorAll('[data-view]').forEach(function(b){ b.setAttribute('aria-pressed', b===btn?'true':'false'); });
+    document.getElementById('map-view').hidden   = v !== 'map';
+    document.getElementById('table-view').hidden = v !== 'table';
+    if (v === 'map' && !mapInited) initMap();
+  });
+});
+
+function renderContractsTable() {
+  var contracts = BD.getContracts();
+  var nextAction = { notsown:'Wait for sowing date', growing:'Schedule irrigation', harvest:'Create lot and list', bids:'Monitor bids', issue:'Resolve issue', closed:'Arrange pickup', paid:'Archive' };
+  document.getElementById('contracts-table-body').innerHTML = contracts.map(function(c){
+    return '<tr><td><b>'+c.gat+'</b></td><td>'+c.village+'</td><td>'+c.farmer.name+'</td><td>'+c.crop+'</td><td>'+c.area+' ac</td><td>'+BhComp.stageChip(c.stage)+'</td><td style="font-size:13px;color:var(--ink-soft)">'+nextAction[c.stage]+'</td><td><button class="btn sm secondary" onclick="openContractPanel(\''+c.id+'\')">Open</button></td></tr>';
+  }).join('');
+}
+
+/* ── BID BOARD ────────────────────────────────────────────────── */
+function initBidBoard() {
+  var lots = BD.getOpenLots();
+  var sel = document.getElementById('bb-lot-select');
+  sel.innerHTML = lots.map(function(l){
+    var c = BD.getContract(l.contractId);
+    return '<option value="'+l.id+'">'+(c?'Gat '+c.gat+' · '+c.crop:l.id)+' — '+(l.farmerPrice?'₹'+l.farmerPrice:'No price set')+'</option>';
+  }).join('');
+  if (!lots.length) sel.innerHTML = '<option>No open lots</option>';
+  renderMainBidBoard();
+}
+
+sel_change: {
+  var bbSel = document.getElementById('bb-lot-select');
+  if (bbSel) bbSel.addEventListener('change', renderMainBidBoard);
+}
+
+function renderMainBidBoard() {
+  var lotId = document.getElementById('bb-lot-select').value;
+  var lot   = BD.getLot(lotId);
+  var bids  = lot ? BD.getBidsByLot(lotId) : [];
+  var c     = lot ? BD.getContract(lot.contractId) : null;
+  var mandiP = c ? Market.getPrice(c.crop).price : 1880;
+  BhComp.renderBidBoard(document.getElementById('bb-main-svg'), { farmerPrice: lot ? lot.farmerPrice : 0, mandiPrice: mandiP, bids: bids });
+  var best = lot ? BD.getHighestBid(lotId) : null;
+  document.getElementById('bb-main-say').textContent = Market.bidBoardNote(lot ? lot.farmerPrice : 0, best ? best.price : 0, c ? c.crop : 'Onion');
+}
+
+document.getElementById('bb-lot-select').addEventListener('change', renderMainBidBoard);
+
+document.getElementById('bb-set-price').addEventListener('click', function(){
+  var lotId = document.getElementById('bb-lot-select').value;
+  var lot = BD.getLot(lotId);
+  var c = lot ? BD.getContract(lot.contractId) : null;
+  if (!c) return;
+  var price = parseInt(document.getElementById('bb-new-price').value.replace(/\D/g,''),10);
+  if (!price) { BhComp.toast('Enter a price first.','warn'); return; }
+  BD.setFarmerPriceByAdmin(lotId, price, c.farmer.name);
+});
+
+document.getElementById('bb-accept-best').addEventListener('click', function(){
+  var lotId = document.getElementById('bb-lot-select').value;
+  var lot = BD.getLot(lotId);
+  var c = lot ? BD.getContract(lot.contractId) : null;
+  var best = lot ? BD.getHighestBid(lotId) : null;
+  if (!best) { BhComp.toast('No bids yet.','warn'); return; }
+  BD.acceptBid(lotId, best.id, c ? c.farmer.name : '—');
+});
+
+document.getElementById('bb-book-storage').addEventListener('click', function(){
+  var lotId = document.getElementById('bb-lot-select').value;
+  openStorageModal(lotId);
+});
+
+BD.on('priceChanged', function(){ if (!document.getElementById('s-bidboard').hidden) renderMainBidBoard(); });
+BD.on('bidPlaced',    function(){ if (!document.getElementById('s-bidboard').hidden) renderMainBidBoard(); });
+BD.on('bidAccepted',  function(){ if (!document.getElementById('s-bidboard').hidden) renderMainBidBoard(); });
+
+/* ── STORAGE MODAL ─────────────────────────────────────────────── */
+var storageLotId = null;
+function openStorageModal(lotId) {
+  storageLotId = lotId;
+  var whs = BD.getWarehouses();
+  document.getElementById('warehouse-select').innerHTML = whs.map(function(w){
+    return '<option value="'+w.id+'">'+w.name+' ('+Math.round(w.usedQt/w.capacityQt*100)+'% full)</option>';
+  }).join('');
+  updateWarehouseFill();
+  document.getElementById('storage-modal').removeAttribute('hidden');
+}
+function updateWarehouseFill() {
+  var wid = document.getElementById('warehouse-select').value;
+  var whs = BD.getWarehouses();
+  var w = whs.find(function(x){ return x.id === wid; });
+  if (w) document.getElementById('warehouse-fill').textContent = 'Available: '+(w.capacityQt-w.usedQt)+' qt of '+w.capacityQt+' qt capacity.';
+}
+document.getElementById('warehouse-select').addEventListener('change', updateWarehouseFill);
+document.getElementById('confirm-storage').addEventListener('click', function(){
+  var wid = document.getElementById('warehouse-select').value;
+  BhComp.toast('Storage booked at '+BD.getWarehouses().find(function(w){return w.id===wid;}).name+'.','ok');
+  document.getElementById('storage-modal').setAttribute('hidden','');
+});
+document.getElementById('cancel-storage').addEventListener('click', function(){
+  document.getElementById('storage-modal').setAttribute('hidden','');
+});
+
+/* ── TASKS ─────────────────────────────────────────────────────── */
+function initTasks() {
+  var contracts = BD.getContracts();
+  var sel = document.getElementById('task-contract');
+  sel.innerHTML = contracts.map(function(c){ return '<option value="'+c.id+'">Gat '+c.gat+' — '+c.farmer.name+' ('+c.crop+')</option>'; }).join('');
+  renderTaskList();
+}
+document.getElementById('task-contract').addEventListener('change', renderTaskList);
+
+function renderTaskList() {
+  var cid = document.getElementById('task-contract').value;
+  var c = BD.getContract(cid);
+  if (!c) { document.getElementById('task-list').innerHTML = ''; return; }
+  var html = '<div style="margin-top:4px">';
+  c.tasks.forEach(function(t){
+    html += '<div class="task-item'+(t.done?' done':'')+'"><input type="checkbox" id="task-'+t.id+'"'+(t.done?' checked':'')+' data-tid="'+t.id+'"><label for="task-'+t.id+'">'+t.label+' <span style="color:var(--ink-soft);font-size:13px">· Due '+t.due+'</span></label></div>';
+  });
+  html += '</div>';
+  document.getElementById('task-list').innerHTML = html;
+
+  document.querySelectorAll('[data-tid]').forEach(function(cb){
+    cb.addEventListener('change', function(){ BD.toggleTask(cb.dataset.tid); renderTaskList(); });
+  });
+}
+
+document.getElementById('add-task-btn').addEventListener('click', function(){
+  document.getElementById('add-task-form').hidden = false;
+});
+document.getElementById('cancel-task-btn').addEventListener('click', function(){
+  document.getElementById('add-task-form').hidden = true;
+});
+document.getElementById('save-task-btn').addEventListener('click', function(){
+  var cid   = document.getElementById('task-contract').value;
+  var label = document.getElementById('new-task-label').value.trim();
+  var due   = document.getElementById('new-task-due').value;
+  if (!label) { BhComp.toast('Enter a task name.','warn'); return; }
+  BD.addTask(cid, label, due || '—');
+  document.getElementById('add-task-form').hidden = true;
+  document.getElementById('new-task-label').value = '';
+  document.getElementById('new-task-due').value   = '';
+  renderTaskList();
+  BhComp.toast('Task added.','ok');
+});
+
+/* ── COSTS ─────────────────────────────────────────────────────── */
+function initCosts() {
+  var contracts = BD.getContracts();
+  ['cost-contract'].forEach(function(id){
+    var sel = document.getElementById(id);
+    sel.innerHTML = contracts.map(function(c){ return '<option value="'+c.id+'">Gat '+c.gat+' — '+c.farmer.name+' ('+c.crop+')</option>'; }).join('');
+  });
+  renderCostTable();
+}
+document.getElementById('cost-contract').addEventListener('change', renderCostTable);
+function renderCostTable() {
+  var cid = document.getElementById('cost-contract').value;
+  var c = BD.getContract(cid);
+  var costs = c ? c.costs : [];
+  var total = costs.reduce(function(s,k){ return s+k.amount; }, 0);
+  document.getElementById('cost-table-body').innerHTML = costs.map(function(k){
+    return '<tr><td>'+k.type+'</td><td class="num">'+BD.fmt(k.amount)+'</td><td>'+k.date+'</td><td><button class="btn sm secondary" style="min-height:32px;padding:0 10px">Remove</button></td></tr>';
+  }).join('');
+  document.getElementById('cost-total').textContent = 'Total: '+BD.fmt(total);
+}
+document.getElementById('add-cost-btn').addEventListener('click', function(){
+  var cid  = document.getElementById('cost-contract').value;
+  var type = document.getElementById('cost-type').value;
+  var amt  = parseInt(document.getElementById('cost-amount').value.replace(/\D/g,''),10);
+  if (!amt) { BhComp.toast('Enter an amount.','warn'); return; }
+  BD.addCost(cid, type, amt);
+  document.getElementById('cost-amount').value = '';
+  renderCostTable();
+  BhComp.toast('Cost added.','ok');
+});
+
+/* ── ISSUES ─────────────────────────────────────────────────────── */
+function initIssues() {
+  var contracts = BD.getContracts();
+  document.getElementById('issue-contract').innerHTML = contracts.map(function(c){ return '<option value="'+c.id+'">Gat '+c.gat+' — '+c.farmer.name+' ('+c.crop+')</option>'; }).join('');
+  renderIssuesTable();
+}
+function renderIssuesTable() {
+  var disputes = BD.getDisputes();
+  document.getElementById('issues-table').innerHTML = disputes.map(function(d){
+    var c = BD.getContract(d.contractId);
+    return '<tr><td>'+(c?'Gat '+c.gat+', '+c.village:'—')+'</td><td style="max-width:280px;font-size:14px">'+d.description+'</td><td>'+d.status+'</td><td style="font-size:13px;color:var(--ink-soft)">'+d.raisedAt.slice(0,10)+'</td></tr>';
+  }).join('') || '<tr><td colspan="4" style="color:var(--ink-soft)">No open issues.</td></tr>';
+}
+document.getElementById('submit-issue-btn').addEventListener('click', function(){
+  var cid  = document.getElementById('issue-contract').value;
+  var desc = document.getElementById('issue-desc').value.trim();
+  if (!desc) { BhComp.toast('Enter a description.','warn'); return; }
+  BD.flagIssue(cid, desc);
+  document.getElementById('issue-msg').textContent = 'Issue reported to head office.';
+  document.getElementById('issue-desc').value = '';
+  renderIssuesTable();
+  BhComp.toast('Issue flagged to head office.','ok');
+});
+
+/* ── DIRECTORY ───────────────────────────────────────────────── */
+function initDirectory() { renderDirectory(''); }
+document.getElementById('dir-search').addEventListener('input', function(){
+  renderDirectory(this.value.toLowerCase());
+});
+function renderDirectory(query) {
+  var contracts = BD.getContracts();
+  var html = '';
+  contracts.filter(function(c){
+    return !query || c.farmer.name.toLowerCase().includes(query) || c.farmer.phone.includes(query);
+  }).forEach(function(c){
+    html += '<div class="farmer-card"><div><b>'+c.farmer.name+'</b><br><span style="font-size:14px;color:var(--ink-soft)">'+c.farmer.phone+' · Gat '+c.gat+' · '+c.village+'</span></div><div style="display:flex;gap:8px;align-items:center">'+BhComp.stageChip(c.stage)+'<a href="tel:+91'+c.farmer.phone+'" class="btn sm secondary" style="text-decoration:none">Call</a></div></div>';
+  });
+  document.getElementById('farmer-cards').innerHTML = html || '<p style="color:var(--ink-soft)">No farmers found.</p>';
+}
+
+/* ── PLAN ─────────────────────────────────────────────────────── */
+function initPlan() {
+  var contracts = BD.getContracts();
+  var totalAcres = contracts.reduce(function(s,c){ return s+c.area; }, 0);
+  var totalCosts = contracts.reduce(function(s,c){ return s+c.costs.reduce(function(s2,k){ return s2+k.amount; }, 0); }, 0);
+  var stages = { notsown:0, growing:0, harvest:0, bids:0, issue:0, closed:0 };
+  contracts.forEach(function(c){ stages[c.stage] = (stages[c.stage]||0)+1; });
+
+  var stats = [
+    { label:'Total contracts', value: contracts.length, note: 'Across 2 villages' },
+    { label:'Total acres',     value: totalAcres.toFixed(1)+' ac', note: 'Under active lease' },
+    { label:'Bids open',       value: stages.bids||0, note: 'Lots being bid on' },
+    { label:'Issues',          value: stages.issue||0, note: 'Needs head office' },
+    { label:'Total costs',     value: BD.fmt(totalCosts), note: 'Inputs + labour' }
+  ];
+  document.getElementById('plan-stats').innerHTML = stats.map(function(s){
+    return '<div class="stat-box"><div class="stat-label">'+s.label+'</div><div class="stat-value">'+s.value+'</div><div class="stat-note">'+s.note+'</div></div>';
+  }).join('');
+
+  // Group by village
+  var byVillage = {};
+  contracts.forEach(function(c){
+    if(!byVillage[c.village]) byVillage[c.village] = [];
+    byVillage[c.village].push(c);
+  });
+
+  document.getElementById('plan-table-body').innerHTML = Object.keys(byVillage).map(function(v){
+    var cs = byVillage[v];
+    var acres = cs.reduce(function(s,c){return s+c.area;},0);
+    var cost  = cs.reduce(function(s,c){return s+c.costs.reduce(function(s2,k){return s2+k.amount;},0);},0);
+    var payments = BD.getPayments().filter(function(p){ return cs.find(function(c){ return c.id===p.contractId; }); });
+    var paid = payments.reduce(function(s,p){return s+p.amount;},0);
+    var stageBreakdown = {};
+    cs.forEach(function(c){ stageBreakdown[c.stage]=(stageBreakdown[c.stage]||0)+1; });
+    var stagePills = Object.keys(stageBreakdown).map(function(st){ return '<span class="chip '+BD.stageClass(st)+'" style="font-size:12px">'+stageBreakdown[st]+' '+BD.stageLabel(st)+'</span>'; }).join(' ');
+    return '<tr><td><b>'+v+'</b></td><td class="num">'+cs.length+'</td><td class="num">'+acres.toFixed(1)+'</td><td>'+stagePills+'</td><td class="num">'+BD.fmt(cost)+'</td><td class="num">'+BD.fmt(paid)+'</td></tr>';
+  }).join('');
+}
+
+/* ── Init ─────────────────────────────────────────────────────── */
+showSection('map');
+</script>
+</body>
+</html>
