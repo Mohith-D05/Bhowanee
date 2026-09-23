@@ -4,16 +4,13 @@ on:
   push:
     branches:
       - main
-  # Allow manual trigger from the Actions tab
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -32,13 +29,17 @@ jobs:
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
+        with:
+          # Automatically enables GitHub Pages if not already enabled
+          enablement: true
 
       - name: Upload site to GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload the entire repository root (no build step needed — pure static site)
+          # Pure static site — upload entire repo root, no build step
           path: "."
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
