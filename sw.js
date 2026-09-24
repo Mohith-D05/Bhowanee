@@ -1,11 +1,11 @@
-﻿/* ============================================================
+/* ============================================================
    Bhowanee - Service Worker (sw.js)
    Caches all app files for offline use.
    Farmer and block-admin dashboards continue working offline.
    Works at root (/) or under a subpath (e.g. /bhowanee/ on GitHub Pages).
    ============================================================ */
 
-var CACHE = 'bhowanee-v2';
+var CACHE = 'bhowanee-v3';
 
 var LOCAL_FILES = [
   'index.html',
@@ -21,7 +21,9 @@ var LOCAL_FILES = [
   'auth.js',
   'market.js',
   'components.js',
-  'geo.js'
+  'geo.js',
+  'logo.png',
+  'logo.jpg'
 ];
 
 var REMOTE_FILES = [
