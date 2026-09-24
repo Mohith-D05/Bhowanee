@@ -1,5 +1,5 @@
-/* ============================================================
-   Bhowanee — Auth (auth.js)
+﻿/* ============================================================
+   Bhowanee - Auth (auth.js)
    Mock authentication using sessionStorage.
    ============================================================ */
 
@@ -80,7 +80,7 @@
     }
   };
 
-  // Offline badge wiring — auto-runs on every page that imports auth.js
+  // Offline badge wiring - auto-runs on every page that imports auth.js
   window.addEventListener('DOMContentLoaded', function () {
     var offBadge  = document.getElementById('offline-badge');
     var syncBadge = document.getElementById('sync-badge');

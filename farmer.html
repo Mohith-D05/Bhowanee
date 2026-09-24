@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bhowanee — Farmer</title>
+<title>Bhowanee - Farmer</title>
 <meta name="description" content="Set your price, watch the offers, say yes.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600&family=Zilla+Slab:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="shared.css">
 <style>
@@ -88,7 +88,7 @@
   <div class="phone-content" id="tab-call" hidden>
     <h2 style="font-size:22px;font-family:var(--font-slab);margin-bottom:16px">Your administrator</h2>
     <p style="font-size:17px;margin-bottom:20px">Your block administrator handles your lease, storage and payments on your behalf. Every action they take on your behalf is confirmed by you first.</p>
-    <a href="tel:+919876543000" class="btn lg block" id="btn-call" style="text-decoration:none;text-align:center">📞 Call block administrator</a>
+    <a href="tel:+919876543000" class="btn lg block" id="btn-call" style="text-decoration:none;text-align:center"> Call block administrator</a>
 
     <h3 style="font-family:var(--font-slab);font-size:19px;margin:28px 0 12px">Payment messages</h3>
     <ul class="payment-list" id="payment-list"></ul>
@@ -219,7 +219,7 @@ document.getElementById('f-set').addEventListener('click', function(){
   document.getElementById('f-set').textContent = t.update;
   document.getElementById('f-changenote').textContent = t.changeNote;
   priceSet = true;
-  BhComp.toast('Price set — ₹'+Number(v).toLocaleString('en-IN'),'ok');
+  BhComp.toast('Price set - ₹'+Number(v).toLocaleString('en-IN'),'ok');
   refreshBidBoard();
 });
 
@@ -260,7 +260,7 @@ document.getElementById('btn-accept').addEventListener('click', function(){
   var lot = BD.getLot(LOT_ID);
   var farmerName = session.name;
   BD.acceptBid(LOT_ID, best.id, farmerName);
-  // acceptBid uses OTP — result comes back via event
+  // acceptBid uses OTP - result comes back via event
 });
 
 document.getElementById('btn-wait').addEventListener('click', function(){
@@ -272,7 +272,7 @@ BD.on('lotClosed', function(detail){
   if (detail.lotId !== LOT_ID) return;
   document.getElementById('closed-banner').classList.add('visible');
   document.getElementById('accept-row').style.display = 'none';
-  BhComp.toast('Lot closed — a buyer matched your price!','ok',5000);
+  BhComp.toast('Lot closed - a buyer matched your price!','ok',5000);
   refreshBidBoard();
 });
 BD.on('bidAccepted', function(){ refreshBidBoard(); });

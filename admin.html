@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bhowanee — Super Admin (Maharashtra)</title>
+<title>Bhowanee - Super Admin (Maharashtra)</title>
 <meta name="description" content="Super admin oversight dashboard for Bhowanee. See every contract across Maharashtra and intervene where stuck.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600&family=Zilla+Slab:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="shared.css">
@@ -61,6 +61,7 @@
     <button class="sidenav-item" data-section="disputes">Dispute Queue</button>
     <button class="sidenav-item" data-section="compliance">Compliance</button>
     <button class="sidenav-item" data-section="kyc">Onboarding & KYC</button>
+    <button class="sidenav-item" data-section="fleet">Fleet Status</button>
     <button class="sidenav-item" data-section="audit">Audit Trail</button>
     <button class="sidenav-item" data-section="analytics">Analytics</button>
   </nav>
@@ -72,7 +73,7 @@
     <section id="s-map">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:12px">
         <div>
-          <h1 class="page-title">Cadastral Revenue Map — Maharashtra Operations</h1>
+          <h1 class="page-title">Cadastral Revenue Map - Maharashtra Operations</h1>
           <p class="trail" id="admin-trail"><b>Maharashtra</b> <span>/</span> <b>Nashik</b> <span>/</span> <b>Dindori</b> <span>/</span> <span id="trail-level">Pimpalgaon Baswant (Gat Nakasha)</span></p>
         </div>
         <div style="display:flex;gap:10px;align-items:center">
@@ -100,8 +101,8 @@
             
             <div class="cmap-top-controls">
               <div class="cmap-layer-pills" role="group" aria-label="Base Map Layer">
-                <button class="cmap-layer-pill-btn active" id="btn-mode-sat" type="button">🛰️ Satellite Aerial</button>
-                <button class="cmap-layer-pill-btn" id="btn-mode-vec" type="button">🗺️ Cadastral Vector</button>
+                <button class="cmap-layer-pill-btn active" id="btn-mode-sat" type="button"> Satellite Aerial</button>
+                <button class="cmap-layer-pill-btn" id="btn-mode-vec" type="button"> Cadastral Vector</button>
               </div>
               <div class="cmap-badge">V-1.30</div>
             </div>
@@ -109,7 +110,7 @@
           
           <div class="cmap-search-row">
             <div class="cmap-search-input-wrap">
-              <span class="cmap-search-icon">🔍</span>
+              <span class="cmap-search-icon"></span>
               <input id="cmap-gat-search" type="text" placeholder="Click on the map or search Sy No. / Gat No. (e.g. 125, 123, 66)..." autocomplete="off">
               <button class="btn sm" id="cmap-search-btn" type="button">Search Sy No.</button>
             </div>
@@ -160,22 +161,22 @@
             <!-- Bottom Action Toolbar -->
             <div class="cmap-bottom-bar">
               <button class="cmap-tool-btn" id="tool-measure" type="button" title="Click two boundary points to measure distance">
-                <span class="tool-icon">📏</span>
+                <span class="tool-icon"></span>
                 <span id="measure-label">Measurement Tools</span>
               </button>
               <div class="tool-divider"></div>
               <button class="cmap-tool-btn" id="tool-search" type="button">
-                <span class="tool-icon">🔍</span>
+                <span class="tool-icon"></span>
                 <span>Search Sy No.</span>
               </button>
               <div class="tool-divider"></div>
               <button class="cmap-tool-btn" id="tool-stage-toggle" type="button">
-                <span class="tool-icon">🎨</span>
+                <span class="tool-icon"></span>
                 <span id="stage-toggle-label">Crop Stage Tint: On</span>
               </button>
               <div class="tool-divider"></div>
               <button class="cmap-tool-btn" id="tool-reset-view" type="button">
-                <span class="tool-icon">🎯</span>
+                <span class="tool-icon"></span>
                 <span>Reset Extent</span>
               </button>
             </div>
@@ -184,7 +185,7 @@
           <div class="admin-panel open" id="admin-panel">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
               <h3 style="font-size:18px;font-family:var(--font-slab)" id="panel-title">Contract & 7/12 Extract</h3>
-              <button class="btn sm secondary" onclick="closeAdminPanel()">✕ Close</button>
+              <button class="btn sm secondary" onclick="closeAdminPanel()"> Close</button>
             </div>
             <div id="panel-content"></div>
             <div class="action-buttons" id="panel-actions"></div>
@@ -444,7 +445,7 @@
               <td style="color:#C5221F">-1,300 Qt</td>
               <td><span class="stat-pill pill-green">87.6%</span></td>
               <td>Sugarcane, Jaggery, Soy</td>
-              <td>Balanced — maintain pace</td>
+              <td>Balanced - maintain pace</td>
             </tr>
             <tr>
               <td><b>Sambhajinagar</b></td>
@@ -821,41 +822,61 @@
           <div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px">
             <div>
               <div style="display:flex;justify-content:space-between;margin-bottom:3px">
-                <span><b>Onion (Rabi)</b> — Nashik & Pune</span>
+                <span><b>Onion (Rabi)</b> - Nashik & Pune</span>
                 <span>2,150 Acres (36.5%)</span>
               </div>
               <div style="background:#EAECEF;height:10px;width:100%"><div style="background:#B86B14;width:36.5%;height:100%"></div></div>
             </div>
             <div>
               <div style="display:flex;justify-content:space-between;margin-bottom:3px">
-                <span><b>Soybean</b> — Amravati & Latur</span>
+                <span><b>Soybean</b> - Amravati & Latur</span>
                 <span>1,420 Acres (24.1%)</span>
               </div>
               <div style="background:#EAECEF;height:10px;width:100%"><div style="background:#D99A06;width:24.1%;height:100%"></div></div>
             </div>
             <div>
               <div style="display:flex;justify-content:space-between;margin-bottom:3px">
-                <span><b>Sugarcane</b> — Kolhapur & Pune</span>
+                <span><b>Sugarcane</b> - Kolhapur & Pune</span>
                 <span>1,180 Acres (20.1%)</span>
               </div>
               <div style="background:#EAECEF;height:10px;width:100%"><div style="background:#2C6E49;width:20.1%;height:100%"></div></div>
             </div>
             <div>
               <div style="display:flex;justify-content:space-between;margin-bottom:3px">
-                <span><b>Pulses & Grains</b> — Sambhajinagar</span>
+                <span><b>Pulses & Grains</b> - Sambhajinagar</span>
                 <span>710 Acres (12.1%)</span>
               </div>
               <div style="background:#EAECEF;height:10px;width:100%"><div style="background:#4B5375;width:12.1%;height:100%"></div></div>
             </div>
             <div>
               <div style="display:flex;justify-content:space-between;margin-bottom:3px">
-                <span><b>Tomato & Vegetables</b> — Dindori</span>
+                <span><b>Tomato & Vegetables</b> - Dindori</span>
                 <span>420 Acres (7.2%)</span>
               </div>
               <div style="background:#EAECEF;height:10px;width:100%"><div style="background:#9B2226;width:7.2%;height:100%"></div></div>
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- Fleet Status (read from logistics BHOWANEE_FLEET) -->
+    <section id="s-fleet" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Logistics Fleet Status</h1>
+        <p class="page-sub">Live vehicle availability from the logistics registry. Contact Fleet Desk to update vehicle status.</p>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi-card"><div class="num" id="adm-kpi-fleet-total">-</div><div class="lbl">Total Vehicles</div></div>
+        <div class="kpi-card"><div class="num" id="adm-kpi-fleet-avail" style="color:var(--field)">-</div><div class="lbl">Available</div></div>
+        <div class="kpi-card"><div class="num" id="adm-kpi-fleet-busy">-</div><div class="lbl">In Transit</div></div>
+        <div class="kpi-card"><div class="num" id="adm-kpi-fleet-cap">- Qt</div><div class="lbl">Free Capacity</div></div>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Reg. No.</th><th>Type</th><th>Capacity</th><th>Driver</th><th>Contact</th><th>Base</th><th>Status</th></tr></thead>
+          <tbody id="adm-fleet-tbody"><tr><td colspan="7" style="color:var(--ink-soft);text-align:center;padding:24px">Fleet data loads from Logistics module. Open Logistics tab first to seed data.</td></tr></tbody>
+        </table>
       </div>
     </section>
 
@@ -1152,7 +1173,7 @@ function renderCadastralMap() {
   if (cad.locality) {
     var locIcon = L.divIcon({
       className: 'locality-label-box',
-      html: '📍 ' + cad.locality.name, iconSize: [100, 22], iconAnchor: [50, 11]
+      html: ' ' + cad.locality.name, iconSize: [100, 22], iconAnchor: [50, 11]
     });
     L.marker(cad.locality.coords, { icon: locIcon, interactive: false }).addTo(map);
   }
@@ -1241,7 +1262,7 @@ function selectCadastralParcel(gatStr, skipPanel) {
   });
 
   var searchInput = document.getElementById('cmap-gat-search');
-  if (searchInput) searchInput.value = 'Gat ' + p.gat + ' — ' + p.farmer;
+  if (searchInput) searchInput.value = 'Gat ' + p.gat + ' - ' + p.farmer;
 
   var trailEl = document.getElementById('admin-trail');
   if (trailEl) {
@@ -1633,7 +1654,7 @@ window.adminFlagEmergency = function (cid) {
   var reason = prompt("Enter dispute / issue details:", "Quality disagreement on standing crop");
   if (!reason) return;
   BD.flagIssue(cid, reason);
-  BD.writeAudit('Urgent issue flagged on contract ' + cid + ': ' + reason, 'Super Admin', '—', 'Dispute Desk');
+  BD.writeAudit('Urgent issue flagged on contract ' + cid + ': ' + reason, 'Super Admin', '-', 'Dispute Desk');
   BhComp.toast('Dispute logged and routed to arbitration.', 'warn');
   renderDisputes();
   inspectContract(cid);
@@ -1655,14 +1676,14 @@ function renderBidsOversight() {
 
     html += '<tr>';
     html += '<td><b>' + l.id.toUpperCase() + '</b></td>';
-    html += '<td>' + (c ? c.district.toUpperCase() + ' / ' + c.village : '—') + '</td>';
-    html += '<td>' + (c ? c.farmer.name : '—') + '</td>';
-    html += '<td>' + (c ? c.crop : '—') + ' (' + l.grade + ')</td>';
+    html += '<td>' + (c ? c.district.toUpperCase() + ' / ' + c.village : '-') + '</td>';
+    html += '<td>' + (c ? c.farmer.name : '-') + '</td>';
+    html += '<td>' + (c ? c.crop : '-') + ' (' + l.grade + ')</td>';
     html += '<td>' + l.weightQt + ' Qt</td>';
     html += '<td>' + BD.fmt(l.farmerPrice) + '</td>';
     html += '<td>' + BD.fmt(mandi) + '</td>';
     html += '<td><b>' + (highest ? BD.fmt(highest.price) : 'No bids') + '</b></td>';
-    html += '<td>' + (highest ? highest.buyer : '—') + '</td>';
+    html += '<td>' + (highest ? highest.buyer : '-') + '</td>';
     html += '<td><span class="chip sm ' + (l.status === 'open' ? 'stage-bids' : 'stage-notsown') + '">' + l.status + '</span></td>';
     html += '<td>' + (isOutlier ? '<span class="flag-alert">Variance >15%</span>' : '<span class="stat-pill pill-green">Normal</span>') + '</td>';
     html += '</tr>';
@@ -1753,7 +1774,7 @@ function renderDisputes() {
     html += '<tr>';
     html += '<td><b>' + d.id.toUpperCase() + '</b></td>';
     html += '<td>' + new Date(d.raisedAt).toLocaleDateString('en-IN') + '</td>';
-    html += '<td>' + (d.contractId ? d.contractId.toUpperCase() : '—') + '</td>';
+    html += '<td>' + (d.contractId ? d.contractId.toUpperCase() : '-') + '</td>';
     html += '<td><span class="chip sm" style="background:#FFF3F0;color:var(--brick)">' + d.type + '</span></td>';
     html += '<td>' + d.description + (d.resolution ? '<br><i style="color:var(--forest);font-size:13px">Resolution: ' + d.resolution + '</i>' : '') + '</td>';
     html += '<td>' + d.raisedBy + '</td>';
@@ -1788,7 +1809,7 @@ window.submitDisputeResolution = function () {
   var res = document.getElementById('disp-resolution').value.trim();
   if (!res) { alert("Please enter resolution details."); return; }
   BD.resolveDispute(selectedDisputeId, res);
-  BD.writeAudit('Super Admin resolved dispute ' + selectedDisputeId + ': ' + res, 'Super Admin', '—', 'Dispute Arbitration');
+  BD.writeAudit('Super Admin resolved dispute ' + selectedDisputeId + ': ' + res, 'Super Admin', '-', 'Dispute Arbitration');
   BhComp.toast("Dispute resolved successfully.", "info");
   closeDisputeModal();
   renderDisputes();
@@ -1827,7 +1848,7 @@ window.fileInsuranceClaim = function (cid) {
   if (c) {
     c.status = 'Active';
     c.notes = 'Claim filed with Agricultural Insurance Company of India (Ref #AIC-8942)';
-    BD.writeAudit('Filed crop insurance claim for ' + c.contractId, 'Super Admin', '—', 'Statutory Filing');
+    BD.writeAudit('Filed crop insurance claim for ' + c.contractId, 'Super Admin', '-', 'Statutory Filing');
     BhComp.toast('Insurance claim lodged with AIC.', 'info');
     renderCompliance();
     renderAuditTrail();
@@ -1960,6 +1981,40 @@ BD.on('priceChanged', renderBidsOversight);
 BD.on('paymentSettled', renderLedger);
 BD.on('disputeResolved', renderDisputes);
 BD.on('auditUpdated', renderAuditTrail);
+
+// Fleet status (read-only from logistics window.BHOWANEE_FLEET)
+function renderAdminFleet() {
+  var fleet = window.BHOWANEE_FLEET || [];
+  var tbody = document.getElementById('adm-fleet-tbody');
+  if (!tbody) return;
+
+  if (!fleet.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="color:var(--ink-soft);text-align:center;padding:24px">Fleet data not loaded. Open the Logistics module first to populate vehicle registry.</td></tr>';
+    return;
+  }
+
+  var html = '';
+  var avail = 0, busy = 0, totalCap = 0;
+  fleet.forEach(function(v) {
+    var statusClass = v.status === 'available' ? 'pill-green' : (v.status === 'in-transit' ? 'pill-amber' : 'pill-red');
+    var statusLabel = v.status === 'available' ? 'Available' : (v.status === 'in-transit' ? 'In Transit' : 'Maintenance');
+    if (v.status === 'available') { avail++; totalCap += v.capacityQt; }
+    if (v.status === 'in-transit') busy++;
+    html += '<tr><td><b>' + v.reg + '</b></td><td>' + v.type + '</td><td>' + v.capacityQt + ' Qt</td><td>' + v.driver + '</td><td>' + v.contact + '</td><td>' + v.base + '</td><td><span class="stat-pill ' + statusClass + '">' + statusLabel + '</span></td></tr>';
+  });
+
+  tbody.innerHTML = html;
+  document.getElementById('adm-kpi-fleet-total').textContent = fleet.length;
+  document.getElementById('adm-kpi-fleet-avail').textContent = avail;
+  document.getElementById('adm-kpi-fleet-busy').textContent = busy;
+  document.getElementById('adm-kpi-fleet-cap').textContent = totalCap + ' Qt';
+}
+
+var _adminOrigSwitch = switchSection;
+switchSection = function(sec) {
+  _adminOrigSwitch(sec);
+  if (sec === 'fleet') renderAdminFleet();
+};
 </script>
 </body>
 </html>

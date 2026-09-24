@@ -1,5 +1,5 @@
-/* ============================================================
-   Bhowanee — Maharashtra Approximate District GeoJSON
+﻿/* ============================================================
+   Bhowanee - Maharashtra Approximate District GeoJSON
    Simplified polygons for prototype choropleth maps.
    Coordinates are [longitude, latitude] in GeoJSON order.
    ============================================================ */
@@ -367,7 +367,7 @@ window.MH_CENTROIDS = {
 };
 
 /* ============================================================
-   Bhowanee — Dindori Cadastral Revenue Map Data
+   Bhowanee - Dindori Cadastral Revenue Map Data
    High-fidelity revenue survey/gat land parcels, water nala,
    village cart road, gaothan settlement, talav and hissa boundaries.
    ============================================================ */

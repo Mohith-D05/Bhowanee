@@ -1,5 +1,5 @@
-/* ============================================================
-   Bhowanee — Central Data Store (data.js)
+﻿/* ============================================================
+   Bhowanee - Central Data Store (data.js)
    All sample data + action functions.
    Actions write to localStorage for persistence across pages.
    IndexedDB queue stores pending actions when offline.
@@ -211,14 +211,14 @@
 
     auditTrail: [
       { id: 'a1', ts: '10:42', action: 'Set price ₹2,100 on Gat 118 onion lot', by: 'Block Administrator', forFarmer: 'Prakash Sonawane', confirmed: 'Farmer, by SMS reply 1' },
-      { id: 'a2', ts: '11:15', action: 'Listed lot — Onion, 12 quintal, Grade A', by: 'Block Administrator', forFarmer: 'Prakash Sonawane', confirmed: 'Farmer, by SMS reply 1' },
+      { id: 'a2', ts: '11:15', action: 'Listed lot - Onion, 12 quintal, Grade A', by: 'Block Administrator', forFarmer: 'Prakash Sonawane', confirmed: 'Farmer, by SMS reply 1' },
       { id: 'a3', ts: '14:30', action: 'Accepted bid ₹2,040 from Buyer C', by: 'Block Administrator', forFarmer: 'Prakash Sonawane', confirmed: 'Farmer, by voice call' }
     ],
 
     compliance: [
       { id: 'comp1', contractId: 'c1', type: 'Lease renewal', dueDate: '2026-06-30', status: 'Active', notes: '7 months remaining' },
       { id: 'comp2', contractId: 'c2', type: 'Land ceiling check', dueDate: '2026-05-15', status: 'Pending', notes: 'Awaiting district record' },
-      { id: 'comp3', contractId: 'c5', type: 'Crop insurance claim', dueDate: '2026-04-01', status: 'Urgent', notes: 'Hailstorm damage — file within 15 days' }
+      { id: 'comp3', contractId: 'c5', type: 'Crop insurance claim', dueDate: '2026-04-01', status: 'Urgent', notes: 'Hailstorm damage - file within 15 days' }
     ],
 
     kycQueue: [
@@ -489,7 +489,7 @@
     getDistrictById: function (id) { return store.districtData[id] || null; },
     fmt: fmt,
 
-    // Write — farmer
+    // Write - farmer
     setFarmerPrice: function (lotId, price) {
       _setFarmerPrice(lotId, price);
       save(store);
@@ -497,7 +497,7 @@
       if (!navigator.onLine) queueAction({ type: 'setFarmerPrice', lotId: lotId, price: price });
     },
 
-    // Write — bidding
+    // Write - bidding
     placeBid: function (lotId, buyer, price) {
       var bid = _placeBid(lotId, buyer, price);
       save(store);
@@ -516,7 +516,7 @@
       });
     },
 
-    // Write — block admin actions for farmer
+    // Write - block admin actions for farmer
     setFarmerPriceByAdmin: function (lotId, price, farmerName) {
       mockOTP(farmerName, 'Set price ' + fmt(price) + ' on your lot?', function (confirmed) {
         if (!confirmed) return;
@@ -529,7 +529,7 @@
 
     createLot: function (contractId, grade, weightQt) {
       var contract = store.contracts.find(function (c) { return c.id === contractId; });
-      var farmerName = contract ? contract.farmer.name : '—';
+      var farmerName = contract ? contract.farmer.name : '-';
       mockOTP(farmerName, 'Create lot: ' + grade + ' grade, ' + weightQt + ' quintal?', function (confirmed) {
         if (!confirmed) return;
         var lot = _createLot(contractId, grade, weightQt);
@@ -567,7 +567,7 @@
       return dispute;
     },
 
-    // Write — logistics
+    // Write - logistics
     confirmHandoff: function (lotId, from, to, weightQt) {
       var h = _confirmHandoff(lotId, from, to, weightQt);
       save(store);
@@ -589,7 +589,7 @@
       emit('lossLogged', {});
     },
 
-    // Write — investor
+    // Write - investor
     invest: function (planId, amount) {
       var plan = store.plans.find(function (p) { return p.id === planId; });
       if (!plan || plan.status === 'Full') return { ok: false, msg: 'Plan is full.' };
@@ -607,7 +607,7 @@
       return this.invest(planId, inv.actualReturn);
     },
 
-    // Write — admin
+    // Write - admin
     resolveDispute: function (disputeId, resolution) {
       var d = store.disputes.find(function (d) { return d.id === disputeId; });
       if (d) { d.status = 'Resolved'; d.resolution = resolution; d.resolvedAt = now(); }
@@ -618,7 +618,7 @@
     approveKYC: function (kycId) {
       var k = store.kycQueue.find(function (k) { return k.id === kycId; });
       if (k) k.status = 'Approved';
-      writeAudit('Approved KYC for ' + (k ? k.name : kycId), 'Super Admin', '—', 'System');
+      writeAudit('Approved KYC for ' + (k ? k.name : kycId), 'Super Admin', '-', 'System');
       save(store);
       emit('kycApproved', { kycId: kycId });
     },
@@ -633,7 +633,7 @@
     settlePayment: function (payId) {
       var p = store.payments.find(function (p) { return p.id === payId; });
       if (p) { p.status = 'Settled'; p.settledAt = now(); }
-      writeAudit('Settled payment ' + fmt(p ? p.amount : 0), 'Super Admin', p ? p.to : '—', 'System');
+      writeAudit('Settled payment ' + fmt(p ? p.amount : 0), 'Super Admin', p ? p.to : '-', 'System');
       save(store);
       emit('paymentSettled', { payId: payId });
     },
@@ -713,7 +713,7 @@
             humidityStatus: 'Moderate (Safe from leaf blights)',
             wind: '11 km/h WNW',
             condition: 'Clear & Warm',
-            icon: '🌤️',
+            icon: '',
             dewPoint: '19.2°C',
             et0: '4.2 mm/day (Reference Evapotranspiration)',
             solarRad: '19.4 MJ/m²',
@@ -724,11 +724,11 @@
               next48hProb: '12% (Negligible shower probability)'
             },
             forecast5Day: [
-              { day: 'Wed (Today)', high: 33, low: 20, icon: '🌤️', rainProb: '10%', desc: 'Sunny & dry' },
-              { day: 'Thu', high: 32, low: 19, icon: '⛅', rainProb: '15%', desc: 'Partly cloudy' },
-              { day: 'Fri', high: 31, low: 19, icon: '🌤️', rainProb: '20%', desc: 'Breezy PM' },
-              { day: 'Sat', high: 32, low: 18, icon: '☀️', rainProb: '5%', desc: 'Clear dry' },
-              { day: 'Sun', high: 34, low: 20, icon: '☀️', rainProb: '5%', desc: 'Warm sunny' }
+              { day: 'Wed (Today)', high: 33, low: 20, icon: '', rainProb: '10%', desc: 'Sunny & dry' },
+              { day: 'Thu', high: 32, low: 19, icon: '', rainProb: '15%', desc: 'Partly cloudy' },
+              { day: 'Fri', high: 31, low: 19, icon: '', rainProb: '20%', desc: 'Breezy PM' },
+              { day: 'Sat', high: 32, low: 18, icon: '', rainProb: '5%', desc: 'Clear dry' },
+              { day: 'Sun', high: 34, low: 20, icon: '', rainProb: '5%', desc: 'Warm sunny' }
             ],
             agroAdvisory: 'Favorable warm, dry atmospheric conditions for onion bulb curing. Relative humidity (56%) is safely below the sporulation threshold for purple blotch (Alternaria porri). Irrigation can be held for harvest preparation.'
           },
@@ -834,17 +834,17 @@
             humidityStatus: 'Dry (Excellent for grape ripening)',
             wind: '12 km/h W',
             condition: 'Sunny',
-            icon: '☀️',
+            icon: '',
             dewPoint: '17.8°C',
             et0: '4.5 mm/day',
             solarRad: '20.1 MJ/m²',
             rain: { seasonTotal: '670 mm', normalPct: '+6%', last24h: '0.0 mm', next48hProb: '5%' },
             forecast5Day: [
-              { day: 'Wed', high: 33, low: 20, icon: '☀️', rainProb: '5%', desc: 'Sunny' },
-              { day: 'Thu', high: 33, low: 19, icon: '☀️', rainProb: '5%', desc: 'Warm dry' },
-              { day: 'Fri', high: 32, low: 19, icon: '🌤️', rainProb: '10%', desc: 'Clear' },
-              { day: 'Sat', high: 32, low: 18, icon: '☀️', rainProb: '0%', desc: 'Dry sun' },
-              { day: 'Sun', high: 34, low: 20, icon: '☀️', rainProb: '0%', desc: 'Sunny' }
+              { day: 'Wed', high: 33, low: 20, icon: '', rainProb: '5%', desc: 'Sunny' },
+              { day: 'Thu', high: 33, low: 19, icon: '', rainProb: '5%', desc: 'Warm dry' },
+              { day: 'Fri', high: 32, low: 19, icon: '', rainProb: '10%', desc: 'Clear' },
+              { day: 'Sat', high: 32, low: 18, icon: '', rainProb: '0%', desc: 'Dry sun' },
+              { day: 'Sun', high: 34, low: 20, icon: '', rainProb: '0%', desc: 'Sunny' }
             ],
             agroAdvisory: 'Low relative humidity (52%) minimizes Downy Mildew risk. Perfect conditions for berry enlargement and TSS sugar concentration.'
           },
@@ -892,17 +892,17 @@
             humidityStatus: 'Moderate',
             wind: '11 km/h WNW',
             condition: 'Clear & Warm',
-            icon: '🌤️',
+            icon: '',
             dewPoint: '19.2°C',
             et0: '4.2 mm/day',
             solarRad: '19.4 MJ/m²',
             rain: { seasonTotal: '685 mm', normalPct: '+8%', last24h: '0.0 mm', next48hProb: '12%' },
             forecast5Day: [
-              { day: 'Wed', high: 33, low: 20, icon: '🌤️', rainProb: '10%', desc: 'Sunny & dry' },
-              { day: 'Thu', high: 32, low: 19, icon: '⛅', rainProb: '15%', desc: 'Partly cloudy' },
-              { day: 'Fri', high: 31, low: 19, icon: '🌤️', rainProb: '20%', desc: 'Breezy PM' },
-              { day: 'Sat', high: 32, low: 18, icon: '☀️', rainProb: '5%', desc: 'Clear dry' },
-              { day: 'Sun', high: 34, low: 20, icon: '☀️', rainProb: '5%', desc: 'Warm sunny' }
+              { day: 'Wed', high: 33, low: 20, icon: '', rainProb: '10%', desc: 'Sunny & dry' },
+              { day: 'Thu', high: 32, low: 19, icon: '', rainProb: '15%', desc: 'Partly cloudy' },
+              { day: 'Fri', high: 31, low: 19, icon: '', rainProb: '20%', desc: 'Breezy PM' },
+              { day: 'Sat', high: 32, low: 18, icon: '', rainProb: '5%', desc: 'Clear dry' },
+              { day: 'Sun', high: 34, low: 20, icon: '', rainProb: '5%', desc: 'Warm sunny' }
             ],
             agroAdvisory: 'High diurnal temperature range (19.8°C to 33.2°C). Soil moisture deficit detected; irrigate within 48h to prevent onion bulb splitting.'
           },
@@ -958,17 +958,17 @@
           humidityStatus: 'Normal Range',
           wind: '11 km/h WNW',
           condition: 'Partly Cloudy',
-          icon: '🌤️',
+          icon: '',
           dewPoint: '19.2°C',
           et0: '4.2 mm/day',
           solarRad: '19.4 MJ/m²',
           rain: { seasonTotal: '685 mm', normalPct: '+8%', last24h: '0.0 mm', next48hProb: '12%' },
           forecast5Day: [
-            { day: 'Wed', high: 33, low: 20, icon: '🌤️', rainProb: '10%', desc: 'Sunny & dry' },
-            { day: 'Thu', high: 32, low: 19, icon: '⛅', rainProb: '15%', desc: 'Partly cloudy' },
-            { day: 'Fri', high: 31, low: 19, icon: '🌤️', rainProb: '20%', desc: 'Breezy PM' },
-            { day: 'Sat', high: 32, low: 18, icon: '☀️', rainProb: '5%', desc: 'Clear dry' },
-            { day: 'Sun', high: 34, low: 20, icon: '☀️', rainProb: '5%', desc: 'Warm sunny' }
+            { day: 'Wed', high: 33, low: 20, icon: '', rainProb: '10%', desc: 'Sunny & dry' },
+            { day: 'Thu', high: 32, low: 19, icon: '', rainProb: '15%', desc: 'Partly cloudy' },
+            { day: 'Fri', high: 31, low: 19, icon: '', rainProb: '20%', desc: 'Breezy PM' },
+            { day: 'Sat', high: 32, low: 18, icon: '', rainProb: '5%', desc: 'Clear dry' },
+            { day: 'Sun', high: 34, low: 20, icon: '', rainProb: '5%', desc: 'Warm sunny' }
           ],
           agroAdvisory: 'Optimal weather for ' + crop + ' growth. Morning humidity and solar radiation in favorable balance.'
         },

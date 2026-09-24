@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bhowanee — Buyer Dashboard</title>
+<title>Bhowanee - Buyer Dashboard</title>
 <meta name="description" content="Institutional commodity buyer portal: browse lots, bid live on harvest, track forward contracts and dock deliveries.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600&family=Zilla+Slab:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="shared.css">
 <style>
@@ -113,13 +113,13 @@
     <section id="s-bidboard" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
         <div>
-          <h1 class="page-title" id="bb-lot-title">Live Bid Board — Lot L1 (Onion Grade A)</h1>
+          <h1 class="page-title" id="bb-lot-title">Live Bid Board - Lot L1 (Onion Grade A)</h1>
           <p class="page-sub">Real-time auction. If your bid reaches the farmer's ask price, the lot automatically closes to you.</p>
         </div>
         <div style="display:flex;gap:8px">
           <select id="sel-bid-lot" onchange="onSelectBidLot(this.value)" style="padding:6px 12px;font-size:14px;font-weight:600">
-            <option value="l1">Lot L1 — Onion (Gat 118, Pimpalgaon) — 12 Qt</option>
-            <option value="l2">Lot L2 — Onion (Gat 147, Pimpalgaon) — 8 Qt</option>
+            <option value="l1">Lot L1 - Onion (Gat 118, Pimpalgaon) - 12 Qt</option>
+            <option value="l2">Lot L2 - Onion (Gat 147, Pimpalgaon) - 8 Qt</option>
           </select>
         </div>
       </div>
@@ -162,7 +162,7 @@
             </div>
           </div>
           <div id="bid-auto-close-note" style="margin-top:10px;font-size:13px;color:var(--forest);font-weight:600;display:none">
-            ⚡ Notice: This bid equals or exceeds the farmer's target price (₹2,100). If placed, the lot will auto-close and be awarded to you immediately!
+             Notice: This bid equals or exceeds the farmer's target price (₹2,100). If placed, the lot will auto-close and be awarded to you immediately!
           </div>
         </div>
 
@@ -315,7 +315,7 @@
       <div class="lot-card" style="margin-bottom:16px">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
           <div>
-            <h3 style="font-family:var(--font-slab);font-size:18px;margin:0">Consignment #TRK-MH-981 (Lot L1 — 12 Qt Onion)</h3>
+            <h3 style="font-family:var(--font-slab);font-size:18px;margin:0">Consignment #TRK-MH-981 (Lot L1 - 12 Qt Onion)</h3>
             <p style="font-size:13.5px;color:var(--ink-soft);margin:4px 0">Vehicle: MH-15-AB-1234 (Driver: Santosh Garud • 9822114455)</p>
           </div>
           <span class="chip sm" style="background:#E6F4EA;color:#137333">Cold Store Staged</span>
@@ -324,13 +324,13 @@
         <div class="delivery-track" style="margin:24px 0">
           <div class="track-step done">
             <div class="track-line"></div>
-            <div class="track-dot">✓</div>
+            <div class="track-dot"></div>
             <span>Farm Harvest</span>
             <small style="color:var(--ink-soft)">Gat 118</small>
           </div>
           <div class="track-step done">
             <div class="track-line"></div>
-            <div class="track-dot">✓</div>
+            <div class="track-dot"></div>
             <span>Digital Handoff</span>
             <small style="color:var(--ink-soft)">Weight Confirmed</small>
           </div>
@@ -545,7 +545,7 @@ function renderLots() {
     html += '<div class="lot-card ' + (l.id === currentLotId ? 'active-selected' : '') + '">';
     html += '<div>';
     html += '<div style="display:flex;justify-content:space-between;align-items:center">';
-    html += '<h3 style="font-family:var(--font-slab);font-size:18px;margin:0">Lot ' + l.id.toUpperCase() + ' — ' + (c ? c.crop : 'Onion') + '</h3>';
+    html += '<h3 style="font-family:var(--font-slab);font-size:18px;margin:0">Lot ' + l.id.toUpperCase() + ' - ' + (c ? c.crop : 'Onion') + '</h3>';
     html += '<span class="chip sm ' + (l.grade === 'A' ? 'stage-growing' : 'stage-notsown') + '">Grade ' + l.grade + '</span>';
     html += '</div>';
     html += '<p style="font-size:13.5px;color:var(--ink-soft);margin:6px 0 12px">';
@@ -599,7 +599,7 @@ function renderBidBoardView(lid) {
   var highest = BD.getHighestBid(lid);
   var mandi = BD.mandiPrice(crop);
 
-  document.getElementById('bb-lot-title').textContent = 'Live Bid Board — Lot ' + lid.toUpperCase() + ' (' + crop + ' Grade ' + lot.grade + ')';
+  document.getElementById('bb-lot-title').textContent = 'Live Bid Board - Lot ' + lid.toUpperCase() + ' (' + crop + ' Grade ' + lot.grade + ')';
   document.getElementById('bb-ask-price').textContent = BD.fmt(lot.farmerPrice) + ' /qt';
 
   // SVG Chart Render

@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bhowanee — Block Administrator</title>
+<title>Bhowanee - Block Administrator</title>
 <meta name="description" content="Run every contract in the block from one map.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600&family=Zilla+Slab:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="shared.css">
@@ -494,7 +494,7 @@
     <section id="s-map">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:12px">
         <div>
-          <h1 class="page-title">Cadastral Revenue Map — Dindori, Nashik</h1>
+          <h1 class="page-title">Cadastral Revenue Map - Dindori, Nashik</h1>
           <p class="trail" id="map-trail"><b>Nashik</b> <span>/</span> <b>Dindori</b> <span>/</span> <b>Pimpalgaon Baswant (Gat Nakasha)</b></p>
         </div>
         <div class="seg" role="group" aria-label="View">
@@ -511,16 +511,12 @@
               <div class="cmap-emblem" title="Cadastral Revenue Map">
                 <svg width="24" height="24" viewBox="0 0 36 36"><circle cx="18" cy="18" r="16" fill="#fff" stroke="#D99A06" stroke-width="2"/><path d="M10 24 L18 8 L26 24 Z" fill="#0070FF"/><circle cx="18" cy="20" r="4" fill="#E53935"/></svg>
               </div>
-              <div>
-                <span class="cmap-name">Cadastral Map</span>
-                <span class="cmap-sub">Dindori Revenue Survey Map</span>
-              </div>
             </div>
             
             <div class="cmap-top-controls">
               <div class="cmap-layer-pills" role="group" aria-label="Base Map Layer">
-                <button class="cmap-layer-pill-btn active" id="btn-mode-sat" type="button">🛰️ Satellite Aerial</button>
-                <button class="cmap-layer-pill-btn" id="btn-mode-vec" type="button">🗺️ Cadastral Vector</button>
+                <button class="cmap-layer-pill-btn active" id="btn-mode-sat" type="button"> Satellite Aerial</button>
+                <button class="cmap-layer-pill-btn" id="btn-mode-vec" type="button"> Cadastral Vector</button>
               </div>
               <div class="cmap-badge">V-1.30</div>
             </div>
@@ -528,7 +524,7 @@
           
           <div class="cmap-search-row">
             <div class="cmap-search-input-wrap">
-              <span class="cmap-search-icon">🔍</span>
+              <span class="cmap-search-icon"></span>
               <input id="cmap-gat-search" type="text" placeholder="Click on the map or search Sy No. / Gat No. (e.g. 125, 123, 66)..." autocomplete="off">
               <button class="btn sm" id="cmap-search-btn" type="button">Search Sy No.</button>
             </div>
@@ -579,22 +575,22 @@
             <!-- Bottom Action Toolbar -->
             <div class="cmap-bottom-bar">
               <button class="cmap-tool-btn" id="tool-measure" type="button" title="Click two boundary points to measure distance">
-                <span class="tool-icon">📏</span>
+                <span class="tool-icon"></span>
                 <span id="measure-label">Measurement Tools</span>
               </button>
               <div class="tool-divider"></div>
               <button class="cmap-tool-btn" id="tool-search" type="button">
-                <span class="tool-icon">🔍</span>
+                <span class="tool-icon"></span>
                 <span>Search Sy No.</span>
               </button>
               <div class="tool-divider"></div>
               <button class="cmap-tool-btn" id="tool-stage-toggle" type="button">
-                <span class="tool-icon">🎨</span>
+                <span class="tool-icon"></span>
                 <span id="stage-toggle-label">Crop Stage Tint: On</span>
               </button>
               <div class="tool-divider"></div>
               <button class="cmap-tool-btn" id="tool-reset-view" type="button">
-                <span class="tool-icon">🎯</span>
+                <span class="tool-icon"></span>
                 <span>Reset Extent</span>
               </button>
             </div>
@@ -603,7 +599,7 @@
           <div class="contract-panel open" id="contract-panel">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
               <h3 style="font-size:18px;font-family:var(--font-slab)" id="panel-title">Contract & 7/12 Extract</h3>
-              <button class="btn sm secondary" id="panel-close">✕ Close</button>
+              <button class="btn sm secondary" id="panel-close"> Close</button>
             </div>
             <div id="panel-content"></div>
             <div class="action-buttons" id="panel-actions"></div>
@@ -869,10 +865,10 @@ function initMap() {
     maxZoom: 19
   });
 
-  // 2. Light Base Tile Layer for paper cadastral view
-  cartoTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  // 2. Light Base Tile Layer for paper cadastral view (OpenStreetMap - no API key required)
+  cartoTileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
-    subdomains: 'abcd'
+    attribution: 'OpenStreetMap contributors'
   });
 
   // 3. Cadastral Vector Backdrop Polygon for the authentic pale ivory background (#FAF7D4)
@@ -1053,7 +1049,7 @@ function renderCadastralMap() {
   if (cad.locality) {
     var locIcon = L.divIcon({
       className: 'locality-label-box',
-      html: '📍 ' + cad.locality.name,
+      html: ' ' + cad.locality.name,
       iconSize: [100, 22],
       iconAnchor: [50, 11]
     });
@@ -1177,7 +1173,7 @@ function selectCadastralParcel(gatStr, skipPanel) {
 
   // Update search input value
   var searchInput = document.getElementById('cmap-gat-search');
-  if (searchInput) searchInput.value = 'Gat ' + p.gat + ' — ' + p.farmer;
+  if (searchInput) searchInput.value = 'Gat ' + p.gat + ' - ' + p.farmer;
 
   // Update breadcrumb trail
   document.getElementById('map-trail').innerHTML = '<b>Nashik</b> <span>/</span> <b>Dindori</b> <span>/</span> <b>Pimpalgaon Baswant</b> <span>/</span> <b style="color:#D32F2F">Gat ' + p.gat + ' (' + p.farmer + ')</b>';
@@ -1551,7 +1547,7 @@ function initBidBoard() {
   var sel = document.getElementById('bb-lot-select');
   sel.innerHTML = lots.map(function(l){
     var c = BD.getContract(l.contractId);
-    return '<option value="'+l.id+'">'+(c?'Gat '+c.gat+' · '+c.crop:l.id)+' — '+(l.farmerPrice?'₹'+l.farmerPrice:'No price set')+'</option>';
+    return '<option value="'+l.id+'">'+(c?'Gat '+c.gat+' · '+c.crop:l.id)+' - '+(l.farmerPrice?'₹'+l.farmerPrice:'No price set')+'</option>';
   }).join('');
   if (!lots.length) sel.innerHTML = '<option>No open lots</option>';
   renderMainBidBoard();
@@ -1591,7 +1587,7 @@ document.getElementById('bb-accept-best').addEventListener('click', function(){
   var c = lot ? BD.getContract(lot.contractId) : null;
   var best = lot ? BD.getHighestBid(lotId) : null;
   if (!best) { BhComp.toast('No bids yet.','warn'); return; }
-  BD.acceptBid(lotId, best.id, c ? c.farmer.name : '—');
+  BD.acceptBid(lotId, best.id, c ? c.farmer.name : '-');
 });
 
 document.getElementById('bb-book-storage').addEventListener('click', function(){
@@ -1634,7 +1630,7 @@ document.getElementById('cancel-storage').addEventListener('click', function(){
 function initTasks() {
   var contracts = BD.getContracts();
   var sel = document.getElementById('task-contract');
-  sel.innerHTML = contracts.map(function(c){ return '<option value="'+c.id+'">Gat '+c.gat+' — '+c.farmer.name+' ('+c.crop+')</option>'; }).join('');
+  sel.innerHTML = contracts.map(function(c){ return '<option value="'+c.id+'">Gat '+c.gat+' - '+c.farmer.name+' ('+c.crop+')</option>'; }).join('');
   renderTaskList();
 }
 document.getElementById('task-contract').addEventListener('change', renderTaskList);
@@ -1666,7 +1662,7 @@ document.getElementById('save-task-btn').addEventListener('click', function(){
   var label = document.getElementById('new-task-label').value.trim();
   var due   = document.getElementById('new-task-due').value;
   if (!label) { BhComp.toast('Enter a task name.','warn'); return; }
-  BD.addTask(cid, label, due || '—');
+  BD.addTask(cid, label, due || '-');
   document.getElementById('add-task-form').hidden = true;
   document.getElementById('new-task-label').value = '';
   document.getElementById('new-task-due').value   = '';
@@ -1679,7 +1675,7 @@ function initCosts() {
   var contracts = BD.getContracts();
   ['cost-contract'].forEach(function(id){
     var sel = document.getElementById(id);
-    sel.innerHTML = contracts.map(function(c){ return '<option value="'+c.id+'">Gat '+c.gat+' — '+c.farmer.name+' ('+c.crop+')</option>'; }).join('');
+    sel.innerHTML = contracts.map(function(c){ return '<option value="'+c.id+'">Gat '+c.gat+' - '+c.farmer.name+' ('+c.crop+')</option>'; }).join('');
   });
   renderCostTable();
 }
@@ -1708,14 +1704,14 @@ document.getElementById('add-cost-btn').addEventListener('click', function(){
 /* ── ISSUES ─────────────────────────────────────────────────────── */
 function initIssues() {
   var contracts = BD.getContracts();
-  document.getElementById('issue-contract').innerHTML = contracts.map(function(c){ return '<option value="'+c.id+'">Gat '+c.gat+' — '+c.farmer.name+' ('+c.crop+')</option>'; }).join('');
+  document.getElementById('issue-contract').innerHTML = contracts.map(function(c){ return '<option value="'+c.id+'">Gat '+c.gat+' - '+c.farmer.name+' ('+c.crop+')</option>'; }).join('');
   renderIssuesTable();
 }
 function renderIssuesTable() {
   var disputes = BD.getDisputes();
   document.getElementById('issues-table').innerHTML = disputes.map(function(d){
     var c = BD.getContract(d.contractId);
-    return '<tr><td>'+(c?'Gat '+c.gat+', '+c.village:'—')+'</td><td style="max-width:280px;font-size:14px">'+d.description+'</td><td>'+d.status+'</td><td style="font-size:13px;color:var(--ink-soft)">'+d.raisedAt.slice(0,10)+'</td></tr>';
+    return '<tr><td>'+(c?'Gat '+c.gat+', '+c.village:'-')+'</td><td style="max-width:280px;font-size:14px">'+d.description+'</td><td>'+d.status+'</td><td style="font-size:13px;color:var(--ink-soft)">'+d.raisedAt.slice(0,10)+'</td></tr>';
   }).join('') || '<tr><td colspan="4" style="color:var(--ink-soft)">No open issues.</td></tr>';
 }
 document.getElementById('submit-issue-btn').addEventListener('click', function(){

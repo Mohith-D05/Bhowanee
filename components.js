@@ -1,5 +1,5 @@
-/* ============================================================
-   Bhowanee — Shared UI Components (components.js)
+﻿/* ============================================================
+   Bhowanee - Shared UI Components (components.js)
    BidBoard, OTP modal, toast notifications, contract card,
    and stage chip helpers. Import after data.js and market.js.
    ============================================================ */
@@ -231,7 +231,7 @@ window.BhComp = (function () {
       '<div class="agri-card soil-card">',
       '  <div class="agri-card-head">',
       '    <div>',
-      '      <span class="agri-card-title">🧪 Soil Health Analysis</span>',
+      '      <span class="agri-card-title"> Soil Health Analysis</span>',
       '      <div class="agri-card-sub">' + escSVG(soil.labName || 'District Lab') + ' · ' + escSVG(soil.testDate || '') + '</div>',
       '    </div>',
       '    <span class="badge" style="background:#E0F2FE;color:#0369A1;font-size:11px;font-weight:700">' + escSVG(soil.shcNumber || 'SHC-OK') + '</span>',
@@ -281,7 +281,7 @@ window.BhComp = (function () {
       '  <div class="micro-grid">' + microList + '</div>',
 
       '  <div class="agri-advisory-box" style="margin-top:14px">',
-      '    <div class="agri-advisory-head">🌱 Agronomist Soil Advisory</div>',
+      '    <div class="agri-advisory-head"> Agronomist Soil Advisory</div>',
       '    <p>' + escSVG(soil.advisory || '') + '</p>',
       '  </div>',
       '</div>'
@@ -297,7 +297,7 @@ window.BhComp = (function () {
         '  <div class="f-day">' + escSVG(f.day) + '</div>',
         '  <div class="f-icon">' + f.icon + '</div>',
         '  <div class="f-temps"><b>' + f.high + '°</b> / <span>' + f.low + '°</span></div>',
-        '  <div class="f-rain">💧 ' + escSVG(f.rainProb) + '</div>',
+        '  <div class="f-rain"> ' + escSVG(f.rainProb) + '</div>',
         '  <div class="f-desc">' + escSVG(f.desc) + '</div>',
         '</div>'
       ].join('');
@@ -307,15 +307,15 @@ window.BhComp = (function () {
       '<div class="agri-card climate-card">',
       '  <div class="agri-card-head">',
       '    <div>',
-      '      <span class="agri-card-title">🌤️ Micro-Climate & Weather</span>',
+      '      <span class="agri-card-title"> Micro-Climate & Weather</span>',
       '      <div class="agri-card-sub">' + escSVG(climate.station || 'Local AWS Station') + ' · ' + escSVG(climate.lastUpdated || 'Live') + '</div>',
       '    </div>',
-      '    <span class="badge" style="background:#ECFDF5;color:#047857;font-size:11px;font-weight:700">● LIVE TELEMETRY</span>',
+      '    <span class="badge" style="background:#ECFDF5;color:#047857;font-size:11px;font-weight:700"> LIVE TELEMETRY</span>',
       '  </div>',
 
       '  <div class="climate-hero">',
       '    <div class="climate-hero-left">',
-      '      <span class="climate-hero-icon">' + (climate.icon || '🌤️') + '</span>',
+      '      <span class="climate-hero-icon">' + (climate.icon || '') + '</span>',
       '      <div>',
       '        <div class="climate-temp-big">' + climate.temp + '<span style="font-size:22px">°C</span></div>',
       '        <div class="climate-condition">' + escSVG(climate.condition) + ' · Feels like ' + climate.tempFeels + '°C</div>',
@@ -339,7 +339,7 @@ window.BhComp = (function () {
       '  <div class="forecast-row">' + fcast + '</div>',
 
       '  <div class="agri-advisory-box alert-warn" style="margin-top:14px">',
-      '    <div class="agri-advisory-head" style="color:#B45309">⚠️ Agro-Climatic Advisory</div>',
+      '    <div class="agri-advisory-head" style="color:#B45309"> Agro-Climatic Advisory</div>',
       '    <p>' + escSVG(climate.agroAdvisory || '') + '</p>',
       '  </div>',
       '</div>'
@@ -359,19 +359,19 @@ window.BhComp = (function () {
       return [
         '<div class="cycle-card' + (isCurrent ? ' cycle-current' : '') + '">',
         '  <div class="cycle-head">',
-        '    <div class="cycle-season"><b>' + escSVG(c.season) + '</b> — <span class="cycle-crop-name">' + escSVG(c.crop) + '</span></div>',
+        '    <div class="cycle-season"><b>' + escSVG(c.season) + '</b> - <span class="cycle-crop-name">' + escSVG(c.crop) + '</span></div>',
         '    ' + statusBadge,
         '  </div>',
         '  <div class="cycle-meta-grid">',
         '    <div><label>Area Cultivated</label><span>' + escSVG(c.area) + '</span></div>',
         '    <div><label>Sowing → Harvest</label><span>' + escSVG(c.sowing) + ' → ' + escSVG(c.harvest) + '</span></div>',
-        '    <div><label>Yield Recorded</label><span style="font-weight:700;color:var(--ink)">' + escSVG(c.yield || '—') + '</span></div>',
-        '    <div><label>Mandi Realization</label><span style="font-weight:700;color:var(--turmeric-text)">' + escSVG(c.rate || '—') + '</span></div>',
-        '    <div><label>Gross Revenue</label><span>' + escSVG(c.revenue || '—') + '</span></div>',
-        '    <div><label>Net Profit Margin</label><span style="font-weight:700;color:var(--field)">' + escSVG(c.netMargin || '—') + '</span></div>',
+        '    <div><label>Yield Recorded</label><span style="font-weight:700;color:var(--ink)">' + escSVG(c.yield || '-') + '</span></div>',
+        '    <div><label>Mandi Realization</label><span style="font-weight:700;color:var(--turmeric-text)">' + escSVG(c.rate || '-') + '</span></div>',
+        '    <div><label>Gross Revenue</label><span>' + escSVG(c.revenue || '-') + '</span></div>',
+        '    <div><label>Net Profit Margin</label><span style="font-weight:700;color:var(--field)">' + escSVG(c.netMargin || '-') + '</span></div>',
         '  </div>',
         c.inputs ? '  <div class="cycle-inputs"><label>Inputs & Fertigation:</label> <span>' + escSVG(c.inputs) + '</span></div>' : '',
-        c.soilImpact ? '  <div class="cycle-impact"><span class="cycle-impact-icon">🔄</span> <div><b>Soil & Rotation Impact:</b> ' + escSVG(c.soilImpact) + '</div></div>' : '',
+        c.soilImpact ? '  <div class="cycle-impact"><span class="cycle-impact-icon"></span> <div><b>Soil & Rotation Impact:</b> ' + escSVG(c.soilImpact) + '</div></div>' : '',
         '</div>'
       ].join('');
     }).join('');
@@ -380,7 +380,7 @@ window.BhComp = (function () {
       '<div class="agri-card cycles-card">',
       '  <div class="agri-card-head">',
       '    <div>',
-      '      <span class="agri-card-title">🔄 Crop Cycles & History</span>',
+      '      <span class="agri-card-title"> Crop Cycles & History</span>',
       '      <div class="agri-card-sub">Multi-season rotational pedigree and agronomic performance</div>',
       '    </div>',
       '    <span class="badge" style="background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700">' + cycles.length + ' CYCLES LOGGED</span>',
@@ -394,10 +394,10 @@ window.BhComp = (function () {
   function agriTabBarHTML(activeTab) {
     activeTab = activeTab || 'contract';
     var tabs = [
-      { id: 'contract', label: '📋 Contract & Lot' },
-      { id: 'soil',     label: '🧪 Soil Analysis' },
-      { id: 'climate',  label: '🌤️ Climatic Condition' },
-      { id: 'cycles',   label: '🔄 Crop Cycles' }
+      { id: 'contract', label: ' Contract & Lot' },
+      { id: 'soil',     label: ' Soil Analysis' },
+      { id: 'climate',  label: ' Climatic Condition' },
+      { id: 'cycles',   label: ' Crop Cycles' }
     ];
     return '<div class="agri-tab-strip" role="tablist">' +
       tabs.map(function (t) {
@@ -418,7 +418,7 @@ window.BhComp = (function () {
       '  <div><dt style="color:var(--ink-soft);font-size:13px">Farmer</dt><dd style="margin:0;font-weight:600">' + escSVG(contract.farmer.name) + '</dd></div>',
       '  <div><dt style="color:var(--ink-soft);font-size:13px">Crop</dt><dd style="margin:0;font-weight:600">' + escSVG(contract.crop) + '</dd></div>',
       '  <div><dt style="color:var(--ink-soft);font-size:13px">Area</dt><dd style="margin:0">' + contract.area + ' acres</dd></div>',
-      '  <div><dt style="color:var(--ink-soft);font-size:13px">Lease ends</dt><dd style="margin:0">' + (contract.leaseDates ? contract.leaseDates.end : '—') + '</dd></div>',
+      '  <div><dt style="color:var(--ink-soft);font-size:13px">Lease ends</dt><dd style="margin:0">' + (contract.leaseDates ? contract.leaseDates.end : '-') + '</dd></div>',
       lot ? '  <div><dt style="color:var(--ink-soft);font-size:13px">Lot grade</dt><dd style="margin:0">Grade ' + lot.grade + ', ' + lot.weightQt + ' qt</dd></div>' : '',
       lot && lot.farmerPrice ? '  <div><dt style="color:var(--ink-soft);font-size:13px">Farmer price</dt><dd style="margin:0;font-weight:600">₹' + Number(lot.farmerPrice).toLocaleString('en-IN') + '</dd></div>' : '',
       highBid ? '  <div><dt style="color:var(--ink-soft);font-size:13px">Highest bid</dt><dd style="margin:0;color:var(--turmeric-text);font-weight:600">₹' + Number(highBid).toLocaleString('en-IN') + '</dd></div>' : '',

@@ -1,5 +1,5 @@
 /* ============================================================
-   Bhowanee — Design Tokens
+   Bhowanee - Design Tokens
    One file imported by every dashboard. Do not add layout
    rules here; keep it strictly to custom properties.
    ============================================================ */
@@ -38,8 +38,8 @@
   --st-paid:     #7DAA6C;
 
   /* --- Typography --- */
-  --font-slab: "Zilla Slab", Rockwell, "Roboto Slab", Georgia, serif;
-  --font-body: Mukta, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-slab: "Google Sans", "Product Sans", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Google Sans", "Product Sans", "Segoe UI", system-ui, sans-serif;
 
   /* --- Scale --- */
   --text-xs:   13.5px;

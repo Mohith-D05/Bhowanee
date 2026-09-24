@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bhowanee — Logistics & Storage Operations</title>
+<title>Bhowanee - Logistics & Storage Operations</title>
 <meta name="description" content="Manage farm pickups, cold chain warehousing, digital proof of handoff, and crop loss tracking across Maharashtra.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600&family=Zilla+Slab:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="shared.css">
@@ -104,7 +104,56 @@
       </div>
     </section>
 
-    <!-- ── 2. STORAGE & WAREHOUSES ─────────────────────────── -->
+    <!-- Vehicle Fleet Registry -->
+    <section id="s-fleet" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title">Vehicle Fleet Registry</h1>
+          <p class="page-sub">All registered vehicles with live availability status, capacity, and driver assignment.</p>
+        </div>
+        <button class="btn" onclick="openAddVehicleModal()">Register Vehicle</button>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="num" id="kpi-fleet-total">0</div>
+          <div class="lbl">Total Registered Vehicles</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" id="kpi-fleet-avail" style="color:var(--field)">0</div>
+          <div class="lbl">Available Now</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" id="kpi-fleet-busy">0</div>
+          <div class="lbl">In Transit</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" id="kpi-fleet-cap">0 Qt</div>
+          <div class="lbl">Total Available Capacity</div>
+        </div>
+      </div>
+
+      <div class="tablewrap">
+        <table id="tbl-fleet">
+          <thead>
+            <tr>
+              <th>Reg. No.</th>
+              <th>Type</th>
+              <th>Capacity (Qt)</th>
+              <th>Driver</th>
+              <th>Contact</th>
+              <th>Base Location</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="fleet-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Farm Pickups ends above -->
+
     <section id="s-storage" style="display:none">
       <div style="margin-bottom:18px">
         <h1 class="page-title">Warehouse Network & Cold Chain Fill Levels</h1>
@@ -163,7 +212,7 @@
           <div class="field">
             <label>Upload Weighment Slip / Bagging Photo</label>
             <div class="upload-zone" onclick="document.getElementById('hf-file').click()">
-              <span id="hf-file-label">📷 Tap to select photo / weighbridge receipt</span>
+              <span id="hf-file-label"> Tap to select photo / weighbridge receipt</span>
               <input type="file" id="hf-file" accept="image/*" style="display:none" onchange="previewHandoffPhoto(this)">
             </div>
           </div>
@@ -206,8 +255,8 @@
           <div class="field">
             <label for="loss-pickup">Consignment / Pickup</label>
             <select id="loss-pickup">
-              <option value="pk1">PK1 — Gat 118 &rarr; Dindori Cold Store</option>
-              <option value="pk2">PK2 — Gat 147 &rarr; Nashik Hub Warehouse</option>
+              <option value="pk1">PK1 - Gat 118 &rarr; Dindori Cold Store</option>
+              <option value="pk2">PK2 - Gat 147 &rarr; Nashik Hub Warehouse</option>
             </select>
           </div>
           <div class="field">
@@ -448,8 +497,8 @@ var storageMap = null;
 function initStorageMap() {
   if (storageMap) return;
   storageMap = L.map('storage-map').setView([20.10, 73.81], 10);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; CartoDB, &copy; OpenStreetMap',
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: 'OpenStreetMap contributors',
     maxZoom: 16
   }).addTo(storageMap);
 
@@ -515,7 +564,7 @@ function inspectWarehouse(wh) {
 // 5. Digital Proof of Handoff
 function previewHandoffPhoto(input) {
   if (input.files && input.files[0]) {
-    document.getElementById('hf-file-label').textContent = '✓ Attached: ' + input.files[0].name;
+    document.getElementById('hf-file-label').textContent = ' Attached: ' + input.files[0].name;
   }
 }
 
@@ -548,7 +597,7 @@ function renderHandoffs() {
     html += '<td><b>' + h.lotId.toUpperCase() + '</b></td>';
     html += '<td>' + h.from + ' &rarr; ' + h.to + '</td>';
     html += '<td><b>' + h.weightQt + ' Qt</b></td>';
-    html += '<td><span class="chip sm" style="background:#E6F4EA;color:#137333">Confirmed ✓</span></td>';
+    html += '<td><span class="chip sm" style="background:#E6F4EA;color:#137333">Confirmed </span></td>';
     html += '</tr>';
   });
 
@@ -583,6 +632,87 @@ window.submitLossReport = function () {
 renderPickups();
 renderHandoffs();
 initStorageMap();
+
+// 7. Vehicle Fleet Registry
+var fleetVehicles = [
+  { reg: 'MH-15-AB-1234', type: 'Tata Ace Tempo', capacityQt: 20, driver: 'Ramesh Patil', contact: '9876543210', base: 'Dindori', status: 'available' },
+  { reg: 'MH-15-CD-5678', type: 'Mahindra Bolero Pickup', capacityQt: 15, driver: 'Sunil Bhor', contact: '9765432109', base: 'Pimpalgaon Baswant', status: 'in-transit' },
+  { reg: 'MH-15-EF-9012', type: 'Eicher 10.90 Truck', capacityQt: 80, driver: 'Ganesh Shinde', contact: '9654321098', base: 'Nashik', status: 'available' },
+  { reg: 'MH-15-GH-3456', type: 'Tata 407 Mini Truck', capacityQt: 40, driver: 'Pravin Jagtap', contact: '9543210987', base: 'Dindori', status: 'available' },
+  { reg: 'MH-15-IJ-7890', type: 'Ashok Leyland Dost', capacityQt: 18, driver: 'Anil Gaikwad', contact: '9432109876', base: 'Manmad', status: 'maintenance' },
+  { reg: 'MH-15-KL-2345', type: 'Tata 1109 Truck', capacityQt: 100, driver: 'Vijay More', contact: '9321098765', base: 'Nashik', status: 'in-transit' }
+];
+window.BHOWANEE_FLEET = fleetVehicles;
+
+function renderFleet() {
+  var tbody = document.getElementById('fleet-tbody');
+  if (!tbody) return;
+  var html = '';
+  var avail = 0, busy = 0, totalCap = 0;
+
+  fleetVehicles.forEach(function (v) {
+    var statusClass = v.status === 'available' ? 'pill-green' : (v.status === 'in-transit' ? 'pill-amber' : 'pill-red');
+    var statusLabel = v.status === 'available' ? 'Available' : (v.status === 'in-transit' ? 'In Transit' : 'Maintenance');
+    if (v.status === 'available') { avail++; totalCap += v.capacityQt; }
+    if (v.status === 'in-transit') busy++;
+
+    html += '<tr>';
+    html += '<td><b>' + v.reg + '</b></td>';
+    html += '<td>' + v.type + '</td>';
+    html += '<td><b>' + v.capacityQt + ' Qt</b></td>';
+    html += '<td>' + v.driver + '</td>';
+    html += '<td><a href="tel:' + v.contact + '">' + v.contact + '</a></td>';
+    html += '<td>' + v.base + '</td>';
+    html += '<td><span class="stat-pill ' + statusClass + '">' + statusLabel + '</span></td>';
+    html += '<td>';
+    if (v.status === 'available') {
+      html += '<button class="btn sm" onclick="assignFleetToPickup(\'' + v.reg + '\')">Assign to Pickup</button>';
+    } else {
+      html += '<button class="btn sm secondary" onclick="markVehicleAvailable(\'' + v.reg + '\')">Mark Available</button>';
+    }
+    html += '</td></tr>';
+  });
+
+  tbody.innerHTML = html;
+  document.getElementById('kpi-fleet-total').textContent = fleetVehicles.length;
+  document.getElementById('kpi-fleet-avail').textContent = avail;
+  document.getElementById('kpi-fleet-busy').textContent = busy;
+  document.getElementById('kpi-fleet-cap').textContent = totalCap + ' Qt';
+}
+
+window.assignFleetToPickup = function (reg) {
+  var v = fleetVehicles.find(function (x) { return x.reg === reg; });
+  if (!v) return;
+  v.status = 'in-transit';
+  BD.writeAudit('Vehicle ' + reg + ' assigned to active pickup run', 'Fleet Desk', v.base, 'Vehicle Dispatch');
+  BhComp.toast('Vehicle ' + reg + ' dispatched.', 'info');
+  renderFleet();
+};
+
+window.markVehicleAvailable = function (reg) {
+  var v = fleetVehicles.find(function (x) { return x.reg === reg; });
+  if (!v) return;
+  v.status = 'available';
+  BhComp.toast('Vehicle ' + reg + ' marked as available.', 'info');
+  renderFleet();
+};
+
+window.openAddVehicleModal = function () {
+  var reg = prompt('Vehicle Registration No. (e.g. MH-15-XY-0001):');
+  if (!reg) return;
+  var type = prompt('Vehicle Type (e.g. Tata Ace Tempo):') || 'Pickup';
+  var cap = parseInt(prompt('Capacity in Quintals:') || '20', 10);
+  var driver = prompt('Driver Name:') || 'TBD';
+  var contact = prompt('Driver Contact:') || '';
+  var base = prompt('Base Location:') || 'Dindori';
+  fleetVehicles.push({ reg: reg, type: type, capacityQt: cap, driver: driver, contact: contact, base: base, status: 'available' });
+  window.BHOWANEE_FLEET = fleetVehicles;
+  BD.writeAudit('Registered new vehicle ' + reg + ' (' + type + ')', 'Fleet Desk', base, 'Fleet Registry');
+  BhComp.toast('Vehicle ' + reg + ' registered.', 'info');
+  renderFleet();
+};
+
+renderFleet();
 </script>
 </body>
 </html>

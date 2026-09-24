@@ -1,5 +1,5 @@
 /* ============================================================
-   Bhowanee — Shared Component Styles
+   Bhowanee - Shared Component Styles
    Import tokens.css before this file.
    ============================================================ */
 
@@ -208,45 +208,56 @@ img { display: block; max-width: 100%; }
 }
 .section-title:first-child { margin-top: 0; }
 
-/* ── Buttons ───────────────────────────────────────────────── */
+/* -- Buttons ----------------------------------------------- */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font: 600 var(--text-base)/1 var(--font-body);
+  font: 500 var(--text-base)/1 var(--font-body);
+  letter-spacing: 0.015em;
   min-height: var(--ctrl-h);
-  padding: 0 22px;
-  border: 2px solid var(--ink);
+  padding: 0 24px;
+  border: 1.5px solid var(--ink);
   background: var(--ink);
   color: var(--sheet);
-  border-radius: var(--radius);
+  border-radius: 6px;
   cursor: pointer;
-  transition: background var(--duration) var(--ease), color var(--duration) var(--ease), transform 60ms;
+  box-shadow: 0 1px 4px rgba(28,36,82,.18);
+  transition: background 160ms ease, box-shadow 160ms ease, transform 80ms ease, border-color 160ms ease;
   text-decoration: none;
   white-space: nowrap;
+  -webkit-font-smoothing: antialiased;
 }
-.btn:hover { background: #2d3a7a; border-color: #2d3a7a; }
-.btn:active { transform: scale(.98); }
+.btn:hover {
+  background: #26347a;
+  border-color: #26347a;
+  box-shadow: 0 3px 10px rgba(28,36,82,.28);
+}
+.btn:active { transform: scale(.975); box-shadow: none; }
+.btn:focus-visible { box-shadow: 0 0 0 3px rgba(217,154,6,.45); outline: none; }
 .btn.secondary {
   background: transparent;
   color: var(--ink);
+  box-shadow: none;
 }
-.btn.secondary:hover { background: var(--paper); }
+.btn.secondary:hover { background: var(--paper); box-shadow: 0 1px 4px rgba(28,36,82,.12); }
 .btn.danger {
   background: var(--brick);
   border-color: var(--brick);
   color: #fff;
 }
+.btn.danger:hover { background: #961f18; border-color: #961f18; }
 .btn.success {
   background: var(--field);
   border-color: var(--field);
   color: #fff;
 }
-.btn.sm { min-height: var(--ctrl-h-sm); font-size: var(--text-sm); padding: 0 14px; }
-.btn.lg { min-height: var(--ctrl-h-lg); font-size: var(--text-md); }
+.btn.success:hover { background: #3a6228; border-color: #3a6228; }
+.btn.sm { min-height: var(--ctrl-h-sm); font-size: var(--text-sm); padding: 0 16px; border-radius: 5px; }
+.btn.lg { min-height: var(--ctrl-h-lg); font-size: var(--text-md); padding: 0 32px; border-radius: 8px; }
 .btn.block { display: flex; width: 100%; }
-.btn:disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
+.btn:disabled { opacity: .4; cursor: not-allowed; pointer-events: none; box-shadow: none; }
 
 .link-btn {
   background: none;
@@ -384,8 +395,8 @@ th {
 }
 th.sortable { cursor: pointer; user-select: none; }
 th.sortable:hover { background: var(--sheet-alt); }
-th.sort-asc::after  { content: " ▲"; font-size: 10px; }
-th.sort-desc::after { content: " ▼"; font-size: 10px; }
+th.sort-asc::after  { content: " "; font-size: 10px; }
+th.sort-desc::after { content: " "; font-size: 10px; }
 td { border-bottom: 1px solid var(--rule); }
 tr:last-child td { border-bottom: none; }
 tr.highlight td { background: var(--turmeric-bg); }

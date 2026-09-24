@@ -1,5 +1,5 @@
-/* ============================================================
-   Bhowanee — Service Worker (sw.js)
+﻿/* ============================================================
+   Bhowanee - Service Worker (sw.js)
    Caches all app files for offline use.
    Farmer and block-admin dashboards continue working offline.
    Works at root (/) or under a subpath (e.g. /bhowanee/ on GitHub Pages).

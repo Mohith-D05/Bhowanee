@@ -1,5 +1,5 @@
-/* ============================================================
-   Bhowanee — Market Intelligence (market.js)
+﻿/* ============================================================
+   Bhowanee - Market Intelligence (market.js)
    Phase 1: data layer only. No dashboard screen.
    Feeds mandi prices on the bid board and farmer set-price screen.
    ============================================================ */
