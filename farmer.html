@@ -11,8 +11,6 @@
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="shared.css">
 <style>
-/* Phone-sized layout centred on desktop */
-.phone-shell { background:var(--sheet); box-shadow:var(--shadow-lg); }
 .mandi-ref { margin-top:14px; padding:10px 14px; border:1px dashed var(--soil); color:var(--soil); font-weight:600; font-size:17px; display:flex; justify-content:space-between; align-items:center; }
 .price-prompt { margin-top:12px; font-size:16px; min-height:52px; line-height:1.5; }
 .price-prompt.warn { color:var(--brick); }
@@ -28,13 +26,18 @@
 .no-bids { color:var(--ink-soft); margin-top:16px; font-size:16px; }
 #closed-banner { display:none; }
 #closed-banner.visible { display:block; }
+/* Constrain form/content width for readability on wide screens */
+.farmer-content-wrap { max-width:740px; }
+.farmer-offers-wrap { max-width:860px; }
 </style>
 </head>
 <body>
-<div class="phone-shell" id="shell">
-  <div class="phone-topbar">
-    <span class="phone-topbar-brand"><img src="logo.png" alt="Bhowanee Logo" class="brand-logo-img" style="width:28px;height:28px">Bhowanee</span>
-    <div style="display:flex;gap:12px;align-items:center">
+<div class="app-shell" id="shell">
+
+  <!-- Topbar -->
+  <header class="topbar" role="banner">
+    <span class="topbar-brand"><img src="logo.png" alt="Bhowanee Logo" class="brand-logo-img" style="width:28px;height:28px">Bhowanee</span>
+    <div class="topbar-tools">
       <span id="offline-badge" class="offline-badge">Offline</span>
       <span id="sync-badge" class="sync-badge">Sync</span>
       <div class="seg" role="group" aria-label="Language" style="border-color:rgba(255,255,255,.4)">
@@ -42,83 +45,96 @@
         <button class="seg-btn" data-flang="mr" aria-pressed="false" style="color:#fff" lang="mr">मर</button>
       </div>
     </div>
-  </div>
+  </header>
 
-  <!-- ── TAB: Sell ── -->
-  <div class="phone-content" id="tab-sell">
-    <h1 id="f-hello" style="font-size:22px;font-family:var(--font-slab)">Your onion lot</h1>
-    <p class="lot-meta" id="f-lot">Onion · 12 quintal · Grade A · Gat 118</p>
-    <div class="mandi-ref" id="f-mandi">
-      <span>Today's mandi price</span>
-      <span id="f-mandi-val">₹1,880</span>
-    </div>
-    <label for="f-price" id="f-label" style="display:block;font-weight:600;font-size:18px;margin-top:18px">Your price per quintal</label>
-    <div class="stepper" style="margin-top:8px">
-      <button type="button" id="f-minus" aria-label="Lower by 10">−10</button>
-      <input id="f-price" inputmode="numeric" value="2100" aria-describedby="f-prompt">
-      <button type="button" id="f-plus"  aria-label="Raise by 10">+10</button>
-    </div>
-    <p class="price-prompt" id="f-prompt" aria-live="polite" role="status"></p>
-    <button class="btn lg block" type="button" id="f-set" style="margin-top:4px">Set my price</button>
-    <p class="set-msg text-ok" id="f-setmsg" aria-live="polite"></p>
-    <p class="change-note" id="f-changenote"></p>
-
-    <!-- Closed banner -->
-    <div id="closed-banner" class="alert ok" style="margin-top:16px">
-      <b>Lot closed!</b> A buyer matched your price. Your block administrator will contact you for pickup details.
-    </div>
-  </div>
-
-  <!-- ── TAB: Offers ── -->
-  <div class="phone-content" id="tab-offers" hidden>
-    <h2 style="font-size:22px;font-family:var(--font-slab);margin-bottom:4px" id="o-title">Offers on your lot</h2>
-    <p class="lot-meta" id="o-lot">Onion · 12 quintal · Grade A</p>
-
-    <svg id="bb-svg" viewBox="0 0 540 300" role="img" aria-label="Bid graph" class="bb-svg" style="margin-top:14px"></svg>
-    <p class="bb-say-farmer" id="bb-say" aria-live="polite"></p>
-
-    <div class="accept-row" id="accept-row">
-      <button class="btn success" type="button" id="btn-accept">Accept best offer</button>
-      <button class="btn secondary" type="button" id="btn-wait">Wait for more</button>
-    </div>
-    <p class="text-soft text-sm" id="accept-note" style="margin-top:10px"></p>
-  </div>
-
-  <!-- ── TAB: Call ── -->
-  <div class="phone-content" id="tab-call" hidden>
-    <h2 style="font-size:22px;font-family:var(--font-slab);margin-bottom:16px">Your administrator</h2>
-    <p style="font-size:17px;margin-bottom:20px">Your block administrator handles your lease, storage and payments on your behalf. Every action they take on your behalf is confirmed by you first.</p>
-    <a href="tel:+919876543000" class="btn lg block" id="btn-call" style="text-decoration:none;text-align:center"> Call block administrator</a>
-
-    <h3 style="font-family:var(--font-slab);font-size:19px;margin:28px 0 12px">Payment messages</h3>
-    <ul class="payment-list" id="payment-list"></ul>
-
-    <h3 style="font-family:var(--font-slab);font-size:19px;margin:24px 0 10px">What your administrator handles</h3>
-    <ul style="padding-left:20px;font-size:15px;color:var(--ink-soft);line-height:1.8">
-      <li>Lease and plot records</li>
-      <li>Price trends and mandi alerts</li>
-      <li>Storage booking</li>
-      <li>Payment records</li>
-    </ul>
-    <p style="margin-top:12px;font-size:14px;color:var(--ink-soft)">You get an SMS or voice message for every action taken on your behalf.</p>
-
-    <button class="btn secondary block" style="margin-top:20px" type="button" onclick="Auth.logout()">Sign out</button>
-  </div>
-
-  <!-- ── TAB: Field (Soil, Climate, Crop Cycles) ── -->
-  <div class="phone-content" id="tab-field" hidden>
-    <h2 style="font-size:22px;font-family:var(--font-slab);margin-bottom:4px" id="f-field-title">Field & Weather</h2>
-    <p class="lot-meta" id="f-field-sub">Gat 118 / 125 · 2.4 Acres · Medium Black Soil</p>
-    <div id="farmer-field-content" style="margin-top:12px"></div>
-  </div>
-
-  <!-- Bottom tab bar -->
-  <nav class="phone-tabs" style="grid-template-columns:repeat(4,1fr)">
-    <button class="phone-tab active" type="button" data-tab="sell" id="nav-sell">Sell</button>
-    <button class="phone-tab" type="button" data-tab="offers" id="nav-offers">Offers</button>
-    <button class="phone-tab" type="button" data-tab="field" id="nav-field">Field</button>
-    <button class="phone-tab" type="button" data-tab="call" id="nav-call">Call</button>
+  <!-- Sidenav -->
+  <nav class="sidenav" aria-label="Farmer navigation">
+    <button class="sidenav-item active" data-tab="sell" id="nav-sell">Sell</button>
+    <button class="sidenav-item" data-tab="offers" id="nav-offers">Offers</button>
+    <button class="sidenav-item" data-tab="field" id="nav-field">Field</button>
+    <button class="sidenav-item" data-tab="call" id="nav-call">Call</button>
   </nav>
+
+  <!-- Main area -->
+  <main class="main-area">
+
+    <!-- ── TAB: Sell ── -->
+    <section id="tab-sell">
+      <div class="farmer-content-wrap">
+        <h1 id="f-hello" style="font-size:22px;font-family:var(--font-slab)">Your onion lot</h1>
+        <p class="lot-meta" id="f-lot">Onion · 12 quintal · Grade A · Gat 118</p>
+        <div class="mandi-ref" id="f-mandi">
+          <span>Today's mandi price</span>
+          <span id="f-mandi-val">₹1,880</span>
+        </div>
+        <label for="f-price" id="f-label" style="display:block;font-weight:600;font-size:18px;margin-top:18px">Your price per quintal</label>
+        <div class="stepper" style="margin-top:8px;max-width:400px">
+          <button type="button" id="f-minus" aria-label="Lower by 10">−10</button>
+          <input id="f-price" inputmode="numeric" value="2100" aria-describedby="f-prompt">
+          <button type="button" id="f-plus"  aria-label="Raise by 10">+10</button>
+        </div>
+        <p class="price-prompt" id="f-prompt" aria-live="polite" role="status"></p>
+        <button class="btn lg" type="button" id="f-set" style="margin-top:4px">Set my price</button>
+        <p class="set-msg text-ok" id="f-setmsg" aria-live="polite"></p>
+        <p class="change-note" id="f-changenote"></p>
+
+        <!-- Closed banner -->
+        <div id="closed-banner" class="alert ok" style="margin-top:16px">
+          <b>Lot closed!</b> A buyer matched your price. Your block administrator will contact you for pickup details.
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TAB: Offers ── -->
+    <section id="tab-offers" hidden>
+      <div class="farmer-offers-wrap">
+        <h2 style="font-size:22px;font-family:var(--font-slab);margin-bottom:4px" id="o-title">Offers on your lot</h2>
+        <p class="lot-meta" id="o-lot">Onion · 12 quintal · Grade A</p>
+
+        <svg id="bb-svg" viewBox="0 0 760 300" role="img" aria-label="Bid graph" class="bb-svg" style="margin-top:14px"></svg>
+        <p class="bb-say-farmer" id="bb-say" aria-live="polite"></p>
+
+        <div class="accept-row" id="accept-row" style="max-width:440px">
+          <button class="btn success" type="button" id="btn-accept">Accept best offer</button>
+          <button class="btn secondary" type="button" id="btn-wait">Wait for more</button>
+        </div>
+        <p class="text-soft text-sm" id="accept-note" style="margin-top:10px"></p>
+      </div>
+    </section>
+
+    <!-- ── TAB: Call ── -->
+    <section id="tab-call" hidden>
+      <div class="farmer-content-wrap">
+        <h2 style="font-size:22px;font-family:var(--font-slab);margin-bottom:16px">Your administrator</h2>
+        <p style="font-size:17px;margin-bottom:20px">Your block administrator handles your lease, storage and payments on your behalf. Every action they take on your behalf is confirmed by you first.</p>
+        <a href="tel:+919876543000" class="btn lg" id="btn-call" style="text-decoration:none;text-align:center;display:inline-flex"> Call block administrator</a>
+
+        <h3 style="font-family:var(--font-slab);font-size:19px;margin:28px 0 12px">Payment messages</h3>
+        <ul class="payment-list" id="payment-list"></ul>
+
+        <h3 style="font-family:var(--font-slab);font-size:19px;margin:24px 0 10px">What your administrator handles</h3>
+        <ul style="padding-left:20px;font-size:15px;color:var(--ink-soft);line-height:1.8">
+          <li>Lease and plot records</li>
+          <li>Price trends and mandi alerts</li>
+          <li>Storage booking</li>
+          <li>Payment records</li>
+        </ul>
+        <p style="margin-top:12px;font-size:14px;color:var(--ink-soft)">You get an SMS or voice message for every action taken on your behalf.</p>
+
+        <button class="btn secondary" style="margin-top:20px" type="button" onclick="Auth.logout()">Sign out</button>
+      </div>
+    </section>
+
+    <!-- ── TAB: Field (Soil, Climate, Crop Cycles) ── -->
+    <section id="tab-field" hidden>
+      <div class="farmer-content-wrap">
+        <h2 style="font-size:22px;font-family:var(--font-slab);margin-bottom:4px" id="f-field-title">Field & Weather</h2>
+        <p class="lot-meta" id="f-field-sub">Gat 118 / 125 · 2.4 Acres · Medium Black Soil</p>
+        <div id="farmer-field-content" style="margin-top:12px"></div>
+      </div>
+    </section>
+
+  </main>
 </div>
 
 <script src="data.js"></script>
@@ -229,7 +245,7 @@ function refreshBidBoard() {
   var bids = BD.getBidsByLot(LOT_ID);
   var best = BD.getHighestBid(LOT_ID);
   var svg  = document.getElementById('bb-svg');
-  var res  = BhComp.renderBidBoard(svg, { farmerPrice: lot ? lot.farmerPrice : 0, mandiPrice: MANDI, bids: bids });
+  var res  = BhComp.renderBidBoard(svg, { farmerPrice: lot ? lot.farmerPrice : 0, mandiPrice: MANDI, bids: bids, width: 760, height: 300 });
   var say  = document.getElementById('bb-say');
 
   if (lot && lot.status === 'closed') {
@@ -301,11 +317,13 @@ function renderFarmerFieldAgri() {
     BhComp.cropCyclesHTML(agri.cropCycles);
 }
 
-/* ── Tabs ───────────────────────────────────────────────────── */
+/* ── Tabs (sidenav-driven) ─────────────────────────────────── */
 function switchTab(name) {
   ['sell','offers','field','call'].forEach(function(t){
     document.getElementById('tab-'+t).hidden = t !== name;
-    document.getElementById('nav-'+t).classList.toggle('active', t === name);
+  });
+  document.querySelectorAll('.sidenav-item').forEach(function(btn){
+    btn.classList.toggle('active', btn.dataset.tab === name);
   });
   if (name === 'offers') refreshBidBoard();
   if (name === 'field')  renderFarmerFieldAgri();
@@ -338,3 +356,4 @@ document.getElementById('f-mandi-val').textContent = '₹'+MANDI.toLocaleString(
 </script>
 </body>
 </html>
+

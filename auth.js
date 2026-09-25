@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    Bhowanee - Auth (auth.js)
    Mock authentication using sessionStorage.
    ============================================================ */
@@ -15,6 +15,7 @@
     buyer:     'buyer.html',
     investor:  'investor.html',
     logistics: 'logistics.html',
+    storage:   'storage.html',
     team:      'admin.html',
     admin:     'admin.html'
   };

@@ -31,50 +31,40 @@ body { display:flex; align-items:center; justify-content:center; min-height:100d
 </head>
 <body>
 <div class="login-wrap">
-  <!-- Left artwork panel -->
-  <div class="login-art" aria-hidden="true">
-    <svg viewBox="0 0 540 380">
-      <defs>
-        <pattern id="rowlines" width="9" height="9" patternUnits="userSpaceOnUse">
-          <line x1="0" y1="4.5" x2="9" y2="4.5" stroke="#1C2452" stroke-opacity=".18" stroke-width="1.5"/>
-        </pattern>
-      </defs>
-      <rect width="540" height="380" fill="#E3EAD9"/>
-      <!-- State outline suggestion -->
-      <polygon points="25,55 200,20 420,40 510,115 495,300 370,365 140,360 28,295" fill="#D5E0C7" stroke="#1C2452" stroke-width="1.5" stroke-dasharray="7 5"/>
-      <!-- Farm parcels -->
-      <polygon points="50,80 160,68 175,148 65,160" fill="#B7D29F" stroke="#1C2452" stroke-width="1.3"/>
-      <polygon points="178,66 295,58 310,136 195,148" fill="#F0C860" stroke="#1C2452" stroke-width="1.3"/>
-      <polygon points="312,62 428,75 438,148 325,140" fill="#B7D29F" stroke="#1C2452" stroke-width="1.3"/>
-      <polygon points="60,238 175,228 186,315 75,318" fill="#AEB8E4" stroke="#1C2452" stroke-width="1.3"/>
-      <polygon points="200,222 315,232 320,318 210,315" fill="#C9D0DE" stroke="#1C2452" stroke-width="1.3" stroke-dasharray="5 4"/>
-      <polygon points="338,238 435,245 430,314 340,318" fill="#DCADCB" stroke="#1C2452" stroke-width="1.3"/>
-      <!-- Row fill on parcels -->
-      <g fill="url(#rowlines)" opacity=".7">
-        <polygon points="50,80 160,68 175,148 65,160"/>
-        <polygon points="178,66 295,58 310,136 195,148"/>
-        <polygon points="312,62 428,75 438,148 325,140"/>
-        <polygon points="60,238 175,228 186,315 75,318"/>
-        <polygon points="338,238 435,245 430,314 340,318"/>
-      </g>
-      <!-- River -->
-      <path d="M0,190 C100,168 195,215 315,195 S490,218 545,200" fill="none" stroke="#9DB4CE" stroke-width="9" stroke-linecap="round"/>
-      <!-- Map pins -->
-      <g fill="#1C2452">
-        <path d="M220,132 L213,119 A8,8,0,1,1,227,119Z"/><circle cx="220" cy="112" r="3" fill="#F9FAF7"/>
-        <path d="M390,298 L383,285 A8,8,0,1,1,397,285Z"/><circle cx="390" cy="278" r="3" fill="#F9FAF7"/>
-      </g>
-    </svg>
-    <p>Every contract, from the state down to the village.</p>
+  <!-- Left brand showcase panel -->
+  <div class="login-art" aria-hidden="true" style="justify-content:center;align-items:center;text-align:center;background:linear-gradient(170deg, #EBF1E3 0%, #DCE7D0 100%);padding:48px 36px">
+    <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:auto;margin-top:auto">
+      <div style="position:relative;margin-bottom:22px">
+        <img src="logo.png" alt="Bhowanee Logo" style="width:130px;height:130px;border-radius:50%;object-fit:cover;box-shadow:0 12px 32px rgba(28,36,82,0.18);border:4px solid #FFFFFF;display:block">
+        <span style="position:absolute;bottom:4px;right:6px;width:24px;height:24px;background:var(--forest);border:3px solid #FFF;border-radius:50%" title="Platform Online"></span>
+      </div>
+      <h1 style="font-family:var(--font-slab);font-size:38px;font-weight:700;color:var(--ink);letter-spacing:-0.5px;margin:0 0 10px;line-height:1.1">Bhowanee</h1>
+      <p style="font-family:var(--font-slab);font-size:20px;font-weight:600;color:var(--ink);line-height:1.35;max-width:20ch;margin:0 0 20px">Let&#39;s celebrate agriculture together.</p>
+      
+      <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:280px;text-align:left;background:rgba(255,255,255,0.65);backdrop-filter:blur(6px);padding:14px 18px;border-radius:8px;border:1px solid rgba(28,36,82,0.12);font-size:13px;color:var(--ink)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="color:var(--forest);font-weight:700">✓</span>
+          <span>Verified Farmer Contracts</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="color:var(--forest);font-weight:700">✓</span>
+          <span>SBI Escrow Guarantee</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="color:var(--forest);font-weight:700">✓</span>
+          <span>Optimized Fleet &amp; Storage</span>
+        </div>
+      </div>
+    </div>
+    
+    <div style="margin-top:auto;font-size:12px;color:var(--ink-soft);opacity:0.85">
+      Nashik Agri Innovation Network • Maharashtra
+    </div>
   </div>
 
   <!-- Login form -->
   <div class="login-form">
-    <div class="login-top">
-      <div style="display:flex;align-items:center;gap:12px">
-        <img src="logo.png" alt="Bhowanee Logo" style="width:40px;height:40px;border-radius:50%;object-fit:cover;box-shadow:0 2px 8px rgba(0,0,0,0.15);border:2px solid var(--paper)">
-        <span class="wordmark">Bhowanee</span>
-      </div>
+    <div class="login-top" style="justify-content:flex-end">
       <div class="seg" role="group" aria-label="Language">
         <button type="button" class="seg-btn" data-lang="en" aria-pressed="true">English</button>
         <button type="button" class="seg-btn" data-lang="mr" aria-pressed="false" lang="mr">मराठी</button>
@@ -95,23 +85,29 @@ var T = {
       again:"Send code again",sent:"Code sent to",authcode:"Code from your authenticator app",smscode:"SMS code sent to your phone",
       roles:{farmer:["Farmer","Set your price and see offers"],block:["Block administrator","Manage your block from the map"],
              buyer:["Buyer","Browse lots and place bids"],investor:["Investor","Compare plans and invest"],
-             logistics:["Logistics and storage","Pickups, storage and delivery"],team:["Bhowanee team","Control room for the whole platform"]}},
+             logistics:["Logistics Partner","Multi-vehicle fleet routing & pickup dispatch"],
+             storage:["Storage & Warehouse","List capacity, request verification & get storage orders"],
+             team:["Bhowanee team","Control room for the whole platform"]}},
   mr:{title:"साइन इन करा",who:"तुम्ही कोण आहात?",mobile:"मोबाईल नंबर",send:"कोड पाठवा",call:"मला फोन करून कोड सांगा",
       code:"६ अंकी कोड",signin:"साइन इन करा",back:"भूमिका बदला",email:"ईमेल",pass:"पासवर्ड",cont:"पुढे जा",
       again:"कोड पुन्हा पाठवा",sent:"कोड पाठवला:",authcode:"ऑथेंटिकेटर कोड",smscode:"SMS कोड पाठवला",
       roles:{farmer:["शेतकरी","तुमची किंमत ठरवा आणि ऑफर पहा"],block:["ब्लॉक प्रशासक","नकाशावरून तुमचा ब्लॉक सांभाळा"],
              buyer:["खरेदीदार","लॉट पहा आणि बोली लावा"],investor:["गुंतवणूकदार","योजना तुलना करा आणि गुंतवणूक करा"],
-             logistics:["वाहतूक आणि साठवण","उचल, साठवण आणि वितरण"],team:["भवानी टीम","संपूर्ण प्लॅटफॉर्मचे नियंत्रण"]}},
+             logistics:["वाहतूक आणि ताफा","वाहने, मार्ग नियोजन आणि थेट शेतावरून उचल"],
+             storage:["गोदाम आणि साठवण","गोदाम नोंदणी, पडताळणी आणि साठवणूक ऑर्डर्स"],
+             team:["भवानी टीम","संपूर्ण प्लॅटफॉर्मचे नियंत्रण"]}},
   hi:{title:"साइन इन करें",who:"आप कौन हैं?",mobile:"मोबाइल नंबर",send:"कोड भेजें",call:"फ़ोन करके कोड बताएं",
       code:"6 अंकों का कोड",signin:"साइन इन करें",back:"भूमिका बदलें",email:"ईमेल",pass:"पासवर्ड",cont:"आगे बढ़ें",
       again:"कोड फिर से भेजें",sent:"कोड भेजा गया:",authcode:"ऑथेंटिकेटर कोड",smscode:"SMS कोड भेजा गया",
       roles:{farmer:["किसान","अपनी कीमत तय करें और ऑफर देखें"],block:["ब्लॉक प्रशासक","मानचित्र से अपने ब्लॉक को संभालें"],
              buyer:["खरीदार","लॉट देखें और बोली लगाएं"],investor:["निवेशक","योजनाएं तुलना करें और निवेश करें"],
-             logistics:["परिवहन और भंडारण","उठान, भंडारण और डिलीवरी"],team:["भवानी टीम","पूरे प्लेटफ़ॉर्म का नियंत्रण"]}}
+             logistics:["परिवहन और फ्लीट","वाहन प्रबंधन, रूट शेड्यूलिंग और फील्ड पिकअप"],
+             storage:["गोदाम और भंडारण","क्षमता लिस्टिंग, सत्यापन और भंडारण ऑर्डर"],
+             team:["भवानी टीम","पूरे प्लेटफ़ॉर्म का नियंत्रण"]}}
 };
-var MODES  = {farmer:'phone',block:'phone',buyer:'email',investor:'email',logistics:'email',team:'staff'};
-var ORDER  = ['farmer','block','buyer','investor','logistics','team'];
-var NAMES  = {farmer:'Prakash Sonawane',block:'Admin Dindori',buyer:'Anil Merchant',investor:'Priya Capital',logistics:'Logistics Partner',team:'Super Admin'};
+var MODES  = {farmer:'phone',block:'phone',buyer:'email',investor:'email',logistics:'email',storage:'email',team:'staff'};
+var ORDER  = ['farmer','block','buyer','investor','logistics','storage','team'];
+var NAMES  = {farmer:'Prakash Sonawane',block:'Admin Dindori',buyer:'Anil Merchant',investor:'Priya Capital',logistics:'Logistics Partner',storage:'Storage Partner',team:'Super Admin'};
 
 var s = {lang:Auth.getLang()||'en', step:'role', role:null, phase:'first', tries:0, locked:false, phone:'', voice:false, err:''};
 var body = document.getElementById('loginBody');

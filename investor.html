@@ -47,11 +47,13 @@
   <nav class="sidenav" aria-label="Investor navigation">
     <button class="sidenav-item active" data-section="plans">Open Plans</button>
     <button class="sidenav-item" data-section="compare">Compare Plans <span id="comp-count-badge" class="chip sm" style="margin-left:4px;display:none">0</span></button>
+    <button class="sidenav-item" data-section="portfolio">My Investments &amp; Portfolio</button>
+    <button class="sidenav-item" data-section="blocks">Block Analytics &amp; Monitoring</button>
+    <button class="sidenav-item" data-section="company">Company Profits &amp; Platform Health</button>
     <button class="sidenav-item" data-section="infographic">How It Works</button>
     <button class="sidenav-item" data-section="bidcharts">Bid Market Charts</button>
-    <button class="sidenav-item" data-section="portfolio">My Investments</button>
     <button class="sidenav-item" data-section="payouts">Payout Schedule</button>
-    <button class="sidenav-item" data-section="documents">Documents & KYC</button>
+    <button class="sidenav-item" data-section="documents">Documents &amp; KYC</button>
   </nav>
 
   <!-- Main -->
@@ -132,13 +134,84 @@
       <div id="compare-container" class="compare-grid"></div>
     </section>
 
-    <!-- ── 3. MY INVESTMENTS (PORTFOLIO) ───────────────────── -->
+    <!-- ── 3. MY INVESTMENTS (PORTFOLIO MANAGEMENT) ─────── -->
     <section id="s-portfolio" style="display:none">
-      <div style="margin-bottom:18px">
-        <h1 class="page-title">Active Investment Portfolio</h1>
-        <p class="page-sub">Track standing crop progress, lease terms, and capital appreciation.</p>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title">Investor Portfolio Management</h1>
+          <p class="page-sub">Track capital allocation, standing crop telemetry, blended returns, and automated escrow dividends.</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;background:var(--sheet);padding:8px 14px;border:1px solid var(--rule);border-radius:6px;cursor:pointer">
+            <input type="checkbox" id="chk-auto-reinvest" checked onchange="toggleAutoReinvest(this.checked)">
+            <span>Auto-Reinvest Yield (Compounding: ON)</span>
+          </label>
+        </div>
       </div>
 
+      <!-- Portfolio KPIs -->
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="num" id="kpi-port-deployed">₹3,25,000</div>
+          <div class="lbl">Active Invested Capital</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--forest)" id="kpi-port-projected">₹3,71,200</div>
+          <div class="lbl">Projected Payout Realization</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--turmeric)">14.2%</div>
+          <div class="lbl">Blended Portfolio IRR</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--forest)">₹46,200</div>
+          <div class="lbl">Accrued Capital Gain</div>
+        </div>
+      </div>
+
+      <!-- Asset Allocation & Risk Profile -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+        <div style="background:var(--sheet);border:1px solid var(--rule);padding:20px">
+          <h3 style="font-family:var(--font-slab);font-size:17px;margin-bottom:12px">Crop &amp; Commodity Allocation</h3>
+          <div style="display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--rule);margin-bottom:14px">
+            <div style="width:45%;background:#B06000" title="Onions: 45%"></div>
+            <div style="width:25%;background:#137333" title="Pulses / Gram: 25%"></div>
+            <div style="width:20%;background:#C5221F" title="Tomatoes: 20%"></div>
+            <div style="width:10%;background:#1A73E8" title="Soybean: 10%"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+            <div><span style="display:inline-block;width:10px;height:10px;background:#B06000;border-radius:2px;margin-right:6px"></span><b>Onion (Rabi):</b> 45% (₹1.46L)</div>
+            <div><span style="display:inline-block;width:10px;height:10px;background:#137333;border-radius:2px;margin-right:6px"></span><b>Pulses / JV:</b> 25% (₹81.2K)</div>
+            <div><span style="display:inline-block;width:10px;height:10px;background:#C5221F;border-radius:2px;margin-right:6px"></span><b>Tomatoes:</b> 20% (₹65.0K)</div>
+            <div><span style="display:inline-block;width:10px;height:10px;background:#1A73E8;border-radius:2px;margin-right:6px"></span><b>Soybean:</b> 10% (₹32.5K)</div>
+          </div>
+        </div>
+
+        <div style="background:var(--sheet);border:1px solid var(--rule);padding:20px">
+          <h3 style="font-family:var(--font-slab);font-size:17px;margin-bottom:12px">Field Telemetry &amp; Crop Health</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px">
+            <div style="background:var(--tint);padding:10px;border-radius:6px">
+              <div style="color:var(--ink-soft);font-size:11.5px">Average Soil Moisture</div>
+              <div style="font-size:18px;font-weight:700;color:var(--forest)">72% <span style="font-size:12px;font-weight:400">(Optimal)</span></div>
+            </div>
+            <div style="background:var(--tint);padding:10px;border-radius:6px">
+              <div style="color:var(--ink-soft);font-size:11.5px">Satellite NDVI Biomass</div>
+              <div style="font-size:18px;font-weight:700;color:var(--forest)">0.78 <span style="font-size:12px;font-weight:400">(Vigorous)</span></div>
+            </div>
+            <div style="background:var(--tint);padding:10px;border-radius:6px">
+              <div style="color:var(--ink-soft);font-size:11.5px">Pre-Order Coverage</div>
+              <div style="font-size:18px;font-weight:700;color:var(--ink)">92% Committed</div>
+            </div>
+            <div style="background:var(--tint);padding:10px;border-radius:6px">
+              <div style="color:var(--ink-soft);font-size:11.5px">Yield Realization Forecast</div>
+              <div style="font-size:18px;font-weight:700;color:var(--forest)">108% of Base</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Investments Table -->
+      <h3 style="font-family:var(--font-slab);font-size:18px;margin-bottom:12px">Standing Ventures &amp; Production Milestones</h3>
       <div class="tablewrap">
         <table>
           <thead>
@@ -148,13 +221,160 @@
               <th>Invested Capital</th>
               <th>Investment Date</th>
               <th>Production Stage</th>
+              <th>Pre-Orders Met</th>
               <th>Projected Return</th>
-              <th>Actual Return</th>
               <th>Target Payout Date</th>
             </tr>
           </thead>
           <tbody id="my-investments-tbody"></tbody>
         </table>
+      </div>
+    </section>
+
+    <!-- ── 3B. BLOCK ANALYTICS & MONITORING ─────────────────── -->
+    <section id="s-blocks" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title">Block Analytics &amp; Agricultural Monitoring</h1>
+          <p class="page-sub">Analyze micro-climate performance, farmer participation, investor capital, and historical yield indices across Nashik district blocks.</p>
+        </div>
+        <div class="seg" role="group" aria-label="Block filter" id="block-filter-seg">
+          <button type="button" class="seg-btn active" onclick="filterBlocks('all', this)">All Blocks</button>
+          <button type="button" class="seg-btn" onclick="filterBlocks('dindori', this)">Dindori</button>
+          <button type="button" class="seg-btn" onclick="filterBlocks('niphad', this)">Niphad</button>
+          <button type="button" class="seg-btn" onclick="filterBlocks('yeola', this)">Yeola</button>
+          <button type="button" class="seg-btn" onclick="filterBlocks('kalwan', this)">Kalwan</button>
+          <button type="button" class="seg-btn" onclick="filterBlocks('sinnar', this)">Sinnar</button>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="num">5 Blocks</div>
+          <div class="lbl">Active Monitoring Hubs</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">2,050 Acres</div>
+          <div class="lbl">Total Verified Production Land</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">698</div>
+          <div class="lbl">Verified Participating Farmers</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--forest)">₹3.59 Cr</div>
+          <div class="lbl">Total Investor Capital Deployed</div>
+        </div>
+      </div>
+
+      <!-- Block Cards Grid -->
+      <div id="block-cards-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:20px;margin-bottom:30px"></div>
+
+      <!-- Comparative Block Analytics Table -->
+      <h3 style="font-family:var(--font-slab);font-size:18px;margin-bottom:12px">Block Comparative Performance Ledger</h3>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Block Name</th>
+              <th>Cultivated Area</th>
+              <th>Participating Farmers</th>
+              <th>Primary Crops</th>
+              <th>Avg Realized Yield</th>
+              <th>Water Security Index</th>
+              <th>Historical IRR</th>
+              <th>Pre-Order Backing</th>
+              <th>Active Plans</th>
+            </tr>
+          </thead>
+          <tbody id="block-table-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 3C. COMPANY PROFITS & PLATFORM HEALTH ───────────── -->
+    <section id="s-company" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Company Profits &amp; Platform Health Infographics</h1>
+        <p class="page-sub">Audited operational metrics, gross marketplace volume (GMV), 2.5% platform take-rate revenue, and SBI escrow safety reserves.</p>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="num">₹1,48,50,000</div>
+          <div class="lbl">Gross Contract Volume (GMV)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--forest)">₹3,71,250</div>
+          <div class="lbl">Bhowanee Facilitation Fee (2.5%)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--field)">₹1,78,200</div>
+          <div class="lbl">Fleet &amp; Storage Margin (1.2%)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--forest)">₹3,39,450</div>
+          <div class="lbl">Company Net Profit (Q2 FY 25-26)</div>
+        </div>
+      </div>
+
+      <!-- Financial Flow Infographic -->
+      <div style="background:var(--sheet);border:1px solid var(--rule);padding:24px;margin-bottom:24px">
+        <h3 style="font-family:var(--font-slab);font-size:19px;margin-bottom:8px">100% Transparent Marketplace Flow (Per ₹1,00,000 Contract)</h3>
+        <p style="font-size:13px;color:var(--ink-soft);margin-bottom:20px">Every rupee accounted for through RBI / SBI escrow compliance without intermediaries or leakage.</p>
+        
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;text-align:center">
+          <div style="background:var(--tint);border:1px solid var(--rule);padding:18px;border-radius:8px">
+            <div style="font-size:13px;font-weight:700;color:var(--ink-soft)">1. Institutional Buyer Payment</div>
+            <div style="font-size:24px;font-weight:700;color:var(--ink);margin:8px 0">₹1,00,000</div>
+            <div style="font-size:12px;color:var(--ink-soft)">100% deposited into SBI Escrow</div>
+          </div>
+          <div style="background:#E6F4EA;border:1px solid #CEEAD6;padding:18px;border-radius:8px">
+            <div style="font-size:13px;font-weight:700;color:#137333">2. Direct Farmer Payout</div>
+            <div style="font-size:24px;font-weight:700;color:#137333;margin:8px 0">₹79,500</div>
+            <div style="font-size:12px;color:#137333">79.5% direct to farmer bank account</div>
+          </div>
+          <div style="background:#FEF7E0;border:1px solid #FEEFC3;padding:18px;border-radius:8px">
+            <div style="font-size:13px;font-weight:700;color:#B06000">3. Investor Yield Payout</div>
+            <div style="font-size:24px;font-weight:700;color:#B06000;margin:8px 0">₹16,800</div>
+            <div style="font-size:12px;color:#B06000">16.8% principal + contractual profit</div>
+          </div>
+          <div style="background:#E8F0FE;border:1px solid #D2E3FC;padding:18px;border-radius:8px">
+            <div style="font-size:13px;font-weight:700;color:#1A73E8">4. Bhowanee Platform Fee</div>
+            <div style="font-size:24px;font-weight:700;color:#1A73E8;margin:8px 0">₹2,500</div>
+            <div style="font-size:12px;color:#1A73E8">2.5% take rate for technology &amp; ops</div>
+          </div>
+          <div style="background:var(--paper);border:1px solid var(--rule);padding:18px;border-radius:8px">
+            <div style="font-size:13px;font-weight:700;color:var(--ink-soft)">5. Logistics &amp; Storage</div>
+            <div style="font-size:24px;font-weight:700;color:var(--ink);margin:8px 0">₹1,200</div>
+            <div style="font-size:12px;color:var(--ink-soft)">1.2% cold chain &amp; fleet transit</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trust & Reserve Metrics -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="kpi-card">
+          <h3 style="font-family:var(--font-slab);font-size:17px;margin-bottom:12px">Capital Safety &amp; Escrow Reserve</h3>
+          <div style="font-size:13.5px;line-height:1.8;color:var(--ink-soft)">
+            <div><b>SBI Nashik Dedicated Escrow:</b> ₹25,00,000 Safety Reserve Held</div>
+            <div><b>Historical Contract Default Rate:</b> <span style="color:var(--forest);font-weight:700">0.00% (0 of 42 Contracts)</span></div>
+            <div><b>Pre-Order Underwriting Ratio:</b> <span style="font-weight:700;color:var(--ink)">100% Institutional Backing</span></div>
+            <div><b>Audited Quality Rejection Rate:</b> 0.4% (All absorbed by reserve)</div>
+            <div><b>Regulatory Model:</b> Direct Crop Production Joint Venture (SEBI Compliant)</div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <h3 style="font-family:var(--font-slab);font-size:17px;margin-bottom:12px">Ecosystem Expansion &amp; Financial Growth</h3>
+          <div style="font-size:13.5px;line-height:1.8;color:var(--ink-soft)">
+            <div><b>Year-over-Year GMV Growth:</b> <span style="color:var(--forest);font-weight:700">+148% vs FY 24-25</span></div>
+            <div><b>Average Investor Retention:</b> 94% Reinvestment Rate</div>
+            <div><b>Active Verified Land Bank:</b> 2,050 Acres across 5 Blocks</div>
+            <div><b>Total Farmer Payouts Distributed:</b> ₹1,18,20,000</div>
+            <div><b>Next Payout Cycle:</b> 30th Sep 2026 (₹28.4L scheduled release)</div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -276,21 +496,27 @@
         </div>
         <div class="info-arrow">&#8594;</div>
         <div class="infographic-step">
-          <div class="infographic-circle">4</div>
-          <div class="infographic-label">Buyers Bid</div>
-          <div class="infographic-desc">Accredited institutional buyers place competitive bids in the 9 AM - 3 PM market window daily.</div>
+          <div class="infographic-circle" style="background:var(--forest)">4</div>
+          <div class="infographic-label" style="color:var(--forest)">Deploying to Pre-Orders</div>
+          <div class="infographic-desc">Harvested produce is allocated directly to fulfill institutional pre-orders and advance commitments first, securing baseline revenue.</div>
         </div>
         <div class="info-arrow">&#8594;</div>
         <div class="infographic-step">
           <div class="infographic-circle">5</div>
-          <div class="infographic-label">Harvest and Handoff</div>
-          <div class="infographic-desc">Logistics confirms digital chain of custody. Weighbridge receipts uploaded. Cold chain tracked.</div>
+          <div class="infographic-label">Buyer Bidding (Excess)</div>
+          <div class="infographic-desc">Buyer bidding opens for any excess harvest volume remaining after pre-orders are met, capturing upside in the 9 AM - 3 PM window.</div>
         </div>
         <div class="info-arrow">&#8594;</div>
         <div class="infographic-step">
           <div class="infographic-circle">6</div>
+          <div class="infographic-label">Harvest &amp; Handoff</div>
+          <div class="infographic-desc">Logistics &amp; storage partners confirm digital chain of custody. Weighbridge receipts uploaded. Cold chain tracked.</div>
+        </div>
+        <div class="info-arrow">&#8594;</div>
+        <div class="infographic-step">
+          <div class="infographic-circle" style="background:var(--turmeric);color:var(--ink)">7</div>
           <div class="infographic-label">You Get Paid</div>
-          <div class="infographic-desc">Escrow released: principal + yield share wired to your account. Option to reinvest into next cycle.</div>
+          <div class="infographic-desc">Escrow released: principal + guaranteed yield share + market auction bonus wired to your account.</div>
         </div>
       </div>
 
@@ -676,8 +902,8 @@ function renderPortfolio() {
     h1 += '<td><b>' + BD.fmt(inv.amount) + '</b></td>';
     h1 += '<td>' + inv.date + '</td>';
     h1 += '<td><span class="chip sm ' + (inv.stage === 'Closed' ? 'stage-growing' : 'stage-bids') + '">' + inv.stage + '</span></td>';
-    h1 += '<td>' + BD.fmt(inv.projectedReturn) + '</td>';
-    h1 += '<td>' + (inv.actualReturn ? '<b>' + BD.fmt(inv.actualReturn) + '</b>' : '<span style="color:var(--ink-soft)">Pending harvest</span>') + '</td>';
+    h1 += '<td><span class="stat-pill pill-green">100% Pre-Orders</span></td>';
+    h1 += '<td style="color:var(--forest);font-weight:700">' + BD.fmt(inv.projectedReturn) + '</td>';
     h1 += '<td>' + inv.nextPayout + '</td>';
     h1 += '</tr>';
 
@@ -704,6 +930,10 @@ function renderPortfolio() {
 
   document.getElementById('kpi-inv-deployed').textContent = BD.fmt(totalDeployed);
   document.getElementById('kpi-inv-projected').textContent = BD.fmt(totalProjected);
+  if (document.getElementById('kpi-port-deployed')) {
+    document.getElementById('kpi-port-deployed').textContent = BD.fmt(totalDeployed);
+    document.getElementById('kpi-port-projected').textContent = BD.fmt(totalProjected);
+  }
 }
 
 // 7. Reinvestment Flow
@@ -959,12 +1189,178 @@ function initBidCharts() {
   }, 50);
 }
 
-// Extend switchSection to init charts
+// ── Multi-Block Analytics & Monitoring Data ───────────────
+var BLOCKS_DATA = [
+  {
+    id: 'dindori',
+    name: 'Dindori Block',
+    acres: 420,
+    farmers: 148,
+    capital: '₹84,50,000',
+    primaryCrops: 'Rabi Onion, Tomato, Grapes',
+    yield: '18.2 Qt/Ac',
+    waterSecurity: '94% (Karanjwan Canal + Drip)',
+    irr: '16.5%',
+    preOrderPct: 95,
+    rainfall: '920 mm (Normal +4%)',
+    soilType: 'Medium Black Clay Loam',
+    activePlans: 2,
+    openPlanId: 'p1'
+  },
+  {
+    id: 'niphad',
+    name: 'Niphad Block',
+    acres: 610,
+    farmers: 215,
+    capital: '₹1,12,00,000',
+    primaryCrops: 'Late Kharif Onion, Table Grapes, Wheat',
+    yield: '21.0 Qt/Ac',
+    waterSecurity: '98% (Godavari Left Canal)',
+    irr: '15.8%',
+    preOrderPct: 100,
+    rainfall: '810 mm (Normal)',
+    soilType: 'Deep Alluvial Black Soil',
+    activePlans: 3,
+    openPlanId: 'p2'
+  },
+  {
+    id: 'yeola',
+    name: 'Yeola Block',
+    acres: 350,
+    farmers: 110,
+    capital: '₹56,00,000',
+    primaryCrops: 'Red Onion, Maize, Bengal Gram',
+    yield: '15.4 Qt/Ac',
+    waterSecurity: '82% (Palkhed Canal + Farm Ponds)',
+    irr: '17.2%',
+    preOrderPct: 88,
+    rainfall: '690 mm (Dry Spells Mitigated)',
+    soilType: 'Light-Medium Loam',
+    activePlans: 1,
+    openPlanId: 'p3'
+  },
+  {
+    id: 'kalwan',
+    name: 'Kalwan Block',
+    acres: 280,
+    farmers: 95,
+    capital: '₹44,00,000',
+    primaryCrops: 'Chana (Gram), Garlic, Hill Onion',
+    yield: '16.8 Qt/Ac',
+    waterSecurity: '91% (Girna River Basin)',
+    irr: '14.9%',
+    preOrderPct: 92,
+    rainfall: '880 mm (Optimal)',
+    soilType: 'Fertile Riverine Loam',
+    activePlans: 1,
+    openPlanId: 'p2'
+  },
+  {
+    id: 'sinnar',
+    name: 'Sinnar Block',
+    acres: 390,
+    farmers: 130,
+    capital: '₹62,50,000',
+    primaryCrops: 'Soybean, Bajra, Garva Onion',
+    yield: '14.9 Qt/Ac',
+    waterSecurity: '85% (Darna System & Check Dams)',
+    irr: '15.2%',
+    preOrderPct: 90,
+    rainfall: '720 mm (Normal)',
+    soilType: 'Medium Reddish Brown Soil',
+    activePlans: 1,
+    openPlanId: 'p1'
+  }
+];
+
+window.renderBlocks = function(filterId) {
+  var grid = document.getElementById('block-cards-grid');
+  var tbody = document.getElementById('block-table-tbody');
+  if (!grid || !tbody) return;
+
+  var list = BLOCKS_DATA;
+  if (filterId && filterId !== 'all') {
+    list = BLOCKS_DATA.filter(function(b) { return b.id === filterId; });
+  }
+
+  // Cards HTML
+  var cHtml = '';
+  list.forEach(function(b) {
+    cHtml += '<div style="background:var(--sheet);border:1px solid var(--rule);padding:20px;display:flex;flex-direction:column;justify-content:space-between">';
+    cHtml += '<div>';
+    cHtml += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">';
+    cHtml += '<div>';
+    cHtml += '<h3 style="font-family:var(--font-slab);font-size:20px;margin:0 0 4px">' + b.name + '</h3>';
+    cHtml += '<div style="font-size:12.5px;color:var(--ink-soft)">' + b.soilType + ' • ' + b.rainfall + '</div>';
+    cHtml += '</div>';
+    cHtml += '<span class="stat-pill pill-green">' + b.irr + ' Target IRR</span>';
+    cHtml += '</div>';
+
+    cHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0;font-size:13px">';
+    cHtml += '<div style="background:var(--tint);padding:8px 10px;border-radius:4px"><b>' + b.acres + ' Acres</b><br><span style="font-size:11.5px;color:var(--ink-soft)">Land Bank</span></div>';
+    cHtml += '<div style="background:var(--tint);padding:8px 10px;border-radius:4px"><b>' + b.farmers + ' Farmers</b><br><span style="font-size:11.5px;color:var(--ink-soft)">FPO Members</span></div>';
+    cHtml += '<div style="background:var(--tint);padding:8px 10px;border-radius:4px"><b>' + b.capital + '</b><br><span style="font-size:11.5px;color:var(--ink-soft)">Investor Capital</span></div>';
+    cHtml += '<div style="background:var(--tint);padding:8px 10px;border-radius:4px"><b>' + b.yield + '</b><br><span style="font-size:11.5px;color:var(--ink-soft)">Historical Avg</span></div>';
+    cHtml += '</div>';
+
+    cHtml += '<div style="font-size:13px;line-height:1.6;color:var(--ink)">';
+    cHtml += '<div><b>Primary Crops:</b> ' + b.primaryCrops + '</div>';
+    cHtml += '<div><b>Water Security:</b> ' + b.waterSecurity + '</div>';
+    cHtml += '<div><b>Pre-Order Coverage:</b> <span style="font-weight:700;color:var(--forest)">' + b.preOrderPct + '% Committed</span></div>';
+    cHtml += '</div>';
+    cHtml += '</div>';
+
+    cHtml += '<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center">';
+    cHtml += '<span style="font-size:12.5px;color:var(--ink-soft)">' + b.activePlans + ' Open Plans</span>';
+    cHtml += '<button class="btn sm" onclick="switchSection(\'plans\')">View ' + b.name.split(' ')[0] + ' Plans &rarr;</button>';
+    cHtml += '</div>';
+    cHtml += '</div>';
+  });
+  grid.innerHTML = cHtml;
+
+  // Table HTML
+  var tHtml = '';
+  BLOCKS_DATA.forEach(function(b) {
+    tHtml += '<tr>';
+    tHtml += '<td><b>' + b.name + '</b></td>';
+    tHtml += '<td>' + b.acres + ' Acres</td>';
+    tHtml += '<td>' + b.farmers + ' Farmers</td>';
+    tHtml += '<td>' + b.primaryCrops + '</td>';
+    tHtml += '<td><b>' + b.yield + '</b></td>';
+    tHtml += '<td>' + b.waterSecurity + '</td>';
+    tHtml += '<td style="color:var(--forest);font-weight:700">' + b.irr + '</td>';
+    tHtml += '<td><span class="stat-pill pill-green">' + b.preOrderPct + '% Pre-Orders</span></td>';
+    tHtml += '<td><button class="btn sm secondary" onclick="switchSection(\'plans\')">View Plans (' + b.activePlans + ')</button></td>';
+    tHtml += '</tr>';
+  });
+  tbody.innerHTML = tHtml;
+};
+
+window.filterBlocks = function(id, btn) {
+  var seg = document.getElementById('block-filter-seg');
+  if (seg) {
+    seg.querySelectorAll('.seg-btn').forEach(function(b) { b.classList.remove('active'); });
+    if (btn) btn.classList.add('active');
+  }
+  window.renderBlocks(id);
+};
+
+window.toggleAutoReinvest = function(enabled) {
+  BhComp.toast(enabled ? 'Auto-reinvestment active: matured payouts will automatically roll into top-yielding open plans.' : 'Auto-reinvestment disabled: matured payouts will wire directly to escrow bank account.', 'info');
+};
+
+// Extend switchSection to init charts and blocks
 var _origSwitch = switchSection;
 switchSection = function(sec) {
   _origSwitch(sec);
   if (sec === 'bidcharts') { initBidCharts(); }
+  if (sec === 'blocks') { renderBlocks('all'); }
 };
+
+// Initialize blocks on load
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof renderBlocks === 'function') renderBlocks('all');
+});
 </script>
 </body>
 </html>

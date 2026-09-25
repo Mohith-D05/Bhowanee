@@ -520,7 +520,6 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .bb-svg {
   display: block;
   width: 100%;
-  max-width: 760px;
   background: var(--sheet);
   border: 1px solid var(--rule);
 }

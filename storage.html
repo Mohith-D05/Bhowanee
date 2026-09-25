@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bhowanee - Storage & Warehouse Partner</title>
+<meta name="description" content="List warehouse capacity, request physical verification from Bhowanee, track storage orders and holding timelines.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+.kpi-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:20px; }
+.kpi-card { background:var(--sheet); border:1px solid var(--rule); padding:16px; }
+.kpi-card .num { font-family:var(--font-slab); font-size:26px; font-weight:700; color:var(--ink); line-height:1.1; margin-bottom:4px; }
+.kpi-card .lbl { font-size:13.5px; color:var(--ink-soft); font-weight:500; }
+.stat-pill { display:inline-flex; align-items:center; gap:6px; padding:3px 8px; border-radius:12px; font-size:12.5px; font-weight:600; }
+.pill-green { background:#E6F4EA; color:#137333; }
+.pill-amber { background:#FEF7E0; color:#B06000; }
+.pill-blue { background:#E8F0FE; color:#1A73E8; }
+.facility-card { background:var(--sheet); border:1px solid var(--rule); padding:20px; margin-bottom:18px; border-radius:6px; }
+.fill-bar-wrap { background:var(--rule); height:12px; border-radius:6px; overflow:hidden; margin:8px 0 4px; }
+.fill-bar { height:100%; transition:width 400ms ease; }
+.timeline-card { background:var(--sheet); border:1px solid var(--rule); padding:18px; margin-bottom:14px; border-left:4px solid var(--forest); }
+.verify-stepper { display:flex; align-items:center; gap:12px; margin:16px 0; background:var(--tint); padding:12px 16px; border-radius:6px; }
+.step-bubble { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; background:var(--rule); color:var(--ink); }
+.step-bubble.done { background:var(--forest); color:#fff; }
+.step-bubble.current { background:var(--turmeric); color:var(--ink); }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- Topbar -->
+  <header class="topbar" role="banner">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="topbar-brand"><img src="logo.png" alt="Bhowanee Logo" class="brand-logo-img">Bhowanee</span>
+      <span class="chip sm" style="background:var(--forest);color:#FFF;font-weight:600">Storage &amp; Warehouse Partner</span>
+    </div>
+    <div class="topbar-tools">
+      <span id="tb-stor-user" style="font-size:14.5px;font-weight:500">Storage Partner Desk</span>
+      <span id="sync-badge" class="sync-badge">Facility Online</span>
+      <button class="ghost" onclick="Auth.logout()">Sign out</button>
+    </div>
+  </header>
+
+  <!-- Sidenav -->
+  <nav class="sidenav" aria-label="Storage navigation">
+    <button class="sidenav-item active" data-section="facilities">My Facilities &amp; Capacity</button>
+    <button class="sidenav-item" data-section="register">List Facility &amp; Verification</button>
+    <button class="sidenav-item" data-section="orders">Storage Orders</button>
+    <button class="sidenav-item" data-section="timeline">Holding Timeline</button>
+    <button class="sidenav-item" data-section="ledger">Rent &amp; Escrow Ledger</button>
+  </nav>
+
+  <!-- Main -->
+  <main class="main-area" id="main-area">
+
+    <!-- ── 1. MY FACILITIES & CAPACITY ─────────────────────── -->
+    <section id="s-facilities">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title">Warehouse &amp; Cold Storage Facilities</h1>
+          <p class="page-sub">Monitor live fill gauges, chamber temperatures, space availability, and verification credentials.</p>
+        </div>
+        <button class="btn" onclick="switchSection('register')">+ List New Facility</button>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="num" id="kpi-wh-count">3 Facilities</div>
+          <div class="lbl">Registered Facilities</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" id="kpi-wh-cap">25,000 Qt</div>
+          <div class="lbl">Total Storage Capacity</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" id="kpi-wh-avail" style="color:var(--forest)">11,100 Qt</div>
+          <div class="lbl">Available Free Space</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--forest)">2 Verified</div>
+          <div class="lbl">Bhowanee Field Inspection</div>
+        </div>
+      </div>
+
+      <div id="facilities-list-container"></div>
+    </section>
+
+    <!-- ── 2. LIST FACILITY & REQUEST VERIFICATION ─────────── -->
+    <section id="s-register" style="display:none">
+      <div style="margin-bottom:20px">
+        <h1 class="page-title">List Storage Location &amp; Request Verification</h1>
+        <p class="page-sub">List your warehouse location, capacity, and equipment. Request physical on-site inspection from the Bhowanee Nashik field team to start receiving storage allocation orders.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:24px">
+        <!-- Registration Form -->
+        <div style="background:var(--sheet);border:1px solid var(--rule);padding:24px;border-radius:6px">
+          <h3 style="font-family:var(--font-slab);font-size:19px;margin-bottom:14px">Facility Specifications</h3>
+          
+          <div class="field">
+            <label for="reg-wh-name">Warehouse / Facility Name</label>
+            <input id="reg-wh-name" placeholder="e.g. Dindori Kisan Agro Cold Store #2">
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="field">
+              <label for="reg-wh-block">Block / Taluka</label>
+              <select id="reg-wh-block">
+                <option value="Dindori">Dindori</option>
+                <option value="Niphad">Niphad</option>
+                <option value="Pimpalgaon">Pimpalgaon Baswant</option>
+                <option value="Yeola">Yeola</option>
+                <option value="Kalwan">Kalwan</option>
+                <option value="Sinnar">Sinnar</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="reg-wh-type">Facility Storage Type</label>
+              <select id="reg-wh-type">
+                <option value="Cold Storage (Controlled Atmosphere)">Cold Storage (CA - 2°C to 4°C)</option>
+                <option value="Modern Ventilated Onion Chawl">Modern Ventilated Onion Chawl</option>
+                <option value="Dry Grain / Pulse Godown">Dry Grain / Pulse Godown</option>
+                <option value="Solar-Powered Pre-cooling Shed">Solar-Powered Pre-cooling Shed</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="reg-wh-loc">Exact Physical Location / Survey Gat Number</label>
+            <input id="reg-wh-loc" placeholder="e.g. Gat No. 204/1, Near SH-17 Highway, Dindori Rural">
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="field">
+              <label for="reg-wh-cap">Total Capacity (Quintals)</label>
+              <input type="number" id="reg-wh-cap" placeholder="e.g. 6000" value="5000">
+            </div>
+            <div class="field">
+              <label for="reg-wh-avail">Currently Available Space (Quintals)</label>
+              <input type="number" id="reg-wh-avail" placeholder="e.g. 3500" value="3500">
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="field">
+              <label for="reg-wh-rent">Expected Storage Rate (₹ / Qt / Month)</label>
+              <input type="number" id="reg-wh-rent" placeholder="e.g. 65" value="65">
+            </div>
+            <div class="field">
+              <label for="reg-wh-docks">Loading Bays &amp; Docks</label>
+              <input id="reg-wh-docks" placeholder="e.g. 2 Hydraulic Bays">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Infrastructure &amp; Safety Equipment</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;margin-top:6px">
+              <label><input type="checkbox" id="chk-cctv" checked> 24x7 CCTV Surveillance</label>
+              <label><input type="checkbox" id="chk-assay" checked> Digital Assaying &amp; Moisture Dock</label>
+              <label><input type="checkbox" id="chk-backup" checked> Generator Backup (Cold Chain)</label>
+              <label><input type="checkbox" id="chk-weigh" checked> 50-Ton Certified Weighbridge</label>
+            </div>
+          </div>
+
+          <button class="btn block lg" style="margin-top:20px" onclick="submitFacilityAndRequestVerification()">
+            ✓ Save &amp; Request Physical Verification from Bhowanee Team
+          </button>
+        </div>
+
+        <!-- Verification Guidance Info -->
+        <div>
+          <div style="background:var(--sheet);border:1px solid var(--rule);padding:20px;border-radius:6px;margin-bottom:18px">
+            <h3 style="font-family:var(--font-slab);font-size:18px;margin-bottom:8px">Bhowanee Onboarding Process</h3>
+            <p style="font-size:13px;color:var(--ink-soft);margin-bottom:14px">How warehouse partners get verified and start receiving institutional orders:</p>
+            
+            <div class="verify-stepper">
+              <div class="step-bubble done">1</div>
+              <div style="font-size:13px"><b>Listing:</b> Provide location, capacity &amp; specs</div>
+            </div>
+            <div class="verify-stepper">
+              <div class="step-bubble current">2</div>
+              <div style="font-size:13px"><b>Physical Verification:</b> Bhowanee field officer inspects insulation, sensors &amp; CCTV (within 48 hours)</div>
+            </div>
+            <div class="verify-stepper">
+              <div class="step-bubble">3</div>
+              <div style="font-size:13px"><b>Order Allotment:</b> Direct system allocation of farmer harvest batches &amp; pre-orders</div>
+            </div>
+            <div class="verify-stepper">
+              <div class="step-bubble">4</div>
+              <div style="font-size:13px"><b>Escrow Payout:</b> Monthly warehouse rent wired directly from SBI escrow</div>
+            </div>
+          </div>
+
+          <div style="background:var(--sheet);border:1px solid var(--rule);padding:20px;border-radius:6px">
+            <h3 style="font-family:var(--font-slab);font-size:17px;margin-bottom:8px">Verification Support Contact</h3>
+            <div style="font-size:13px;line-height:1.7;color:var(--ink-soft)">
+              <div><b>Regional Nodal Officer:</b> Rahul Sharma (Super Admin)</div>
+              <div><b>Nashik Verification Cell:</b> +91 253 2309100</div>
+              <div><b>Email:</b> logistics@bhowanee.agri</div>
+              <div><b>Average Turnaround:</b> 2 business days for site verification</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 3. STORAGE ORDERS ───────────────────────────────── -->
+    <section id="s-orders" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title">Assigned Storage Orders</h1>
+          <p class="page-sub">Orders allocated to your verified warehouses by the Bhowanee platform to hold harvested produce.</p>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="num">3 Active Orders</div>
+          <div class="lbl">Currently in Custody</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--forest)">930 Qt</div>
+          <div class="lbl">Produce Under Active Hold</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">₹64,350</div>
+          <div class="lbl">Monthly Storage Accrual</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--forest)">100% Guaranteed</div>
+          <div class="lbl">SBI Escrow Backed</div>
+        </div>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Facility Assigned</th>
+              <th>Commodity &amp; Farmer Lot</th>
+              <th>Stored Volume</th>
+              <th>Inward Date</th>
+              <th>Holding Duration</th>
+              <th>Outward Release</th>
+              <th>Agreed Rent</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="orders-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 4. HOLDING TIMELINE & BATCHES ────────────────────── -->
+    <section id="s-timeline" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Storage Holding Timeline &amp; Chamber Batches</h1>
+        <p class="page-sub">Track holding schedules, planned release dates, batch rotation, and sensor telemetry across chambers.</p>
+      </div>
+
+      <div id="timeline-cards-container"></div>
+    </section>
+
+    <!-- ── 5. RENT & ESCROW LEDGER ─────────────────────────── -->
+    <section id="s-ledger" style="display:none">
+      <div style="margin-bottom:18px">
+        <h1 class="page-title">Warehouse Rent &amp; Escrow Settlement Ledger</h1>
+        <p class="page-sub">Direct monthly rental disbursements from SBI escrow for verified storage tenures.</p>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="num">₹1,93,050</div>
+          <div class="lbl">Total Rent Settled to Date</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--forest)">₹64,350</div>
+          <div class="lbl">Upcoming Payout (30th Sep)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num">₹65 / Qt / Mo</div>
+          <div class="lbl">Average Warehouse Yield</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" style="color:var(--forest)">T+0</div>
+          <div class="lbl">Automated Settlement</div>
+        </div>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Invoice Ref</th>
+              <th>Facility</th>
+              <th>Period</th>
+              <th>Stored Volume</th>
+              <th>Rate / Month</th>
+              <th>Disbursement Amount</th>
+              <th>Settlement Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>INV-STO-2026-08</b></td>
+              <td>Dindori Cold Store Facility #1</td>
+              <td>01 Aug - 31 Aug 2026</td>
+              <td>450 Qt Onion</td>
+              <td>₹65 / Qt</td>
+              <td><b>₹29,250</b></td>
+              <td><span class="stat-pill pill-green">Settled via SBI Escrow</span></td>
+            </tr>
+            <tr>
+              <td><b>INV-STO-2026-07</b></td>
+              <td>Pimpalgaon Ventilated Onion Chawl</td>
+              <td>01 Jul - 31 Jul 2026</td>
+              <td>600 Qt Onion</td>
+              <td>₹60 / Qt</td>
+              <td><b>₹36,000</b></td>
+              <td><span class="stat-pill pill-green">Settled via SBI Escrow</span></td>
+            </tr>
+            <tr>
+              <td><b>INV-STO-2026-09 (Current)</b></td>
+              <td>All Active Facilities</td>
+              <td>01 Sep - 30 Sep 2026</td>
+              <td>930 Qt Multi-crop</td>
+              <td>Blended</td>
+              <td><b>₹64,350</b></td>
+              <td><span class="stat-pill pill-amber">Disbursement on 30-Sep</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script src="components.js"></script>
+<script>
+// 1. Session verification
+var session = Auth.require(['storage', 'team', 'admin']);
+if (session) {
+  Auth.renderTopbar(document.getElementById('tb-stor-user'), null);
+}
+
+// 2. Navigation
+var navBtns = document.querySelectorAll('.sidenav-item');
+navBtns.forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var sec = btn.getAttribute('data-section');
+    switchSection(sec);
+  });
+});
+
+function switchSection(sec) {
+  navBtns.forEach(function (b) {
+    b.classList.toggle('active', b.getAttribute('data-section') === sec);
+  });
+  document.querySelectorAll('main > section').forEach(function (s) {
+    s.style.display = s.id === 's-' + sec ? 'block' : 'none';
+  });
+}
+
+// 3. Facilities Data
+var FACILITIES_DATA = [
+  {
+    id: 'f1',
+    name: 'Dindori Cold Store Facility #1',
+    location: 'Gat No. 114, Karanjwan Road, Dindori',
+    block: 'Dindori',
+    type: 'Cold Storage (CA - 2°C to 4°C)',
+    capacity: 5000,
+    filled: 3800,
+    available: 1200,
+    temp: '3.2°C',
+    humidity: '68%',
+    rate: '₹65 / Qt / Mo',
+    verified: true,
+    certId: 'BH-WH-042',
+    cctv: 'Online (4/4 Cameras)',
+    status: 'Verified & Active'
+  },
+  {
+    id: 'f2',
+    name: 'Pimpalgaon Modern Ventilated Onion Chawl',
+    location: 'Plot 48, Baswant Agri Zone, Pimpalgaon',
+    block: 'Pimpalgaon',
+    type: 'Modern Ventilated Onion Chawl',
+    capacity: 8000,
+    filled: 4600,
+    available: 3400,
+    temp: '22.0°C (Ambient Forced Draft)',
+    humidity: '62%',
+    rate: '₹60 / Qt / Mo',
+    verified: true,
+    certId: 'BH-WH-089',
+    cctv: 'Online (6/6 Cameras)',
+    status: 'Verified & Active'
+  },
+  {
+    id: 'f3',
+    name: 'Nashik Central Multi-Commodity Godown',
+    location: 'Survey 29, APMC Yard Road, Nashik',
+    block: 'Nashik',
+    type: 'Dry Grain / Pulse Godown',
+    capacity: 12000,
+    filled: 5500,
+    available: 6500,
+    temp: 'Dry Ambient',
+    humidity: '55%',
+    rate: '₹55 / Qt / Mo',
+    verified: false,
+    certId: 'Pending Inspection',
+    cctv: 'Online',
+    status: 'Under Physical Verification'
+  }
+];
+
+function renderFacilities() {
+  var container = document.getElementById('facilities-list-container');
+  if (!container) return;
+  var html = '';
+  var totalCap = 0, totalAvail = 0;
+
+  FACILITIES_DATA.forEach(function (f) {
+    totalCap += f.capacity;
+    totalAvail += f.available;
+    var pct = Math.round((f.filled / f.capacity) * 100);
+    var barColor = pct > 85 ? 'var(--turmeric)' : 'var(--forest)';
+    var isVer = f.verified;
+
+    html += '<div class="facility-card">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">';
+    html += '<div>';
+    html += '<div style="display:flex;align-items:center;gap:10px">';
+    html += '<h3 style="font-family:var(--font-slab);font-size:20px;margin:0">' + f.name + '</h3>';
+    if (isVer) {
+      html += '<span class="stat-pill pill-green">✓ Verified by Bhowanee (Cert: ' + f.certId + ')</span>';
+    } else {
+      html += '<span class="stat-pill pill-amber">⌛ ' + f.status + '</span>';
+    }
+    html += '</div>';
+    html += '<div style="font-size:13px;color:var(--ink-soft);margin-top:4px">';
+    html += '<b>Location:</b> ' + f.location + ' • <b>Type:</b> ' + f.type + ' • <b>Tariff:</b> ' + f.rate;
+    html += '</div>';
+    html += '</div>';
+
+    html += '<div style="display:flex;gap:10px">';
+    if (isVer) {
+      html += '<button class="btn sm" onclick="switchSection(\'orders\')">View Allocated Orders</button>';
+    } else {
+      html += '<button class="btn sm secondary" onclick="alert(\'Bhowanee field inspector verification appointment scheduled for tomorrow 11:00 AM.\')">Check Inspection Status</button>';
+    }
+    html += '</div>';
+    html += '</div>';
+
+    // Fill Gauge
+    html += '<div style="margin:16px 0 10px">';
+    html += '<div style="display:flex;justify-content:space-between;font-size:13px">';
+    html += '<span><b>Occupancy:</b> ' + f.filled + ' / ' + f.capacity + ' Qt (' + pct + '% Stored)</span>';
+    html += '<span style="color:var(--forest);font-weight:700">' + f.available + ' Qt Available Free Space</span>';
+    html += '</div>';
+    html += '<div class="fill-bar-wrap"><div class="fill-bar" style="width:' + pct + '%;background:' + barColor + '"></div></div>';
+    html += '</div>';
+
+    // Telemetry strip
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:10px;font-size:12.5px;background:var(--tint);padding:10px 14px;border-radius:4px">';
+    html += '<div><b>Chamber Temp:</b> ' + f.temp + '</div>';
+    html += '<div><b>Humidity:</b> ' + f.humidity + '</div>';
+    html += '<div><b>CCTV Security:</b> ' + f.cctv + '</div>';
+    html += '<div><b>Weighbridge:</b> 50T Calibrated</div>';
+    html += '</div>';
+
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+  document.getElementById('kpi-wh-count').textContent = FACILITIES_DATA.length + ' Facilities';
+  document.getElementById('kpi-wh-cap').textContent = totalCap + ' Qt';
+  document.getElementById('kpi-wh-avail').textContent = totalAvail + ' Qt';
+}
+
+// 4. Submit Facility & Request Verification
+window.submitFacilityAndRequestVerification = function () {
+  var name = document.getElementById('reg-wh-name').value.trim();
+  var block = document.getElementById('reg-wh-block').value;
+  var type = document.getElementById('reg-wh-type').value;
+  var loc = document.getElementById('reg-wh-loc').value.trim();
+  var cap = parseInt(document.getElementById('reg-wh-cap').value, 10) || 5000;
+  var avail = parseInt(document.getElementById('reg-wh-avail').value, 10) || cap;
+  var rent = document.getElementById('reg-wh-rent').value || 65;
+
+  if (!name || !loc) {
+    alert('Please enter your facility name and physical location / survey number.');
+    return;
+  }
+
+  var newFac = {
+    id: 'f' + (FACILITIES_DATA.length + 1),
+    name: name,
+    location: loc,
+    block: block,
+    type: type,
+    capacity: cap,
+    filled: cap - avail,
+    available: avail,
+    temp: 'Under Baseline Log',
+    humidity: 'Sensor Calibration',
+    rate: '₹' + rent + ' / Qt / Mo',
+    verified: false,
+    certId: 'Pending',
+    cctv: 'Online',
+    status: 'Pending Physical Verification'
+  };
+
+  FACILITIES_DATA.unshift(newFac);
+  renderFacilities();
+  switchSection('facilities');
+  BhComp.toast('Facility registered! Request for physical verification submitted to Bhowanee Nashik team.', 'info');
+};
+
+// 5. Storage Orders Data
+var STORAGE_ORDERS = [
+  {
+    id: 'ORD-STO-201',
+    facility: 'Dindori Cold Store Facility #1',
+    commodity: 'Rabi Onion (Grade A, Gat 118)',
+    qty: '450.0 Qt',
+    inward: '25th Sep 2026',
+    duration: '60 Days',
+    outward: '24th Nov 2026',
+    rent: '₹65 / Qt / Mo',
+    monthlyTotal: '₹29,250 / mo',
+    status: 'Active Custody'
+  },
+  {
+    id: 'ORD-STO-202',
+    facility: 'Pimpalgaon Modern Onion Chawl',
+    commodity: 'Late Kharif Onion (Gat 124)',
+    qty: '300.0 Qt',
+    inward: '20th Sep 2026',
+    duration: '45 Days',
+    outward: '4th Nov 2026',
+    rent: '₹60 / Qt / Mo',
+    monthlyTotal: '₹18,000 / mo',
+    status: 'Active Custody'
+  },
+  {
+    id: 'ORD-STO-203',
+    facility: 'Dindori Cold Store Facility #1',
+    commodity: 'Plum Tomatoes (Pre-cooling, Gat 147)',
+    qty: '180.0 Qt',
+    inward: '25th Sep 2026',
+    duration: '14 Days',
+    outward: '09th Oct 2026',
+    rent: '₹95 / Qt / Mo',
+    monthlyTotal: '₹17,100 / mo',
+    status: 'Inward Verified'
+  }
+];
+
+function renderOrdersTable() {
+  var tbody = document.getElementById('orders-tbody');
+  if (!tbody) return;
+  var html = '';
+
+  STORAGE_ORDERS.forEach(function (o) {
+    html += '<tr>';
+    html += '<td><b>' + o.id + '</b></td>';
+    html += '<td>' + o.facility + '</td>';
+    html += '<td><b>' + o.commodity + '</b></td>';
+    html += '<td><b>' + o.qty + '</b></td>';
+    html += '<td>' + o.inward + '</td>';
+    html += '<td>' + o.duration + '</td>';
+    html += '<td><span style="font-weight:700;color:var(--turmeric)">' + o.outward + '</span></td>';
+    html += '<td>' + o.rent + '<br><span style="font-size:11.5px;color:var(--forest)">(' + o.monthlyTotal + ')</span></td>';
+    html += '<td><button class="btn sm secondary" onclick="switchSection(\'timeline\')">View Timeline</button></td>';
+    html += '</tr>';
+  });
+
+  tbody.innerHTML = html;
+}
+
+// 6. Holding Timeline & Batches
+function renderTimelineCards() {
+  var container = document.getElementById('timeline-cards-container');
+  if (!container) return;
+  var html = '';
+
+  STORAGE_ORDERS.forEach(function (o) {
+    html += '<div class="timeline-card">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">';
+    html += '<div>';
+    html += '<h3 style="font-family:var(--font-slab);font-size:19px;margin:0 0 4px">' + o.commodity + ' (' + o.qty + ')</h3>';
+    html += '<div style="font-size:13px;color:var(--ink-soft)">Order Ref: <b>' + o.id + '</b> • Stored at: ' + o.facility + '</div>';
+    html += '</div>';
+    html += '<span class="stat-pill pill-green">' + o.status + '</span>';
+    html += '</div>';
+
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));gap:12px;margin:16px 0;font-size:13px">';
+    html += '<div style="background:var(--tint);padding:10px;border-radius:4px"><b>Inward Intake:</b><br>' + o.inward + '</div>';
+    html += '<div style="background:var(--tint);padding:10px;border-radius:4px"><b>Contract Tenure:</b><br>' + o.duration + ' (Planned Hold)</div>';
+    html += '<div style="background:var(--tint);padding:10px;border-radius:4px"><b>Scheduled Outward:</b><br><span style="color:var(--forest);font-weight:700">' + o.outward + '</span></div>';
+    html += '<div style="background:var(--tint);padding:10px;border-radius:4px"><b>Accruing Rent:</b><br>' + o.monthlyTotal + '</div>';
+    html += '</div>';
+
+    html += '<div style="font-size:12.5px;color:var(--ink-soft);display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--rule);padding-top:10px">';
+    html += '<span>Chamber Condition: Optimal • Moisture Telemetry: Normal</span>';
+    html += '<span style="color:var(--forest);font-weight:600">✓ SBI Escrow Protected Payout</span>';
+    html += '</div>';
+
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+// Initialize on DOM load
+document.addEventListener('DOMContentLoaded', function () {
+  renderFacilities();
+  renderOrdersTable();
+  renderTimelineCards();
+});
+</script>
+</body>
+</html>

@@ -605,7 +605,7 @@
             <div class="action-buttons" id="panel-actions"></div>
             <div id="panel-bid-board" style="margin-top:20px;display:none">
               <h4 style="font-size:16px;margin-bottom:8px">Bid board</h4>
-              <svg id="panel-bb-svg" viewBox="0 0 480 260" class="bb-svg"></svg>
+              <svg id="panel-bb-svg" viewBox="0 0 600 260" class="bb-svg"></svg>
               <p id="panel-bb-say" class="bb-say" style="font-size:14px;margin-top:6px"></p>
             </div>
           </div>
@@ -653,7 +653,7 @@
         <select id="bb-lot-select"></select>
       </div>
       <div style="margin-top:20px">
-        <svg id="bb-main-svg" viewBox="0 0 640 300" class="bb-svg" role="img" aria-label="Bid graph"></svg>
+        <svg id="bb-main-svg" viewBox="0 0 760 300" class="bb-svg" role="img" aria-label="Bid graph"></svg>
         <p id="bb-main-say" class="bb-say" style="margin-top:10px"></p>
       </div>
 
@@ -1247,7 +1247,7 @@ function updateCadastralPanelView() {
       if (lots.length && panelBB) {
         panelBB.style.display = 'block';
         var svg = document.getElementById('panel-bb-svg');
-        var res = BhComp.renderBidBoard(svg, { farmerPrice: lots[0].farmerPrice, mandiPrice: mandiPrice, bids: bids, width: 480, height: 260 });
+        var res = BhComp.renderBidBoard(svg, { farmerPrice: lots[0].farmerPrice, mandiPrice: mandiPrice, bids: bids, width: 600, height: 260 });
         var best = BD.getHighestBid(lots[0].id);
         document.getElementById('panel-bb-say').textContent = Market.bidBoardNote(lots[0].farmerPrice, best ? best.price : 0, c.crop);
       } else if (panelBB) {
@@ -1564,7 +1564,7 @@ function renderMainBidBoard() {
   var bids  = lot ? BD.getBidsByLot(lotId) : [];
   var c     = lot ? BD.getContract(lot.contractId) : null;
   var mandiP = c ? Market.getPrice(c.crop).price : 1880;
-  BhComp.renderBidBoard(document.getElementById('bb-main-svg'), { farmerPrice: lot ? lot.farmerPrice : 0, mandiPrice: mandiP, bids: bids });
+  BhComp.renderBidBoard(document.getElementById('bb-main-svg'), { farmerPrice: lot ? lot.farmerPrice : 0, mandiPrice: mandiP, bids: bids, width: 760, height: 300 });
   var best = lot ? BD.getHighestBid(lotId) : null;
   document.getElementById('bb-main-say').textContent = Market.bidBoardNote(lot ? lot.farmerPrice : 0, best ? best.price : 0, c ? c.crop : 'Onion');
 }

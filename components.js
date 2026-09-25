@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    Bhowanee - Shared UI Components (components.js)
    BidBoard, OTP modal, toast notifications, contract card,
    and stage chip helpers. Import after data.js and market.js.
@@ -122,8 +122,15 @@ window.BhComp = (function () {
     var farmerPrice = opts.farmerPrice || 0;
     var mandiPrice  = opts.mandiPrice  || 0;
     var bids        = opts.bids        || [];
-    var W           = opts.width  || 640;
+    var W           = opts.width  || 760;
     var H           = opts.height || 300;
+
+    // Layout constants derived from width
+    var LEFT     = 60;                    // y-axis label space
+    var RIGHT    = W - 10;                // right edge with padding
+    var CHART_R  = Math.round(W * 0.68);  // right edge of chart lines (leaves room for labels)
+    var LABEL_X  = CHART_R + 12;          // where right-side text labels start
+    var MID_X    = Math.round((LEFT + CHART_R) / 2);  // x-axis label centre
 
     // Y scale
     var prices = bids.map(function (b) { return b.price; }).concat([farmerPrice, mandiPrice].filter(Boolean));
@@ -133,24 +140,30 @@ window.BhComp = (function () {
     if (hi <= lo) hi = lo + 200;
     var step = (hi - lo) > 600 ? 200 : 100;
 
-    function yPos(p) { return 250 - (p - lo) / (hi - lo) * 205; }
+    var PLOT_TOP = 30;
+    var PLOT_BOT = 260;
+    function yPos(p) { return PLOT_BOT - (p - lo) / (hi - lo) * (PLOT_BOT - PLOT_TOP); }
     var n = bids.length;
-    function xPos(i) { return 60 + 470 * (i + 1) / (n + 1); }
+    var plotW = CHART_R - LEFT;
+    function xPos(i) { return LEFT + plotW * (i + 1) / (n + 1); }
+
+    // Set viewBox dynamically so SVG never clips
+    svgEl.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
 
     var html = '<g class="axis">';
     for (var v = lo; v <= hi; v += step) {
       var yv = yPos(v);
-      html += '<line x1="60" y1="' + yv + '" x2="540" y2="' + yv + '" stroke="' + (v === lo ? '#1C2452' : '#C7CDD8') + '" stroke-width="' + (v === lo ? 1.5 : 1) + '"/>';
-      html += '<text x="52" y="' + (yv + 4) + '" text-anchor="end" font-size="12" fill="#4B5375">' + v.toLocaleString('en-IN') + '</text>';
+      html += '<line x1="' + LEFT + '" y1="' + yv + '" x2="' + CHART_R + '" y2="' + yv + '" stroke="' + (v === lo ? '#1C2452' : '#C7CDD8') + '" stroke-width="' + (v === lo ? 1.5 : 1) + '"/>';
+      html += '<text x="' + (LEFT - 8) + '" y="' + (yv + 4) + '" text-anchor="end" font-size="12" fill="#4B5375">' + v.toLocaleString('en-IN') + '</text>';
     }
-    html += '<text x="8" y="28" font-size="12" font-weight="600" fill="#4B5375">₹/qt</text>';
-    html += '<text x="295" y="292" text-anchor="middle" font-size="12" fill="#4B5375">Bids, oldest to newest</text>';
+    html += '<text x="8" y="24" font-size="12" font-weight="600" fill="#4B5375">₹/qt</text>';
+    html += '<text x="' + MID_X + '" y="' + (H - 8) + '" text-anchor="middle" font-size="12" fill="#4B5375">Bids, oldest to newest</text>';
     html += '</g>';
 
     // Mandi price dashed line
     if (mandiPrice) {
       var ym = yPos(mandiPrice);
-      html += '<line x1="60" y1="' + ym + '" x2="540" y2="' + ym + '" stroke="#6B4E3A" stroke-width="2" stroke-dasharray="7 5"/>';
+      html += '<line x1="' + LEFT + '" y1="' + ym + '" x2="' + CHART_R + '" y2="' + ym + '" stroke="#6B4E3A" stroke-width="2" stroke-dasharray="7 5"/>';
     }
 
     // Highest bid step line + dots
@@ -169,7 +182,7 @@ window.BhComp = (function () {
       }
     });
     if (n && topPrice) {
-      bidPath += ' H540';
+      bidPath += ' H' + CHART_R;
       html += '<path d="' + bidPath + '" fill="none" stroke="#D99A06" stroke-width="3.5" stroke-linejoin="round"/>';
     }
     html += bidDots;
@@ -177,7 +190,7 @@ window.BhComp = (function () {
     // Farmer price solid line
     if (farmerPrice) {
       var yf = yPos(farmerPrice);
-      html += '<line x1="60" y1="' + yf + '" x2="540" y2="' + yf + '" stroke="#1C2452" stroke-width="3.5"/>';
+      html += '<line x1="' + LEFT + '" y1="' + yf + '" x2="' + CHART_R + '" y2="' + yf + '" stroke="#1C2452" stroke-width="3.5"/>';
     }
 
     // Right-side labels (collision avoidance)
@@ -190,7 +203,7 @@ window.BhComp = (function () {
       if (labs[k].y - labs[k - 1].y < 16) labs[k].y = labs[k - 1].y + 16;
     }
     labs.forEach(function (l) {
-      html += '<text x="548" y="' + (l.y + 4) + '" font-size="12.5" font-weight="' + l.weight + '" fill="' + l.color + '">' + escSVG(l.text) + '</text>';
+      html += '<text x="' + LABEL_X + '" y="' + (l.y + 4) + '" font-size="12.5" font-weight="' + l.weight + '" fill="' + l.color + '">' + escSVG(l.text) + '</text>';
     });
 
     svgEl.innerHTML = html;

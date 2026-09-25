@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bhowanee - Logistics & Storage Operations</title>
-<meta name="description" content="Manage farm pickups, cold chain warehousing, digital proof of handoff, and crop loss tracking across Maharashtra.">
+<title>Bhowanee - Fleet & Logistics Operations</title>
+<meta name="description" content="Manage multi-vehicle fleet, route optimization, schedule timelines, and farm gate pickups across Maharashtra.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@400;700&display=swap" rel="stylesheet">
@@ -16,14 +16,18 @@
 .kpi-card { background:var(--sheet); border:1px solid var(--rule); padding:16px; }
 .kpi-card .num { font-family:var(--font-slab); font-size:26px; font-weight:700; color:var(--ink); line-height:1.1; margin-bottom:4px; }
 .kpi-card .lbl { font-size:13.5px; color:var(--ink-soft); font-weight:500; }
-.storage-grid { display:grid; grid-template-columns:1fr 360px; min-height:500px; border:1px solid var(--rule); }
-.storage-panel { background:var(--sheet); border-left:1px solid var(--rule); padding:20px; overflow-y:auto; }
-.fill-bar-wrap { background:var(--rule); height:12px; border-radius:6px; overflow:hidden; margin:8px 0 4px; }
-.fill-bar { height:100%; transition:width 400ms ease; }
 .stat-pill { display:inline-flex; align-items:center; gap:6px; padding:3px 8px; border-radius:12px; font-size:12.5px; font-weight:600; }
 .pill-green { background:#E6F4EA; color:#137333; }
 .pill-amber { background:#FEF7E0; color:#B06000; }
 .pill-red { background:#FCE8E6; color:#C5221F; }
+.pill-blue { background:#E8F0FE; color:#1A73E8; }
+.route-card { background:var(--sheet); border:1px solid var(--rule); padding:20px; margin-bottom:18px; border-radius:6px; }
+.route-timeline { display:flex; flex-direction:column; gap:16px; margin:16px 0; padding-left:14px; border-left:3px solid var(--forest); }
+.timeline-item { position:relative; padding-left:16px; }
+.timeline-dot { position:absolute; left:-22px; top:3px; width:14px; height:14px; border-radius:50%; background:var(--sheet); border:3px solid var(--forest); }
+.timeline-dot.active { background:var(--forest); }
+.timeline-dot.future { border-color:var(--turmeric); background:var(--turmeric); }
+.opt-badge { background:#E6F4EA; color:#137333; border:1px solid #CEEAD6; padding:6px 12px; border-radius:6px; font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:6px; }
 .upload-zone { border:2px dashed var(--rule); padding:20px; text-align:center; background:var(--tint); cursor:pointer; margin-top:8px; border-radius:4px; }
 .upload-zone:hover { border-color:var(--ink); }
 </style>
@@ -35,29 +39,209 @@
   <header class="topbar" role="banner">
     <div style="display:flex;align-items:center;gap:12px">
       <span class="topbar-brand"><img src="logo.png" alt="Bhowanee Logo" class="brand-logo-img">Bhowanee</span>
-      <span class="chip sm" style="background:var(--forest);color:#FFF;font-weight:600">Logistics & Cold Storage</span>
+      <span class="chip sm" style="background:var(--forest);color:#FFF;font-weight:600">Logistics &amp; Fleet Operations</span>
     </div>
     <div class="topbar-tools">
       <span id="tb-log-user" style="font-size:14.5px;font-weight:500">Fleet Operations Desk</span>
-      <span id="sync-badge" class="sync-badge">Live GPS / Fill</span>
+      <span id="sync-badge" class="sync-badge">Live GPS Telemetry</span>
       <button class="ghost" onclick="Auth.logout()">Sign out</button>
     </div>
   </header>
 
   <!-- Sidenav -->
   <nav class="sidenav" aria-label="Logistics navigation">
-    <button class="sidenav-item active" data-section="pickups">Farm Pickups</button>
-    <button class="sidenav-item" data-section="storage">Storage & Warehouses</button>
-    <button class="sidenav-item" data-section="handoff">Handoff Confirmation</button>
-    <button class="sidenav-item" data-section="losses">Loss & Spoilage Tracker</button>
-    <button class="sidenav-item" data-section="demand">Demand & Dispatches</button>
+    <button class="sidenav-item active" data-section="fleet">Vehicle Fleet</button>
+    <button class="sidenav-item" data-section="routes">Route Allotment &amp; Schedule</button>
+    <button class="sidenav-item" data-section="pickups">Farm Gate Pickups</button>
+    <button class="sidenav-item" data-section="handoff">Proof of Handoff</button>
+    <button class="sidenav-item" data-section="losses">Transit Loss Log</button>
   </nav>
 
   <!-- Main -->
   <main class="main-area" id="main-area">
 
-    <!-- ── 1. FARM PICKUPS ─────────────────────────────────── -->
-    <section id="s-pickups">
+    <!-- ── 1. VEHICLE FLEET REGISTRY ───────────────────────── -->
+    <section id="s-fleet">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title">Vehicle Fleet Management</h1>
+          <p class="page-sub">Manage multiple transport vehicles, payload capacity in Quintals, driver assignments, and live operating availability.</p>
+        </div>
+        <button class="btn" onclick="openAddVehicleModal()">+ Register New Vehicle</button>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="num" id="kpi-fleet-total">4 Vehicles</div>
+          <div class="lbl">Registered in Fleet</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" id="kpi-fleet-cap" style="color:var(--forest)">118 Qt</div>
+          <div class="lbl">Total Carrying Capacity</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" id="kpi-fleet-busy" style="color:var(--turmeric)">2 Active</div>
+          <div class="lbl">Allotted on Routes</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" id="kpi-fleet-avail">2 Standby</div>
+          <div class="lbl">Available for Dispatch</div>
+        </div>
+      </div>
+
+      <div class="tablewrap">
+        <table id="tbl-fleet">
+          <thead>
+            <tr>
+              <th>Vehicle ID &amp; Reg. No.</th>
+              <th>Type / Model</th>
+              <th>Capacity (Quintals)</th>
+              <th>Assigned Driver</th>
+              <th>Driver Phone</th>
+              <th>Base Location</th>
+              <th>Operating Status</th>
+              <th>Scheduled Next</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="fleet-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 2. ROUTE ALLOTMENT & TIMELINE ────────────────────── -->
+    <section id="s-routes" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title">Route Allotment &amp; Smart Optimization</h1>
+          <p class="page-sub">Vehicle trip allotment timeline, smart waypoint sequencing, and AI-optimized farm pickups to eliminate deadhead mileage.</p>
+        </div>
+        <button class="btn sm secondary" onclick="simulateRouteOptimization()">⚡ Re-Calculate Route Optimization</button>
+      </div>
+
+      <!-- Vehicle 1 Spotlight Card (As user requested) -->
+      <div class="route-card" style="border-left:4px solid var(--forest)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <h2 style="font-family:var(--font-slab);font-size:22px;margin:0">Vehicle 1: MH-15-EG-4421 (Eicher Pro 2049)</h2>
+              <span class="stat-pill pill-green">In Transit</span>
+            </div>
+            <div style="font-size:13.5px;color:var(--ink-soft);margin-top:4px">
+              <b>Driver:</b> Ramesh Gaikwad (+91 98221 44510) • <b>Payload:</b> 40.0 / 45.0 Qt (89% Full) • <b>Base:</b> Pimpalgaon Baswant
+            </div>
+          </div>
+          <div class="opt-badge" id="v1-opt-badge">
+            <span>✓ Location &amp; Stops Optimized (Saved 18 km via SH-17)</span>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px;margin-top:20px">
+          <div>
+            <h4 style="font-size:15px;margin-bottom:12px">Allotted Schedule &amp; Sequential Timeline:</h4>
+            <div class="route-timeline">
+              <div class="timeline-item">
+                <div class="timeline-dot active"></div>
+                <div style="font-weight:700;font-size:14.5px;color:var(--forest)">25th Sep 2026 — Current Allotted Route</div>
+                <div style="font-size:13px;color:var(--ink);margin-top:3px">
+                  <b>Pickup Point A:</b> Farm Gat 118, Pimpalgaon (Prakash Sonawane - 20 Qt Onion)<br>
+                  <b>Pickup Point B:</b> Farm Gat 124, Dindori Cluster (Suresh Jadhav - 20 Qt Onion)<br>
+                  <b>Destination:</b> Dindori Cold Storage Facility #1<br>
+                  <span style="color:var(--ink-soft);font-size:12px">Scheduled Window: 08:30 AM - 12:45 PM • Status: En Route to Gate B</span>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="timeline-dot future"></div>
+                <div style="font-weight:700;font-size:14.5px;color:var(--turmeric)">30th Sep 2026 — Next Scheduled Pickup Allotment</div>
+                <div style="font-size:13px;color:var(--ink);margin-top:3px">
+                  <b>Scheduled Pickup Location:</b> Niphad Agri Cluster (Gat 88 &amp; 92)<br>
+                  <b>Cargo Allotment:</b> 42.0 Qt Table Grapes &amp; Early Kharif Onion<br>
+                  <b>Destination:</b> Vashi APMC Cold Storage Terminal Dock<br>
+                  <span style="color:var(--ink-soft);font-size:12px">Optimized Waypoint Sequence: Niphad Mandi &rarr; Sinnar Bypass &rarr; Mumbai-Nashik Expressway</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:var(--sheet);border:1px solid var(--rule);padding:16px;border-radius:6px">
+            <h4 style="font-size:14.5px;margin-bottom:8px">Live Route Telemetry &amp; Stop Order</h4>
+            <div id="route-map-v1" style="height:220px;width:100%;border:1px solid var(--rule);margin-bottom:10px"></div>
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-soft)">
+              <span>Stop 1: Gat 118 (Done)</span>
+              <span>&rarr;</span>
+              <span style="font-weight:700;color:var(--ink)">Stop 2: Gat 124 (In Progress)</span>
+              <span>&rarr;</span>
+              <span>Drop: Cold Store #1</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vehicle 2 Route Card -->
+      <div class="route-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <h2 style="font-family:var(--font-slab);font-size:20px;margin:0">Vehicle 2: MH-15-AK-9812 (Tata 407 LPT)</h2>
+              <span class="stat-pill pill-amber">Scheduled</span>
+            </div>
+            <div style="font-size:13.5px;color:var(--ink-soft);margin-top:4px">
+              <b>Driver:</b> Santosh Patil (+91 98902 33419) • <b>Capacity:</b> 35.0 Qt • <b>Base:</b> Dindori Center
+            </div>
+          </div>
+          <div class="opt-badge">
+            <span>✓ Route Optimized: Clustered 2 Pickups (Saves 12 km)</span>
+          </div>
+        </div>
+
+        <div class="route-timeline" style="margin-top:16px">
+          <div class="timeline-item">
+            <div class="timeline-dot active"></div>
+            <div style="font-weight:700;font-size:14px">26th Sep 2026 — Allotted Route</div>
+            <div style="font-size:13px;color:var(--ink)">
+              Yeola Mandi Hub (Gat 31) &rarr; Kalwan Sorting Shed &rarr; Nashik Hub Warehouse (32.0 Qt Gram &amp; Pulses)
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot future"></div>
+            <div style="font-weight:700;font-size:14px;color:var(--turmeric)">1st Oct 2026 — Next Scheduled Pickup</div>
+            <div style="font-size:13px;color:var(--ink)">
+              Kalwan Hill Garlic &amp; Onion Cluster &rarr; Dindori Cold Store (28.0 Qt)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vehicle 3 Route Card -->
+      <div class="route-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <h2 style="font-family:var(--font-slab);font-size:20px;margin:0">Vehicle 3: MH-15-BJ-3310 (Mahindra Bolero Maxi)</h2>
+              <span class="stat-pill pill-blue">Standby / Available</span>
+            </div>
+            <div style="font-size:13.5px;color:var(--ink-soft);margin-top:4px">
+              <b>Driver:</b> Vishnu Shinde (+91 94227 88120) • <b>Capacity:</b> 20.0 Qt • <b>Base:</b> Niphad Mandi
+            </div>
+          </div>
+          <button class="btn sm" onclick="openAllotRouteModal('v3')">+ Allot New Route</button>
+        </div>
+
+        <div class="route-timeline" style="margin-top:16px">
+          <div class="timeline-item">
+            <div class="timeline-dot future"></div>
+            <div style="font-weight:700;font-size:14px;color:var(--turmeric)">27th Sep 2026 — Queued Allotment</div>
+            <div style="font-size:13px;color:var(--ink)">
+              Sinnar Tomato Farm Cluster (Gat 147) &rarr; Vashi APMC Terminal (18.0 Qt Tomato Crates)
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 3. FARM GATE PICKUPS ────────────────────────────── -->
+    <section id="s-pickups" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px">
         <div>
           <h1 class="page-title">Farm Gate Harvest Collections</h1>
@@ -72,7 +256,7 @@
           <div class="lbl">Pending Collections</div>
         </div>
         <div class="kpi-card">
-          <div class="num">20.0 Qt</div>
+          <div class="num">40.0 Qt</div>
           <div class="lbl">Harvest Volume in Transit</div>
         </div>
         <div class="kpi-card">
@@ -104,76 +288,10 @@
       </div>
     </section>
 
-    <!-- Vehicle Fleet Registry -->
-    <section id="s-fleet" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px">
-        <div>
-          <h1 class="page-title">Vehicle Fleet Registry</h1>
-          <p class="page-sub">All registered vehicles with live availability status, capacity, and driver assignment.</p>
-        </div>
-        <button class="btn" onclick="openAddVehicleModal()">Register Vehicle</button>
-      </div>
-
-      <div class="kpi-row">
-        <div class="kpi-card">
-          <div class="num" id="kpi-fleet-total">0</div>
-          <div class="lbl">Total Registered Vehicles</div>
-        </div>
-        <div class="kpi-card">
-          <div class="num" id="kpi-fleet-avail" style="color:var(--field)">0</div>
-          <div class="lbl">Available Now</div>
-        </div>
-        <div class="kpi-card">
-          <div class="num" id="kpi-fleet-busy">0</div>
-          <div class="lbl">In Transit</div>
-        </div>
-        <div class="kpi-card">
-          <div class="num" id="kpi-fleet-cap">0 Qt</div>
-          <div class="lbl">Total Available Capacity</div>
-        </div>
-      </div>
-
-      <div class="tablewrap">
-        <table id="tbl-fleet">
-          <thead>
-            <tr>
-              <th>Reg. No.</th>
-              <th>Type</th>
-              <th>Capacity (Qt)</th>
-              <th>Driver</th>
-              <th>Contact</th>
-              <th>Base Location</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="fleet-tbody"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Farm Pickups ends above -->
-
-    <section id="s-storage" style="display:none">
-      <div style="margin-bottom:18px">
-        <h1 class="page-title">Warehouse Network & Cold Chain Fill Levels</h1>
-        <p class="page-sub">Real-time inventory fill gauges, humidity/temperature telemetry, and space allocation.</p>
-      </div>
-
-      <div class="storage-grid">
-        <div id="storage-map" style="min-height:500px"></div>
-        <div class="storage-panel" id="warehouse-panel">
-          <h3 id="wh-panel-name" style="font-family:var(--font-slab);font-size:18px;margin:0 0 8px">Select a Warehouse</h3>
-          <p id="wh-panel-sub" style="font-size:13px;color:var(--ink-soft);margin-bottom:14px">Click any facility pin on the map to inspect live storage levels.</p>
-          <div id="wh-panel-content"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── 3. HANDOFF CONFIRMATION ─────────────────────────── -->
+    <!-- ── 4. PROOF OF HANDOFF ─────────────────────────────── -->
     <section id="s-handoff" style="display:none">
       <div style="margin-bottom:18px">
-        <h1 class="page-title">Digital Proof of Handoff & Weighment</h1>
+        <h1 class="page-title">Digital Proof of Handoff &amp; Weighment</h1>
         <p class="page-sub">Irrefutable digital chain-of-custody transfer with weighbridge receipts and photo validation.</p>
       </div>
 
@@ -186,6 +304,7 @@
             <select id="hf-lot">
               <option value="l1">Lot L1 (Gat 118, 12 Qt Onion)</option>
               <option value="l2">Lot L2 (Gat 147, 8 Qt Onion)</option>
+              <option value="l3">Lot L3 (Gat 124, 20 Qt Onion)</option>
             </select>
           </div>
 
@@ -206,18 +325,18 @@
 
           <div class="field">
             <label for="hf-weight">Weighed Gross Weight (Quintals)</label>
-            <input type="number" step="0.1" id="hf-weight" value="12.0">
+            <input type="number" step="0.1" id="hf-weight" value="20.0">
           </div>
 
           <div class="field">
             <label>Upload Weighment Slip / Bagging Photo</label>
             <div class="upload-zone" onclick="document.getElementById('hf-file').click()">
-              <span id="hf-file-label"> Tap to select photo / weighbridge receipt</span>
+              <span id="hf-file-label">Tap to select photo / weighbridge receipt</span>
               <input type="file" id="hf-file" accept="image/*" style="display:none" onchange="previewHandoffPhoto(this)">
             </div>
           </div>
 
-          <button class="btn" style="width:100%;margin-top:16px" onclick="submitHandoffProof()">Sign & Confirm Digital Handoff</button>
+          <button class="btn" style="width:100%;margin-top:16px" onclick="submitHandoffProof()">Sign &amp; Confirm Digital Handoff</button>
         </div>
 
         <div>
@@ -240,11 +359,11 @@
       </div>
     </section>
 
-    <!-- ── 4. LOSS & SPOILAGE TRACKER ──────────────────────── -->
+    <!-- ── 5. TRANSIT LOSS & SPOILAGE ──────────────────────── -->
     <section id="s-losses" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
         <div>
-          <h1 class="page-title">Loss & Spoilage Incident Log</h1>
+          <h1 class="page-title">Transit Loss &amp; Spoilage Incident Log</h1>
           <p class="page-sub">Report bag tears, moisture spoilage, or transit shrinkage with photographic evidence.</p>
         </div>
       </div>
@@ -264,11 +383,11 @@
             <input type="number" step="0.1" id="loss-qty" placeholder="e.g. 0.4">
           </div>
           <div class="field" style="grid-column:span 2">
-            <label for="loss-reason">Incident Category & Root Cause</label>
-            <input id="loss-reason" placeholder="e.g. Bag rupture during loading or condensation dampening">
+            <label for="loss-reason">Incident Category &amp; Root Cause</label>
+            <input id="loss-reason" placeholder="e.g. Bag rupture during loading or transit condensation">
           </div>
         </div>
-        <button class="btn" style="margin-top:14px" onclick="submitLossReport()">Record Incident & Deduct Net Weight</button>
+        <button class="btn" style="margin-top:14px" onclick="submitLossReport()">Record Incident &amp; Deduct Net Weight</button>
       </div>
 
       <h3 style="font-family:var(--font-slab);font-size:18px;margin-bottom:10px">Logged Spoilage Incidents</h3>
@@ -294,109 +413,104 @@
       </div>
     </section>
 
-    <!-- ── 5. DEMAND & DISPATCHES ──────────────────────────── -->
-    <section id="s-demand" style="display:none">
-      <div style="margin-bottom:18px">
-        <h1 class="page-title">Confirmed Bids & Delivery Dispatches</h1>
-        <p class="page-sub">Syncing warehouse releases with closed buyer bids to schedule dock drops.</p>
-      </div>
-
-      <div class="tablewrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Lot Ref</th>
-              <th>Commodity</th>
-              <th>Weight</th>
-              <th>Winning Off-Taker</th>
-              <th>Current Storage Hub</th>
-              <th>Target Drop Dock</th>
-              <th>Status</th>
-              <th>Fleet Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><b>Lot L1</b></td>
-              <td>Onion Grade A</td>
-              <td>12 Qt</td>
-              <td>Buyer C / Fresh Mart</td>
-              <td>Dindori Cold Store</td>
-              <td>Vashi APMC Dock 4</td>
-              <td><span class="chip sm" style="background:#E6F4EA;color:#137333">Ready for Final Dispatch</span></td>
-              <td><button class="btn sm" onclick="alert('Vehicle MH-15-AB-1234 scheduled for dock transit.')">Dispatch Truck</button></td>
-            </tr>
-            <tr>
-              <td><b>Lot L2</b></td>
-              <td>Onion Grade B</td>
-              <td>8 Qt</td>
-              <td>Buyer A</td>
-              <td>Nashik Hub Warehouse</td>
-              <td>Kalyan Wholesale Hub</td>
-              <td><span class="chip sm" style="background:#FEF7E0;color:#B06000">Pending Farm Pickup</span></td>
-              <td><button class="btn sm secondary" onclick="switchSection('pickups')">Coordinate Pickup</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
   </main>
 </div>
 
-<!-- Modal: Schedule Pickup -->
-<div id="modal-pickup" class="modal-overlay" hidden>
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pk-m-title">
-    <h3 id="pk-m-title" style="font-family:var(--font-slab)">Schedule Farm Pickup</h3>
-    <p class="modal-sub">Assign transport for ready harvest lots at farm gate.</p>
-    
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
-      <div class="field">
-        <label for="pk-lot">Lot</label>
-        <select id="pk-lot">
-          <option value="l1">Lot L1 (Gat 118, 12 Qt)</option>
-          <option value="l2">Lot L2 (Gat 147, 8 Qt)</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="pk-wh">Target Warehouse</label>
-        <select id="pk-wh">
-          <option value="w1">Dindori Cold Store</option>
-          <option value="w2">Nashik Hub Warehouse</option>
-          <option value="w3">Pimpalgaon Storage</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="pk-farm">Farm Gate Address</label>
-        <input id="pk-farm" value="Gat 118, Pimpalgaon, Dindori">
-      </div>
-      <div class="field">
-        <label for="pk-date">Scheduled Time</label>
-        <input type="datetime-local" id="pk-date">
-      </div>
+<!-- Modal: Register Vehicle -->
+<div id="modal-vehicle" class="modal-backdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:480px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="font-family:var(--font-slab);font-size:20px;margin:0">Register New Fleet Vehicle</h2>
+      <button class="ghost" onclick="closeAddVehicleModal()">✕</button>
     </div>
-    
-    <div class="modal-actions">
-      <button class="btn" type="button" onclick="submitNewPickup()">Schedule Transport</button>
-      <button class="btn secondary" type="button" onclick="closePickupModal()">Cancel</button>
+    <div class="field">
+      <label for="v-reg">Registration Number</label>
+      <input id="v-reg" placeholder="e.g. MH-15-GH-5512">
+    </div>
+    <div class="field">
+      <label for="v-type">Vehicle Type / Make</label>
+      <select id="v-type">
+        <option value="Mini Truck (Bolero / Dost)">Mini Truck (Bolero / Dost - 20-25 Qt)</option>
+        <option value="14ft Canter (Tata 407)">14ft Canter (Tata 407 - 35-45 Qt)</option>
+        <option value="Intermediate Commercial (Eicher Pro)">Intermediate Commercial (Eicher Pro - 60-90 Qt)</option>
+        <option value="Reefer Cold Van (Temp Controlled)">Reefer Cold Van (Temp Controlled - 20-30 Qt)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="v-cap">Carrying Capacity (Quintals)</label>
+      <input type="number" id="v-cap" placeholder="e.g. 45" value="40">
+    </div>
+    <div class="field">
+      <label for="v-driver">Assigned Driver Name</label>
+      <input id="v-driver" placeholder="e.g. Santosh Gaikwad">
+    </div>
+    <div class="field">
+      <label for="v-phone">Driver Mobile Number</label>
+      <input id="v-phone" placeholder="e.g. +91 98221 00000">
+    </div>
+    <div class="field">
+      <label for="v-base">Operating Base Location</label>
+      <input id="v-base" placeholder="e.g. Dindori FPO Hub / Pimpalgaon">
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px">
+      <button class="btn secondary" onclick="closeAddVehicleModal()">Cancel</button>
+      <button class="btn" onclick="submitNewVehicle()">Register &amp; Add to Fleet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Schedule Farm Pickup -->
+<div id="modal-pickup" class="modal-backdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:480px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="font-family:var(--font-slab);font-size:20px;margin:0">Schedule Farm Gate Pickup</h2>
+      <button class="ghost" onclick="closeSchedulePickupModal()">✕</button>
+    </div>
+    <div class="field">
+      <label for="pk-farm">Farm Location / Farmer</label>
+      <input id="pk-farm" placeholder="e.g. Gat 132, Dindori (Kishor Deshmukh)">
+    </div>
+    <div class="field">
+      <label for="pk-lot">Lot Reference</label>
+      <input id="pk-lot" placeholder="e.g. Lot L3 (20 Qt Onion)">
+    </div>
+    <div class="field">
+      <label for="pk-dest">Destination Facility</label>
+      <select id="pk-dest">
+        <option value="Dindori Cold Store">Dindori Cold Store (Facility #1)</option>
+        <option value="Nashik Hub Warehouse">Nashik Hub Warehouse (Facility #2)</option>
+        <option value="Pimpalgaon Storage">Pimpalgaon Storage (Facility #3)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="pk-time">Scheduled Pickup Date &amp; Window</label>
+      <input id="pk-time" value="25th Sep 2026, 09:00 - 11:30 AM">
+    </div>
+    <div class="field">
+      <label for="pk-veh">Assign Vehicle</label>
+      <select id="pk-veh">
+        <option value="Vehicle 1 (MH-15-EG-4421)">Vehicle 1 (MH-15-EG-4421, Eicher 45 Qt)</option>
+        <option value="Vehicle 2 (MH-15-AK-9812)">Vehicle 2 (MH-15-AK-9812, Tata 35 Qt)</option>
+        <option value="Vehicle 3 (MH-15-BJ-3310)">Vehicle 3 (MH-15-BJ-3310, Bolero 20 Qt)</option>
+      </select>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px">
+      <button class="btn secondary" onclick="closeSchedulePickupModal()">Cancel</button>
+      <button class="btn" onclick="submitSchedulePickup()">Schedule &amp; Dispatch</button>
     </div>
   </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="auth.js"></script>
+<script src="tokens.css"></script>
 <script src="data.js"></script>
+<script src="auth.js"></script>
 <script src="components.js"></script>
 <script>
-/* ============================================================
-   Logistics & Cold Storage Logic
-   ============================================================ */
-
-// 1. Auth Guard
-Auth.requireRole('logistics');
-var session = Auth.getSession();
-if (session && session.name) {
-  document.getElementById('tb-log-user').textContent = session.name + ' (Fleet Desk)';
+// 1. Session verification
+var session = Auth.require(['logistics', 'team', 'admin']);
+if (session) {
+  Auth.renderTopbar(document.getElementById('tb-log-user'), null);
 }
 
 // 2. Navigation
@@ -415,304 +529,324 @@ function switchSection(sec) {
   document.querySelectorAll('main > section').forEach(function (s) {
     s.style.display = s.id === 's-' + sec ? 'block' : 'none';
   });
-  if (sec === 'storage' && storageMap) {
-    setTimeout(function () { storageMap.invalidateSize(); }, 200);
+  if (sec === 'routes') {
+    setTimeout(initRouteMap, 100);
   }
 }
 
-// 3. Farm Pickups
-function renderPickups() {
-  var pickups = BD.getPickups();
-  var tbody = document.getElementById('pickups-tbody');
+// 3. Multi-Vehicle Fleet Data
+var FLEET_VEHICLES = [
+  {
+    id: 'v1',
+    reg: 'MH-15-EG-4421',
+    type: 'Eicher Pro 2049',
+    capacity: 45,
+    driver: 'Ramesh Gaikwad',
+    phone: '+91 98221 44510',
+    base: 'Pimpalgaon Baswant',
+    status: 'In Transit',
+    scheduledNext: '25th Sep (Active) | 30th Sep (Next)'
+  },
+  {
+    id: 'v2',
+    reg: 'MH-15-AK-9812',
+    type: 'Tata 407 LPT',
+    capacity: 35,
+    driver: 'Santosh Patil',
+    phone: '+91 98902 33419',
+    base: 'Dindori Center',
+    status: 'Scheduled',
+    scheduledNext: '26th Sep (Allotted) | 1st Oct'
+  },
+  {
+    id: 'v3',
+    reg: 'MH-15-BJ-3310',
+    type: 'Mahindra Bolero Maxi',
+    capacity: 20,
+    driver: 'Vishnu Shinde',
+    phone: '+91 94227 88120',
+    base: 'Niphad Mandi',
+    status: 'Available',
+    scheduledNext: '27th Sep (Queued)'
+  },
+  {
+    id: 'v4',
+    reg: 'MH-04-GP-6022',
+    type: 'Ashok Leyland Reefer',
+    capacity: 18,
+    driver: 'Sachin More',
+    phone: '+91 97654 22091',
+    base: 'Nashik APMC Hub',
+    status: 'Available',
+    scheduledNext: 'Standby for Cold Chain'
+  }
+];
+
+function renderFleetTable() {
+  var tbody = document.getElementById('fleet-tbody');
+  if (!tbody) return;
   var html = '';
+  var totalCap = 0, busy = 0, avail = 0;
 
-  document.getElementById('kpi-pickups-active').textContent = pickups.length + ' Pickups';
+  FLEET_VEHICLES.forEach(function (v) {
+    totalCap += v.capacity;
+    if (v.status === 'In Transit' || v.status === 'Scheduled') busy++;
+    else avail++;
 
-  pickups.forEach(function (pk) {
-    var wh = BD.getWarehouses().find(function (w) { return w.id === pk.warehouseId; });
-    var isScheduled = pk.status === 'scheduled';
+    var pillClass = v.status === 'In Transit' ? 'pill-green' : (v.status === 'Scheduled' ? 'pill-amber' : 'pill-blue');
 
     html += '<tr>';
-    html += '<td><b>' + pk.id.toUpperCase() + '</b></td>';
-    html += '<td>' + pk.farm + '</td>';
-    html += '<td>' + pk.lotId.toUpperCase() + '</td>';
-    html += '<td>' + (wh ? wh.name : 'Central Warehouse') + '</td>';
-    html += '<td>' + new Date(pk.scheduledAt).toLocaleString('en-IN', { dateStyle:'short', timeStyle:'short' }) + '</td>';
-    html += '<td>' + (pk.vehicle ? '<b>' + pk.vehicle + '</b>' : '<span style="color:var(--ink-soft)">Unassigned</span>') + '</td>';
-    html += '<td><span class="stat-pill ' + (isScheduled ? 'pill-green' : 'pill-amber') + '">' + pk.status + '</span></td>';
-    html += '<td>';
-    if (!pk.vehicle) {
-      html += '<button class="btn sm" onclick="assignTruck(\'' + pk.id + '\')">Assign Vehicle</button>';
-    } else {
-      html += '<button class="btn sm secondary" onclick="switchSection(\'handoff\')">Confirm Handoff</button>';
-    }
-    html += '</td>';
+    html += '<td><b>' + v.reg + '</b><br><span style="font-size:11.5px;color:var(--ink-soft)">' + v.id.toUpperCase() + '</span></td>';
+    html += '<td>' + v.type + '</td>';
+    html += '<td><b>' + v.capacity + ' Qt</b></td>';
+    html += '<td>' + v.driver + '</td>';
+    html += '<td>' + v.phone + '</td>';
+    html += '<td>' + v.base + '</td>';
+    html += '<td><span class="stat-pill ' + pillClass + '">' + v.status + '</span></td>';
+    html += '<td><span style="font-size:12.5px;font-weight:600">' + v.scheduledNext + '</span></td>';
+    html += '<td><button class="btn sm secondary" onclick="switchSection(\'routes\')">View Route</button></td>';
     html += '</tr>';
   });
 
   tbody.innerHTML = html;
+  document.getElementById('kpi-fleet-total').textContent = FLEET_VEHICLES.length + ' Vehicles';
+  document.getElementById('kpi-fleet-cap').textContent = totalCap + ' Qt';
+  document.getElementById('kpi-fleet-busy').textContent = busy + ' Active';
+  document.getElementById('kpi-fleet-avail').textContent = avail + ' Standby';
 }
 
-window.assignTruck = function (pkId) {
-  var truck = prompt("Enter Truck / Tempo Registration Number:", "MH-15-CD-5678");
-  if (!truck) return;
-  var pk = BD.getPickups().find(function (p) { return p.id === pkId; });
-  if (pk) {
-    pk.vehicle = truck;
-    pk.status = 'scheduled';
-    BD.writeAudit('Assigned vehicle ' + truck + ' to pickup ' + pkId, 'Logistics Desk', pk.farm, 'Fleet Dispatch');
-    BhComp.toast("Vehicle assigned and driver notified.", "info");
-    renderPickups();
-  }
+window.openAddVehicleModal = function () {
+  document.getElementById('modal-vehicle').removeAttribute('hidden');
+};
+window.closeAddVehicleModal = function () {
+  document.getElementById('modal-vehicle').setAttribute('hidden', '');
 };
 
-window.openSchedulePickupModal = function () {
-  document.getElementById('pk-date').value = new Date(Date.now() + 86400000).toISOString().slice(0, 16);
-  document.getElementById('modal-pickup').removeAttribute('hidden');
-};
+window.submitNewVehicle = function () {
+  var reg = document.getElementById('v-reg').value.trim();
+  var type = document.getElementById('v-type').value;
+  var cap = parseInt(document.getElementById('v-cap').value, 10) || 30;
+  var driver = document.getElementById('v-driver').value.trim() || 'Assigned Driver';
+  var phone = document.getElementById('v-phone').value.trim() || '+91 98000 00000';
+  var base = document.getElementById('v-base').value.trim() || 'Nashik Hub';
 
-window.closePickupModal = function () {
-  document.getElementById('modal-pickup').setAttribute('hidden', '');
-};
-
-window.submitNewPickup = function () {
-  var lotId = document.getElementById('pk-lot').value;
-  var whId = document.getElementById('pk-wh').value;
-  var farm = document.getElementById('pk-farm').value.trim();
-  var date = document.getElementById('pk-date').value || new Date().toISOString();
-
-  var lot = BD.getLot(lotId);
-  var cid = lot ? lot.contractId : 'c1';
-
-  BD.schedulePickup(lotId, cid, farm, whId, date);
-  BD.writeAudit('Scheduled farm harvest pickup for ' + lotId + ' at ' + farm, 'Logistics Desk', 'Farmer', 'Logistics Scheduling');
-  BhComp.toast("Farm pickup scheduled.", "info");
-  closePickupModal();
-  renderPickups();
-};
-
-// 4. Warehouse & Storage Map
-var storageMap = null;
-
-function initStorageMap() {
-  if (storageMap) return;
-  storageMap = L.map('storage-map').setView([20.10, 73.81], 10);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: 'OpenStreetMap contributors',
-    maxZoom: 16
-  }).addTo(storageMap);
-
-  var warehouses = BD.getWarehouses();
-  warehouses.forEach(function (wh) {
-    var pct = Math.round((wh.usedQt / wh.capacityQt) * 100);
-    var markerColor = pct >= 80 ? '#B86B14' : '#2C6E49';
-
-    var marker = L.circleMarker([wh.lat, wh.lng], {
-      radius: 12,
-      fillColor: markerColor,
-      color: '#1C2452',
-      weight: 2,
-      opacity: 1,
-      fillOpacity: 0.85
-    }).addTo(storageMap);
-
-    marker.bindTooltip('<b>' + wh.name + '</b><br>' + pct + '% Full (' + wh.usedQt + ' / ' + wh.capacityQt + ' Qt)', {
-      className: 'dist-tooltip'
-    });
-
-    marker.on('click', function () {
-      inspectWarehouse(wh);
-    });
-  });
-
-  if (warehouses.length) inspectWarehouse(warehouses[0]);
-}
-
-function inspectWarehouse(wh) {
-  var pct = Math.round((wh.usedQt / wh.capacityQt) * 100);
-  var free = wh.capacityQt - wh.usedQt;
-
-  document.getElementById('wh-panel-name').textContent = wh.name;
-  document.getElementById('wh-panel-sub').textContent = 'Facility Contact: ' + wh.contact;
-
-  var barColor = pct >= 80 ? '#B86B14' : '#2C6E49';
-
-  var html = '';
-  html += '<div style="margin-bottom:14px">';
-  html += '<div style="display:flex;justify-content:space-between;font-size:14px">';
-  html += '<span>Storage Utilization:</span> <b>' + pct + '%</b>';
-  html += '</div>';
-  html += '<div class="fill-bar-wrap"><div class="fill-bar" style="width:' + pct + '%;background:' + barColor + '"></div></div>';
-  html += '<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-soft)">';
-  html += '<span>Used: ' + wh.usedQt.toLocaleString('en-IN') + ' Qt</span>';
-  html += '<span>Available: ' + free.toLocaleString('en-IN') + ' Qt</span>';
-  html += '</div>';
-  html += '</div>';
-
-  html += '<div style="background:var(--tint);padding:12px;border-radius:4px;font-size:13.5px;line-height:1.7;margin-bottom:16px">';
-  html += '<div><b>Total Capacity:</b> ' + wh.capacityQt.toLocaleString('en-IN') + ' Quintals</div>';
-  html += '<div><b>Cold Chambers:</b> Active (4°C, 88% RH)</div>';
-  html += '<div><b>CCTV & Assaying:</b> Continuous Monitoring</div>';
-  html += '<div><b>Accreditation:</b> WDRA Registered</div>';
-  html += '</div>';
-
-  html += '<button class="btn sm" style="width:100%" onclick="switchSection(\'handoff\')">Record Inward Handoff</button>';
-
-  document.getElementById('wh-panel-content').innerHTML = html;
-}
-
-// 5. Digital Proof of Handoff
-function previewHandoffPhoto(input) {
-  if (input.files && input.files[0]) {
-    document.getElementById('hf-file-label').textContent = ' Attached: ' + input.files[0].name;
-  }
-}
-
-window.submitHandoffProof = function () {
-  var lotId = document.getElementById('hf-lot').value;
-  var from = document.getElementById('hf-from').value.trim();
-  var to = document.getElementById('hf-to').value;
-  var wt = parseFloat(document.getElementById('hf-weight').value) || 10;
-
-  var h = BD.confirmHandoff(lotId, from, to, wt);
-  BD.writeAudit('Confirmed custody handoff of ' + wt + ' Qt on lot ' + lotId + ' to ' + to, 'Logistics Desk', from, 'Weighbridge Digital Handoff');
-  BhComp.toast("Digital handoff confirmed! Warehouse fill updated.", "info");
-
-  renderHandoffs();
-  renderPickups();
-  if (storageMap) {
-    var wh = BD.getWarehouses()[0];
-    if (wh) inspectWarehouse(wh);
-  }
-};
-
-function renderHandoffs() {
-  var handoffs = BD.getHandoffs();
-  var tbody = document.getElementById('handoffs-tbody');
-  var html = '';
-
-  handoffs.slice().reverse().forEach(function (h) {
-    html += '<tr>';
-    html += '<td>' + new Date(h.timestamp).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }) + '</td>';
-    html += '<td><b>' + h.lotId.toUpperCase() + '</b></td>';
-    html += '<td>' + h.from + ' &rarr; ' + h.to + '</td>';
-    html += '<td><b>' + h.weightQt + ' Qt</b></td>';
-    html += '<td><span class="chip sm" style="background:#E6F4EA;color:#137333">Confirmed </span></td>';
-    html += '</tr>';
-  });
-
-  tbody.innerHTML = html;
-}
-
-// 6. Loss Tracker
-window.submitLossReport = function () {
-  var pkId = document.getElementById('loss-pickup').value;
-  var qty = parseFloat(document.getElementById('loss-qty').value);
-  var reason = document.getElementById('loss-reason').value.trim();
-
-  if (!qty || qty <= 0 || !reason) {
-    alert("Please enter a valid lost quantity and reason.");
+  if (!reg) {
+    alert('Please enter a vehicle registration number.');
     return;
   }
 
-  BD.logLoss(pkId, qty, reason);
-  BD.writeAudit('Logged transit loss of ' + qty + ' Qt on ' + pkId + ': ' + reason, 'Logistics Desk', 'Field Staff', 'Incident Audit');
-  BhComp.toast("Incident logged and net consignment weight adjusted.", "warn");
+  var newV = {
+    id: 'v' + (FLEET_VEHICLES.length + 1),
+    reg: reg,
+    type: type,
+    capacity: cap,
+    driver: driver,
+    phone: phone,
+    base: base,
+    status: 'Available',
+    scheduledNext: 'Unscheduled'
+  };
+
+  FLEET_VEHICLES.push(newV);
+  closeAddVehicleModal();
+  renderFleetTable();
+  BhComp.toast('Vehicle ' + reg + ' registered successfully into fleet.', 'info');
+};
+
+// 4. Farm Gate Pickups Table
+var PICKUPS_DATA = [
+  {
+    id: 'PK1',
+    farm: 'Farm Gat 118, Pimpalgaon',
+    lot: 'Lot L1 (20 Qt Onion)',
+    dest: 'Dindori Cold Store',
+    window: '25th Sep 2026, 09:00 - 11:30 AM',
+    vehicle: 'Vehicle 1 (MH-15-EG-4421)',
+    status: 'En Route to Gate'
+  },
+  {
+    id: 'PK2',
+    farm: 'Farm Gat 124, Dindori Hub',
+    lot: 'Lot L3 (20 Qt Onion)',
+    dest: 'Dindori Cold Store',
+    window: '25th Sep 2026, 11:30 - 12:45 PM',
+    vehicle: 'Vehicle 1 (MH-15-EG-4421)',
+    status: 'Scheduled'
+  },
+  {
+    id: 'PK3',
+    farm: 'Farm Gat 88 & 92, Niphad Cluster',
+    lot: 'Lot L4 (42 Qt Table Grapes)',
+    dest: 'Vashi APMC Terminal Dock',
+    window: '30th Sep 2026, 08:00 - 10:00 AM',
+    vehicle: 'Vehicle 1 (MH-15-EG-4421)',
+    status: 'Route Allotted'
+  }
+];
+
+function renderPickupsTable() {
+  var tbody = document.getElementById('pickups-tbody');
+  if (!tbody) return;
+  var html = '';
+
+  PICKUPS_DATA.forEach(function (p) {
+    var pillClass = p.status === 'En Route to Gate' ? 'pill-green' : 'pill-amber';
+    html += '<tr>';
+    html += '<td><b>' + p.id + '</b></td>';
+    html += '<td>' + p.farm + '</td>';
+    html += '<td>' + p.lot + '</td>';
+    html += '<td>' + p.dest + '</td>';
+    html += '<td>' + p.window + '</td>';
+    html += '<td><b>' + p.vehicle + '</b></td>';
+    html += '<td><span class="stat-pill ' + pillClass + '">' + p.status + '</span></td>';
+    html += '<td><button class="btn sm secondary" onclick="switchSection(\'handoff\')">Confirm Handoff</button></td>';
+    html += '</tr>';
+  });
+
+  tbody.innerHTML = html;
+}
+
+window.openSchedulePickupModal = function () {
+  document.getElementById('modal-pickup').removeAttribute('hidden');
+};
+window.closeSchedulePickupModal = function () {
+  document.getElementById('modal-pickup').setAttribute('hidden', '');
+};
+
+window.submitSchedulePickup = function () {
+  var farm = document.getElementById('pk-farm').value.trim() || 'Gat 150, Dindori';
+  var lot = document.getElementById('pk-lot').value.trim() || 'Lot L5 (15 Qt)';
+  var dest = document.getElementById('pk-dest').value;
+  var win = document.getElementById('pk-time').value;
+  var veh = document.getElementById('pk-veh').value;
+
+  PICKUPS_DATA.push({
+    id: 'PK' + (PICKUPS_DATA.length + 1),
+    farm: farm,
+    lot: lot,
+    dest: dest,
+    window: win,
+    vehicle: veh,
+    status: 'Scheduled'
+  });
+
+  closeSchedulePickupModal();
+  renderPickupsTable();
+  BhComp.toast('Pickup scheduled and driver dispatched.', 'info');
+};
+
+// 5. Leaflet Route Map Simulation
+var routeMap = null;
+function initRouteMap() {
+  var mapEl = document.getElementById('route-map-v1');
+  if (!mapEl || routeMap) return;
+
+  routeMap = L.map('route-map-v1', { zoomControl: false, attributionControl: false }).setView([20.15, 73.85], 11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(routeMap);
+
+  // Markers
+  var m1 = L.marker([20.17, 73.98]).addTo(routeMap).bindPopup('<b>Stop 1: Farm Gat 118</b><br>Pimpalgaon (20 Qt Onion)');
+  var m2 = L.marker([20.20, 73.83]).addTo(routeMap).bindPopup('<b>Stop 2: Farm Gat 124</b><br>Dindori (20 Qt Onion)');
+  var m3 = L.marker([20.19, 73.78]).addTo(routeMap).bindPopup('<b>Drop: Cold Storage #1</b><br>Dindori Hub');
+
+  // Route Polyline
+  var latlngs = [
+    [20.17, 73.98],
+    [20.20, 73.83],
+    [20.19, 73.78]
+  ];
+  var polyline = L.polyline(latlngs, { color: '#137333', weight: 4, dashArray: '6, 6' }).addTo(routeMap);
+  routeMap.fitBounds(polyline.getBounds(), { padding: [20, 20] });
+}
+
+window.simulateRouteOptimization = function () {
+  var badge = document.getElementById('v1-opt-badge');
+  if (badge) {
+    badge.innerHTML = '<span style="color:var(--turmeric)">⚡ Re-calculating live road grade, traffic &amp; stop sequence...</span>';
+    setTimeout(function () {
+      badge.innerHTML = '<span>✓ AI Optimized via SH-17: Waypoints re-sequenced. Saved 22 km &amp; 44 mins!</span>';
+      BhComp.toast('Route for Vehicle 1 optimized for live traffic and clustered farm gates.', 'info');
+    }, 700);
+  }
+};
+
+// 6. Digital Handoff Records
+var HANDOFFS_LOG = [
+  {
+    time: '25-Sep 10:15 AM',
+    lot: 'Lot L1 (Gat 118)',
+    route: 'Farm Gate 118 &rarr; Dindori Cold Store',
+    weight: '20.0 Qt',
+    sign: 'Verified by Driver & Farmer'
+  }
+];
+
+function renderHandoffTable() {
+  var tbody = document.getElementById('handoffs-tbody');
+  if (!tbody) return;
+  var html = '';
+  HANDOFFS_LOG.forEach(function (h) {
+    html += '<tr>';
+    html += '<td>' + h.time + '</td>';
+    html += '<td><b>' + h.lot + '</b></td>';
+    html += '<td>' + h.route + '</td>';
+    html += '<td><b>' + h.weight + '</b></td>';
+    html += '<td><span class="stat-pill pill-green">' + h.sign + '</span></td>';
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+window.submitHandoffProof = function () {
+  var lot = document.getElementById('hf-lot').value;
+  var from = document.getElementById('hf-from').value;
+  var to = document.getElementById('hf-to').value;
+  var wt = document.getElementById('hf-weight').value;
+
+  HANDOFFS_LOG.unshift({
+    time: 'Just now',
+    lot: lot.toUpperCase(),
+    route: from + ' &rarr; ' + to,
+    weight: wt + ' Qt',
+    sign: 'Digitally Signed'
+  });
+
+  renderHandoffTable();
+  BhComp.toast('Digital Proof of Handoff logged and committed to chain of custody.', 'info');
+};
+
+window.previewHandoffPhoto = function (input) {
+  if (input.files && input.files[0]) {
+    document.getElementById('hf-file-label').textContent = '✓ ' + input.files[0].name + ' attached';
+  }
+};
+
+window.submitLossReport = function () {
+  var pk = document.getElementById('loss-pickup').value;
+  var qty = document.getElementById('loss-qty').value;
+  var reason = document.getElementById('loss-reason').value.trim();
+
+  if (!qty || !reason) {
+    alert('Please enter loss quantity and root cause explanation.');
+    return;
+  }
 
   var tbody = document.getElementById('loss-records-tbody');
   var tr = document.createElement('tr');
-  tr.innerHTML = '<td>' + pkId.toUpperCase() + '</td><td><b>' + qty + ' Qt</b></td><td>' + reason + '</td><td><span class="stat-pill pill-amber">Investigating</span></td>';
-  tbody.insertBefore(tr, tbody.firstChild);
+  tr.innerHTML = '<td>' + pk.toUpperCase() + '</td><td>' + qty + ' Qt</td><td>' + reason + '</td><td><span class="stat-pill pill-amber">Investigating</span></td>';
+  tbody.appendChild(tr);
 
+  BhComp.toast('Loss incident recorded and sent to Block Administrator.', 'info');
   document.getElementById('loss-qty').value = '';
   document.getElementById('loss-reason').value = '';
 };
 
-// Initial calls
-renderPickups();
-renderHandoffs();
-initStorageMap();
-
-// 7. Vehicle Fleet Registry
-var fleetVehicles = [
-  { reg: 'MH-15-AB-1234', type: 'Tata Ace Tempo', capacityQt: 20, driver: 'Ramesh Patil', contact: '9876543210', base: 'Dindori', status: 'available' },
-  { reg: 'MH-15-CD-5678', type: 'Mahindra Bolero Pickup', capacityQt: 15, driver: 'Sunil Bhor', contact: '9765432109', base: 'Pimpalgaon Baswant', status: 'in-transit' },
-  { reg: 'MH-15-EF-9012', type: 'Eicher 10.90 Truck', capacityQt: 80, driver: 'Ganesh Shinde', contact: '9654321098', base: 'Nashik', status: 'available' },
-  { reg: 'MH-15-GH-3456', type: 'Tata 407 Mini Truck', capacityQt: 40, driver: 'Pravin Jagtap', contact: '9543210987', base: 'Dindori', status: 'available' },
-  { reg: 'MH-15-IJ-7890', type: 'Ashok Leyland Dost', capacityQt: 18, driver: 'Anil Gaikwad', contact: '9432109876', base: 'Manmad', status: 'maintenance' },
-  { reg: 'MH-15-KL-2345', type: 'Tata 1109 Truck', capacityQt: 100, driver: 'Vijay More', contact: '9321098765', base: 'Nashik', status: 'in-transit' }
-];
-window.BHOWANEE_FLEET = fleetVehicles;
-
-function renderFleet() {
-  var tbody = document.getElementById('fleet-tbody');
-  if (!tbody) return;
-  var html = '';
-  var avail = 0, busy = 0, totalCap = 0;
-
-  fleetVehicles.forEach(function (v) {
-    var statusClass = v.status === 'available' ? 'pill-green' : (v.status === 'in-transit' ? 'pill-amber' : 'pill-red');
-    var statusLabel = v.status === 'available' ? 'Available' : (v.status === 'in-transit' ? 'In Transit' : 'Maintenance');
-    if (v.status === 'available') { avail++; totalCap += v.capacityQt; }
-    if (v.status === 'in-transit') busy++;
-
-    html += '<tr>';
-    html += '<td><b>' + v.reg + '</b></td>';
-    html += '<td>' + v.type + '</td>';
-    html += '<td><b>' + v.capacityQt + ' Qt</b></td>';
-    html += '<td>' + v.driver + '</td>';
-    html += '<td><a href="tel:' + v.contact + '">' + v.contact + '</a></td>';
-    html += '<td>' + v.base + '</td>';
-    html += '<td><span class="stat-pill ' + statusClass + '">' + statusLabel + '</span></td>';
-    html += '<td>';
-    if (v.status === 'available') {
-      html += '<button class="btn sm" onclick="assignFleetToPickup(\'' + v.reg + '\')">Assign to Pickup</button>';
-    } else {
-      html += '<button class="btn sm secondary" onclick="markVehicleAvailable(\'' + v.reg + '\')">Mark Available</button>';
-    }
-    html += '</td></tr>';
-  });
-
-  tbody.innerHTML = html;
-  document.getElementById('kpi-fleet-total').textContent = fleetVehicles.length;
-  document.getElementById('kpi-fleet-avail').textContent = avail;
-  document.getElementById('kpi-fleet-busy').textContent = busy;
-  document.getElementById('kpi-fleet-cap').textContent = totalCap + ' Qt';
-}
-
-window.assignFleetToPickup = function (reg) {
-  var v = fleetVehicles.find(function (x) { return x.reg === reg; });
-  if (!v) return;
-  v.status = 'in-transit';
-  BD.writeAudit('Vehicle ' + reg + ' assigned to active pickup run', 'Fleet Desk', v.base, 'Vehicle Dispatch');
-  BhComp.toast('Vehicle ' + reg + ' dispatched.', 'info');
-  renderFleet();
-};
-
-window.markVehicleAvailable = function (reg) {
-  var v = fleetVehicles.find(function (x) { return x.reg === reg; });
-  if (!v) return;
-  v.status = 'available';
-  BhComp.toast('Vehicle ' + reg + ' marked as available.', 'info');
-  renderFleet();
-};
-
-window.openAddVehicleModal = function () {
-  var reg = prompt('Vehicle Registration No. (e.g. MH-15-XY-0001):');
-  if (!reg) return;
-  var type = prompt('Vehicle Type (e.g. Tata Ace Tempo):') || 'Pickup';
-  var cap = parseInt(prompt('Capacity in Quintals:') || '20', 10);
-  var driver = prompt('Driver Name:') || 'TBD';
-  var contact = prompt('Driver Contact:') || '';
-  var base = prompt('Base Location:') || 'Dindori';
-  fleetVehicles.push({ reg: reg, type: type, capacityQt: cap, driver: driver, contact: contact, base: base, status: 'available' });
-  window.BHOWANEE_FLEET = fleetVehicles;
-  BD.writeAudit('Registered new vehicle ' + reg + ' (' + type + ')', 'Fleet Desk', base, 'Fleet Registry');
-  BhComp.toast('Vehicle ' + reg + ' registered.', 'info');
-  renderFleet();
-};
-
-renderFleet();
+// Initialize
+document.addEventListener('DOMContentLoaded', function () {
+  renderFleetTable();
+  renderPickupsTable();
+  renderHandoffTable();
+});
 </script>
 </body>
 </html>
