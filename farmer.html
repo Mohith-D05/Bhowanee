@@ -91,7 +91,7 @@
         <h2 style="font-size:22px;font-family:var(--font-slab);margin-bottom:4px" id="o-title">Offers on your lot</h2>
         <p class="lot-meta" id="o-lot">Onion · 12 quintal · Grade A</p>
 
-        <svg id="bb-svg" viewBox="0 0 760 300" role="img" aria-label="Bid graph" class="bb-svg" style="margin-top:14px"></svg>
+        <svg id="bb-svg" viewBox="0 0 840 340" role="img" aria-label="Bid graph" class="bb-svg" style="margin-top:14px"></svg>
         <p class="bb-say-farmer" id="bb-say" aria-live="polite"></p>
 
         <div class="accept-row" id="accept-row" style="max-width:440px">
@@ -245,7 +245,7 @@ function refreshBidBoard() {
   var bids = BD.getBidsByLot(LOT_ID);
   var best = BD.getHighestBid(LOT_ID);
   var svg  = document.getElementById('bb-svg');
-  var res  = BhComp.renderBidBoard(svg, { farmerPrice: lot ? lot.farmerPrice : 0, mandiPrice: MANDI, bids: bids, width: 760, height: 300 });
+  var res  = BhComp.renderBidBoard(svg, { farmerPrice: lot ? lot.farmerPrice : 0, mandiPrice: MANDI, bids: bids, width: 840, height: 340 });
   var say  = document.getElementById('bb-say');
 
   if (lot && lot.status === 'closed') {

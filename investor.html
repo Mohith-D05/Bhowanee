@@ -1039,13 +1039,13 @@ function drawDaywiseChart() {
   ctx.clearRect(0, 0, W, H);
 
   // Grid lines
-  ctx.strokeStyle = '#E2E6EE';
+  ctx.strokeStyle = '#EDF1F7';
   ctx.lineWidth = 1;
   for (var i = 0; i <= 4; i++) {
     var y = pad.top + chartH - (chartH * i / 4);
     ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + chartW, y); ctx.stroke();
-    ctx.fillStyle = '#8A91AA'; ctx.font = '11px "Google Sans", sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText(Math.round(maxVol * i / 4) + ' Qt', pad.left - 4, y + 4);
+    ctx.fillStyle = '#8A91AA'; ctx.font = '500 11px "Google Sans", sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(Math.round(maxVol * i / 4) + ' Qt', pad.left - 6, y + 4);
   }
 
   // Bars
@@ -1053,23 +1053,43 @@ function drawDaywiseChart() {
     var x = pad.left + i * gap + gap * 0.2;
     var barH = (d.vol / maxVol) * chartH;
     var y = pad.top + chartH - barH;
+    var radius = Math.min(6, barW / 2);
 
     // Gradient bar
     var grad = ctx.createLinearGradient(0, y, 0, y + barH);
     grad.addColorStop(0, '#1C2452');
-    grad.addColorStop(1, '#3a4f8c');
+    grad.addColorStop(0.6, '#283870');
+    grad.addColorStop(1, '#3E5496');
     ctx.fillStyle = grad;
-    ctx.fillRect(x, y, barW, barH);
+
+    // Rounded top bar
+    ctx.beginPath();
+    ctx.moveTo(x, y + barH);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.lineTo(x + barW - radius, y);
+    ctx.quadraticCurveTo(x + barW, y, x + barW, y + radius);
+    ctx.lineTo(x + barW, y + barH);
+    ctx.closePath();
+    ctx.fill();
+
+    // Subtle highlight line on top
+    ctx.strokeStyle = '#D99A06';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + barW - radius, y);
+    ctx.stroke();
 
     // Volume label on top
-    ctx.fillStyle = '#1C2452'; ctx.font = '10px "Google Sans", sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(d.vol, x + barW / 2, y - 4);
+    ctx.fillStyle = '#1C2452'; ctx.font = 'bold 11px "Google Sans", sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(d.vol, x + barW / 2, y - 6);
 
     // Day label
-    ctx.fillStyle = '#4B5375'; ctx.font = '11px "Google Sans", sans-serif';
-    ctx.fillText(d.day, x + barW / 2, pad.top + chartH + 14);
-    ctx.fillStyle = '#8A91AA'; ctx.font = '10px "Google Sans", sans-serif';
-    ctx.fillText(d.date.replace('Sep ', ''), x + barW / 2, pad.top + chartH + 26);
+    ctx.fillStyle = '#2A3047'; ctx.font = '600 11px "Google Sans", sans-serif';
+    ctx.fillText(d.day, x + barW / 2, pad.top + chartH + 16);
+    ctx.fillStyle = '#8A91AA'; ctx.font = '500 10px "Google Sans", sans-serif';
+    ctx.fillText(d.date.replace('Sep ', ''), x + barW / 2, pad.top + chartH + 28);
   });
 }
 
@@ -1082,7 +1102,7 @@ function drawIntradayChart() {
   canvas.height = 200;
   var H = canvas.height;
 
-  var pad = { top: 20, right: 20, bottom: 40, left: 50 };
+  var pad = { top: 24, right: 24, bottom: 42, left: 54 };
   var chartW = W - pad.left - pad.right;
   var chartH = H - pad.top - pad.bottom;
 
@@ -1093,31 +1113,21 @@ function drawIntradayChart() {
 
   ctx.clearRect(0, 0, W, H);
 
+  // Background subtle card tint
+  ctx.fillStyle = '#FAFBFD';
+  ctx.fillRect(pad.left, pad.top, chartW, chartH);
+
   // Grid
-  ctx.strokeStyle = '#E2E6EE'; ctx.lineWidth = 1;
+  ctx.strokeStyle = '#EEF2F6'; ctx.lineWidth = 1;
   for (var i = 0; i <= 4; i++) {
     var y = pad.top + chartH * i / 4;
     ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + chartW, y); ctx.stroke();
     var pVal = maxP - pRange * i / 4;
-    ctx.fillStyle = '#8A91AA'; ctx.font = '11px "Google Sans", sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText(Math.round(pVal), pad.left - 4, y + 4);
+    ctx.fillStyle = '#8A91AA'; ctx.font = '500 11px "Google Sans", sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText('₹' + Math.round(pVal), pad.left - 6, y + 4);
   }
 
-  // Market open / close zone shading
-  ctx.fillStyle = 'rgba(230,244,234,0.25)';
-  ctx.fillRect(pad.left, pad.top, chartW, chartH);
-
-  // Line chart
-  ctx.beginPath();
-  ctx.strokeStyle = '#1C2452'; ctx.lineWidth = 2;
-  intradayBids.forEach(function(b, i) {
-    var x = pad.left + (i / (intradayBids.length - 1)) * chartW;
-    var y = pad.top + chartH - ((b.price - minP) / pRange) * chartH;
-    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-
-  // Area fill
+  // Smooth Area fill
   ctx.beginPath();
   intradayBids.forEach(function(b, i) {
     var x = pad.left + (i / (intradayBids.length - 1)) * chartW;
@@ -1128,26 +1138,60 @@ function drawIntradayChart() {
   ctx.lineTo(pad.left, pad.top + chartH);
   ctx.closePath();
   var areaGrad = ctx.createLinearGradient(0, pad.top, 0, pad.top + chartH);
-  areaGrad.addColorStop(0, 'rgba(28,36,82,.12)');
-  areaGrad.addColorStop(1, 'rgba(28,36,82,0)');
+  areaGrad.addColorStop(0, 'rgba(217, 154, 6, 0.22)');
+  areaGrad.addColorStop(0.7, 'rgba(28, 36, 82, 0.08)');
+  areaGrad.addColorStop(1, 'rgba(28, 36, 82, 0.0)');
   ctx.fillStyle = areaGrad;
   ctx.fill();
+
+  // Premium line chart
+  ctx.beginPath();
+  var lineGrad = ctx.createLinearGradient(pad.left, 0, pad.left + chartW, 0);
+  lineGrad.addColorStop(0, '#1C2452');
+  lineGrad.addColorStop(0.5, '#23377A');
+  lineGrad.addColorStop(1, '#D99A06');
+  ctx.strokeStyle = lineGrad;
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  intradayBids.forEach(function(b, i) {
+    var x = pad.left + (i / (intradayBids.length - 1)) * chartW;
+    var y = pad.top + chartH - ((b.price - minP) / pRange) * chartH;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
 
   // Dots and time labels
   intradayBids.forEach(function(b, i) {
     var x = pad.left + (i / (intradayBids.length - 1)) * chartW;
     var y = pad.top + chartH - ((b.price - minP) / pRange) * chartH;
-    ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2);
-    ctx.fillStyle = '#D99A06'; ctx.fill();
-    if (i % 3 === 0) {
-      ctx.fillStyle = '#4B5375'; ctx.font = '9px "Google Sans", sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText(b.time, x, pad.top + chartH + 14);
+    var isLast = (i === intradayBids.length - 1);
+
+    // Glowing halo for last point
+    if (isLast) {
+      ctx.beginPath();
+      ctx.arc(x, y, 7, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(217, 154, 6, 0.35)';
+      ctx.fill();
+    }
+
+    ctx.beginPath();
+    ctx.arc(x, y, isLast ? 4 : 3, 0, Math.PI * 2);
+    ctx.fillStyle = isLast ? '#D99A06' : '#1C2452';
+    ctx.fill();
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    if (i % 2 === 0 || isLast) {
+      ctx.fillStyle = '#4B5375'; ctx.font = '500 10px "Google Sans", sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(b.time, x, pad.top + chartH + 16);
     }
   });
 
   // X-axis label
-  ctx.fillStyle = '#8A91AA'; ctx.font = '10px "Google Sans", sans-serif'; ctx.textAlign = 'center';
-  ctx.fillText('Time (IST)  |  09:00 - 15:00 Market Window', pad.left + chartW / 2, pad.top + chartH + 30);
+  ctx.fillStyle = '#71788E'; ctx.font = '500 10px "Google Sans", sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('Execution Time (IST)  •  Live Bid Stream', pad.left + chartW / 2, pad.top + chartH + 32);
 }
 
 function renderBidChartKPIs() {

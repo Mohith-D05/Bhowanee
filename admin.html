@@ -54,7 +54,7 @@
   <!-- Sidenav -->
   <nav class="sidenav" aria-label="Super admin sections">
     <button class="sidenav-item active" data-section="map">State Map</button>
-    <button class="sidenav-item" data-section="pipeline">Land Pipeline</button>
+    <button class="sidenav-item" data-section="pipeline">Farmland Leases</button>
     <button class="sidenav-item" data-section="demand">Demand & Supply</button>
     <button class="sidenav-item" data-section="bids">Bid Oversight</button>
     <button class="sidenav-item" data-section="ledger">Settlement Ledger</button>
@@ -189,10 +189,30 @@
             </div>
             <div id="panel-content"></div>
             <div class="action-buttons" id="panel-actions"></div>
-            <div id="panel-bid-board" style="margin-top:20px;display:none">
-              <h4 style="font-size:16px;margin-bottom:8px">Bid board</h4>
-              <svg id="panel-bb-svg" viewBox="0 0 480 260" class="bb-svg"></svg>
-              <p id="panel-bb-say" class="bb-say" style="font-size:14px;margin-top:6px"></p>
+            <div id="panel-bid-board" style="margin-top:16px;display:none">
+              <div style="background:var(--sheet);border:1px solid var(--rule);padding:14px;border-radius:6px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                  <h4 style="font-size:14px;margin:0;font-family:var(--font-slab)">Price Discovery Status</h4>
+                  <span class="stat-pill pill-green" id="panel-bid-count-pill">7 Offers</span>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+                  <div style="background:var(--tint);padding:8px 10px;border-radius:4px">
+                    <div style="font-size:11px;color:var(--ink-soft)">Highest Offer</div>
+                    <div style="font-size:18px;font-weight:700;color:var(--forest)" id="panel-stat-high">₹2,040</div>
+                    <div style="font-size:10.5px;color:var(--ink-soft)" id="panel-stat-bidder">Buyer C (Leading)</div>
+                  </div>
+                  <div style="background:var(--tint);padding:8px 10px;border-radius:4px">
+                    <div style="font-size:11px;color:var(--ink-soft)">Farmer Reserve</div>
+                    <div style="font-size:18px;font-weight:700;color:var(--ink)" id="panel-stat-reserve">₹2,100</div>
+                    <div style="font-size:10.5px;color:#C5221F" id="panel-stat-gap">Gap: -₹60/Qt</div>
+                  </div>
+                </div>
+                <p id="panel-bb-say" class="bb-say" style="font-size:12px;margin:6px 0 10px;color:var(--ink-soft);line-height:1.4"></p>
+                <button class="btn block sm" type="button" onclick="openSeparatedBidModal()" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;font-weight:600">
+                  <span>📈 Open Full Bid Curve &amp; Analytics</span>
+                  <span>&rarr;</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -242,14 +262,14 @@
       </div>
     </section>
 
-    <!-- ── 2. LAND PIPELINE ────────────────────────────────── -->
+    <!-- ── 2. FARMLAND LEASES ────────────────────────────── -->
     <section id="s-pipeline" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
         <div>
-          <h1 class="page-title">Land Acquisition & Lease Pipeline</h1>
-          <p class="page-sub">Land under farmer negotiation vs active executed leases across Maharashtra.</p>
+          <h1 class="page-title">Farmland Onboarding &amp; Lease Registry</h1>
+          <p class="page-sub">Farmland under farmer negotiation vs active executed agricultural leases across Maharashtra.</p>
         </div>
-        <button class="btn" onclick="openAddLandModal()">+ Add Land Parcel</button>
+        <button class="btn" onclick="openAddLandModal()">+ Add Farmland Parcel</button>
       </div>
 
       <div class="kpi-row">
@@ -427,7 +447,7 @@
               <td style="color:#C5221F">-3,800 Qt</td>
               <td><span class="stat-pill pill-amber">78.9%</span></td>
               <td>Onion, Tomato, Grapes</td>
-              <td><button class="btn sm secondary" onclick="switchSection('pipeline')">Expand Leases in Dindori</button></td>
+              <td><button class="btn sm secondary" onclick="switchSection('pipeline')">Expand Farmland Leases in Dindori</button></td>
             </tr>
             <tr>
               <td><b>Pune</b></td>
@@ -899,11 +919,11 @@
   </div>
 </div>
 
-<!-- Modal: Add Land Parcel -->
+<!-- Modal: Add Farmland Parcel -->
 <div id="modal-land" class="modal-overlay" hidden>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="land-m-title">
-    <h3 id="land-m-title" style="font-family:var(--font-slab)">Add New Land Parcel to Pipeline</h3>
-    <p class="modal-sub">Register land scouted for upcoming seasonal contracts.</p>
+    <h3 id="land-m-title" style="font-family:var(--font-slab)">Add New Farmland Parcel</h3>
+    <p class="modal-sub">Register scouted agricultural land for upcoming seasonal lease agreements.</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
       <div class="field">
         <label for="lp-gat">Gat / Survey Number</label>
@@ -933,8 +953,78 @@
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn" type="button" onclick="saveNewLandParcel()">Add to Pipeline</button>
+      <button class="btn" type="button" onclick="saveNewLandParcel()">Add Farmland Record</button>
       <button class="btn secondary" type="button" onclick="closeLandModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Separated Premium Price Discovery Curve & Bid Book -->
+<div id="modal-bid-curve" class="modal-overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:920px;width:95%;max-height:92vh;overflow-y:auto;padding:26px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <h2 style="font-family:var(--font-slab);font-size:22px;margin:0" id="sep-modal-title">Price Discovery &amp; Bid Curve</h2>
+          <span class="chip sm" style="background:#E6F4EA;color:#137333;font-weight:700">9 AM – 3 PM Window Active</span>
+        </div>
+        <p style="font-size:13px;color:var(--ink-soft);margin-top:4px" id="sep-modal-sub">Gat 125, Dindori • 12.0 Quintals Rabi Onion Grade A</p>
+      </div>
+      <button class="ghost" onclick="closeSeparatedBidModal()" style="font-size:20px;line-height:1">✕</button>
+    </div>
+
+    <!-- KPI Strip -->
+    <div class="kpi-row" style="margin-bottom:18px">
+      <div class="kpi-card" style="padding:12px 14px">
+        <div class="num" id="sep-kpi-high" style="color:var(--forest);font-size:22px">₹2,040</div>
+        <div class="lbl">Highest Offer (Leading)</div>
+      </div>
+      <div class="kpi-card" style="padding:12px 14px">
+        <div class="num" id="sep-kpi-farmer" style="font-size:22px">₹2,100</div>
+        <div class="lbl">Farmer Ask Price</div>
+      </div>
+      <div class="kpi-card" style="padding:12px 14px">
+        <div class="num" id="sep-kpi-mandi" style="color:#8C6239;font-size:22px">₹1,880</div>
+        <div class="lbl">Mandi Reference Rate</div>
+      </div>
+      <div class="kpi-card" style="padding:12px 14px">
+        <div class="num" id="sep-kpi-spread" style="color:var(--forest);font-size:22px">+₹160 / Qt</div>
+        <div class="lbl">Premium vs Mandi (+8.5%)</div>
+      </div>
+    </div>
+
+    <!-- The Separated Wide Graph -->
+    <div style="background:var(--sheet);border:1px solid var(--rule);padding:18px;border-radius:6px;margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <h3 style="font-size:15px;margin:0;font-family:var(--font-slab)">Stepped Price Discovery Curve</h3>
+        <span style="font-size:12px;color:var(--ink-soft)">Separated Bid Sequence (Chronological)</span>
+      </div>
+      <div style="width:100%;overflow-x:auto">
+        <svg id="separated-bb-svg" viewBox="0 0 840 340" style="display:block;width:100%;min-width:680px;height:auto"></svg>
+      </div>
+    </div>
+
+    <!-- Full Bid Book Table -->
+    <h3 style="font-family:var(--font-slab);font-size:16px;margin-bottom:10px">Audited Chronological Bid Book</h3>
+    <div class="tablewrap" style="max-height:220px;overflow-y:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Bidder Entity</th>
+            <th>Bid Price (₹/Qt)</th>
+            <th>Volume</th>
+            <th>Spread over Mandi</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="sep-bid-tbody"></tbody>
+      </table>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px">
+      <button class="btn secondary" onclick="closeSeparatedBidModal()">Close</button>
+      <button class="btn" onclick="alert('Notification sent to buyer and farmer: Leading offer ₹2,040 ready for lock-in.'); closeSeparatedBidModal();">Lock In Highest Bid</button>
     </div>
   </div>
 </div>
@@ -1327,10 +1417,35 @@ function updateCadastralPanelView() {
 
       if (lots.length && panelBB) {
         panelBB.style.display = 'block';
-        var svg = document.getElementById('panel-bb-svg');
-        BhComp.renderBidBoard(svg, { farmerPrice: lots[0].farmerPrice, mandiPrice: mandiPrice, bids: bids, width: 480, height: 260 });
         var best = BD.getHighestBid(lots[0].id);
-        document.getElementById('panel-bb-say').textContent = Market.bidBoardNote(lots[0].farmerPrice, best ? best.price : 0, c.crop);
+        var fPrice = lots[0].farmerPrice;
+        var hPrice = best ? best.price : 0;
+
+        var countPill = document.getElementById('panel-bid-count-pill');
+        if (countPill) countPill.textContent = bids.length + ' Offers';
+        var statHigh = document.getElementById('panel-stat-high');
+        if (statHigh) statHigh.textContent = '₹' + Number(hPrice).toLocaleString('en-IN');
+        var statBidder = document.getElementById('panel-stat-bidder');
+        if (statBidder) statBidder.textContent = best ? (best.buyer + ' (Leading)') : 'No bids yet';
+        var statReserve = document.getElementById('panel-stat-reserve');
+        if (statReserve) statReserve.textContent = '₹' + Number(fPrice).toLocaleString('en-IN');
+        var gap = hPrice - fPrice;
+        var gapEl = document.getElementById('panel-stat-gap');
+        if (gapEl) {
+          gapEl.textContent = gap >= 0 ? ('+' + gap + '/Qt Met') : ('Gap: ₹' + gap + '/Qt');
+          gapEl.style.color = gap >= 0 ? 'var(--forest)' : '#C5221F';
+        }
+        var sayEl = document.getElementById('panel-bb-say');
+        if (sayEl) sayEl.textContent = Market.bidBoardNote(fPrice, hPrice, c.crop);
+
+        window._activeBidModalData = {
+          contract: c,
+          lot: lots[0],
+          bids: bids,
+          mandiPrice: mandiPrice,
+          farmerPrice: fPrice,
+          bestPrice: hPrice
+        };
       } else if (panelBB) {
         panelBB.style.display = 'none';
       }
@@ -1955,7 +2070,7 @@ window.saveNewLandParcel = function () {
   tbody.insertBefore(tr, tbody.firstChild);
 
   BD.writeAudit('Registered new scouted land parcel ' + gat + ' (' + acres + ' ac) for ' + farmer, 'Super Admin', farmer, 'Field Survey');
-  BhComp.toast('Land parcel added to negotiation pipeline.', 'info');
+  BhComp.toast('Farmland parcel added to lease registry.', 'info');
   closeLandModal();
   renderAuditTrail();
 };
@@ -2014,6 +2129,60 @@ var _adminOrigSwitch = switchSection;
 switchSection = function(sec) {
   _adminOrigSwitch(sec);
   if (sec === 'fleet') renderAdminFleet();
+};
+
+window.openSeparatedBidModal = function () {
+  var d = window._activeBidModalData;
+  if (!d) return;
+
+  var modal = document.getElementById('modal-bid-curve');
+  if (!modal) return;
+
+  document.getElementById('sep-modal-title').textContent = 'Price Discovery & Bid Curve — Lot ' + d.lot.id.toUpperCase();
+  document.getElementById('sep-modal-sub').textContent = 'Gat ' + d.contract.gat + ', ' + d.contract.village + ' • ' + d.lot.qty + ' Qt ' + d.contract.crop + ' Grade ' + d.lot.grade;
+
+  document.getElementById('sep-kpi-high').textContent = '₹' + Number(d.bestPrice).toLocaleString('en-IN');
+  document.getElementById('sep-kpi-farmer').textContent = '₹' + Number(d.farmerPrice).toLocaleString('en-IN');
+  document.getElementById('sep-kpi-mandi').textContent = '₹' + Number(d.mandiPrice).toLocaleString('en-IN');
+  var spread = d.bestPrice - d.mandiPrice;
+  document.getElementById('sep-kpi-spread').textContent = (spread >= 0 ? '+' : '') + '₹' + spread + ' / Qt';
+
+  // Render the wide separated SVG!
+  var svg = document.getElementById('separated-bb-svg');
+  BhComp.renderBidBoard(svg, {
+    farmerPrice: d.farmerPrice,
+    mandiPrice: d.mandiPrice,
+    bids: d.bids,
+    crop: d.contract.crop,
+    width: 840,
+    height: 340
+  });
+
+  // Render the Bid Book Table
+  var tbody = document.getElementById('sep-bid-tbody');
+  var html = '';
+  var times = ['09:20', '10:05', '10:50', '11:35', '12:40', '13:30', '14:15'];
+  d.bids.slice().reverse().forEach(function (b, idx) {
+    var isTop = b.price === d.bestPrice;
+    var spreadB = b.price - d.mandiPrice;
+    var t = b.time || times[(d.bids.length - 1 - idx) % times.length];
+    html += '<tr style="' + (isTop ? 'background:#FEFCE8' : '') + '">';
+    html += '<td><b>' + t + '</b></td>';
+    html += '<td>' + b.buyer + '</td>';
+    html += '<td><b style="color:' + (isTop ? 'var(--turmeric)' : 'var(--ink)') + '">₹' + Number(b.price).toLocaleString('en-IN') + '</b></td>';
+    html += '<td>' + (b.qty || d.lot.qty) + ' Qt</td>';
+    html += '<td style="color:' + (spreadB >= 0 ? 'var(--forest)' : '#C5221F') + ';font-weight:600">' + (spreadB >= 0 ? '+' : '') + '₹' + spreadB + '</td>';
+    html += '<td><span class="stat-pill ' + (isTop ? 'pill-green' : 'pill-amber') + '">' + (isTop ? 'Leading Offer' : 'Outbid') + '</span></td>';
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
+
+  modal.removeAttribute('hidden');
+};
+
+window.closeSeparatedBidModal = function () {
+  var modal = document.getElementById('modal-bid-curve');
+  if (modal) modal.setAttribute('hidden', '');
 };
 </script>
 </body>

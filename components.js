@@ -112,98 +112,184 @@ window.BhComp = (function () {
    * opts: {
    *   farmerPrice: number,
    *   mandiPrice: number,
-   *   bids: [{buyer, price, timestamp}],
+   *   bids: [{buyer, price, timestamp, time}],
    *   crop: string,
-   *   width: number  (viewBox width, default 640)
-   *   height: number (viewBox height, default 300)
+   *   width: number  (viewBox width, default 840)
+   *   height: number (viewBox height, default 340)
    * }
    */
   function renderBidBoard(svgEl, opts) {
     var farmerPrice = opts.farmerPrice || 0;
     var mandiPrice  = opts.mandiPrice  || 0;
     var bids        = opts.bids        || [];
-    var W           = opts.width  || 760;
-    var H           = opts.height || 300;
+    var W           = opts.width  || 840;
+    var H           = opts.height || 340;
 
-    // Layout constants derived from width
-    var LEFT     = 60;                    // y-axis label space
-    var RIGHT    = W - 10;                // right edge with padding
-    var CHART_R  = Math.round(W * 0.68);  // right edge of chart lines (leaves room for labels)
-    var LABEL_X  = CHART_R + 12;          // where right-side text labels start
-    var MID_X    = Math.round((LEFT + CHART_R) / 2);  // x-axis label centre
+    // Layout constants
+    var LEFT     = 70;                    // y-axis label space
+    var RIGHT    = W - 14;                // right edge with padding
+    var CHART_R  = Math.max(LEFT + 120, W - 220); // right edge of chart line (leaves 220px for clear tags)
+    var LABEL_X  = CHART_R + 16;          // where right-side badge pills start
+    var MID_X    = Math.round((LEFT + CHART_R) / 2);
 
     // Y scale
     var prices = bids.map(function (b) { return b.price; }).concat([farmerPrice, mandiPrice].filter(Boolean));
     if (!prices.length) prices = [2000];
-    var lo  = Math.floor((Math.min.apply(null, prices) - 80)  / 100) * 100;
-    var hi  = Math.ceil( (Math.max.apply(null, prices) + 80)  / 100) * 100;
+    var lo  = Math.floor((Math.min.apply(null, prices) - 70)  / 100) * 100;
+    var hi  = Math.ceil( (Math.max.apply(null, prices) + 70)  / 100) * 100;
     if (hi <= lo) hi = lo + 200;
     var step = (hi - lo) > 600 ? 200 : 100;
 
-    var PLOT_TOP = 30;
-    var PLOT_BOT = 260;
+    var PLOT_TOP = 36;
+    var PLOT_BOT = H - 56;
     function yPos(p) { return PLOT_BOT - (p - lo) / (hi - lo) * (PLOT_BOT - PLOT_TOP); }
     var n = bids.length;
     var plotW = CHART_R - LEFT;
-    function xPos(i) { return LEFT + plotW * (i + 1) / (n + 1); }
+    function xPos(i) {
+      if (n <= 1) return LEFT + plotW / 2;
+      return LEFT + 24 + (plotW - 48) * (i / (n - 1));
+    }
 
-    // Set viewBox dynamically so SVG never clips
     svgEl.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
 
-    var html = '<g class="axis">';
+    // Defs for gradients & filters
+    var defsId = 'bb-grad-' + Math.floor(Math.random() * 10000);
+    var html = '<defs>' +
+      '<linearGradient id="' + defsId + '" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0%" stop-color="#D99A06" stop-opacity="0.28"/>' +
+        '<stop offset="100%" stop-color="#D99A06" stop-opacity="0.01"/>' +
+      '</linearGradient>' +
+    '</defs>';
+
+    // Background chart card area
+    html += '<rect x="' + LEFT + '" y="' + PLOT_TOP + '" width="' + (CHART_R - LEFT) + '" height="' + (PLOT_BOT - PLOT_TOP) + '" fill="#FAFBF8" rx="4"/>';
+
+    // Gridlines & Y-axis labels
+    html += '<g class="axis-y">';
     for (var v = lo; v <= hi; v += step) {
       var yv = yPos(v);
-      html += '<line x1="' + LEFT + '" y1="' + yv + '" x2="' + CHART_R + '" y2="' + yv + '" stroke="' + (v === lo ? '#1C2452' : '#C7CDD8') + '" stroke-width="' + (v === lo ? 1.5 : 1) + '"/>';
-      html += '<text x="' + (LEFT - 8) + '" y="' + (yv + 4) + '" text-anchor="end" font-size="12" fill="#4B5375">' + v.toLocaleString('en-IN') + '</text>';
+      html += '<line x1="' + LEFT + '" y1="' + yv + '" x2="' + CHART_R + '" y2="' + yv + '" stroke="' + (v === lo ? '#1C2452' : '#E2E6EE') + '" stroke-width="' + (v === lo ? 1.5 : 1) + '" stroke-dasharray="' + (v === lo ? 'none' : '4 3') + '"/>';
+      html += '<text x="' + (LEFT - 10) + '" y="' + (yv + 4) + '" text-anchor="end" font-size="11.5" font-weight="500" fill="#4B5375">₹' + v.toLocaleString('en-IN') + '</text>';
     }
-    html += '<text x="8" y="24" font-size="12" font-weight="600" fill="#4B5375">₹/qt</text>';
-    html += '<text x="' + MID_X + '" y="' + (H - 8) + '" text-anchor="middle" font-size="12" fill="#4B5375">Bids, oldest to newest</text>';
+    html += '<text x="' + LEFT + '" y="' + (PLOT_TOP - 12) + '" font-size="11.5" font-weight="700" fill="#1C2452">Price (₹/Qt)</text>';
     html += '</g>';
 
-    // Mandi price dashed line
+    // Mandi benchmark line
     if (mandiPrice) {
       var ym = yPos(mandiPrice);
-      html += '<line x1="' + LEFT + '" y1="' + ym + '" x2="' + CHART_R + '" y2="' + ym + '" stroke="#6B4E3A" stroke-width="2" stroke-dasharray="7 5"/>';
+      html += '<line x1="' + LEFT + '" y1="' + ym + '" x2="' + CHART_R + '" y2="' + ym + '" stroke="#8C6239" stroke-width="2" stroke-dasharray="6 4" opacity="0.9"/>';
     }
 
-    // Highest bid step line + dots
-    var topPrice = 0, topBidIdx = -1, bidPath = '', bidDots = '';
+    // Farmer target price line
+    if (farmerPrice) {
+      var yf = yPos(farmerPrice);
+      html += '<line x1="' + LEFT + '" y1="' + yf + '" x2="' + CHART_R + '" y2="' + yf + '" stroke="#1C2452" stroke-width="2.5" opacity="0.95"/>';
+    }
+
+    // Step price line, area fill, and separated X-axis values
+    var topPrice = 0, topBidIdx = -1, bidPath = '', areaPath = '', bidDots = '';
+    var sampleTimes = ['09:15', '10:02', '10:45', '11:30', '12:45', '13:30', '14:15', '14:50'];
+
+    html += '<g class="axis-x">';
     bids.forEach(function (b, i) {
-      var xi = xPos(i), yi = yPos(b.price);
+      var xi = Math.round(xPos(i)), yi = Math.round(yPos(b.price));
       var isTop = b.price > topPrice;
-      if (i === 0) { bidPath = 'M' + xi + ',' + yi; }
-      else if (isTop) { bidPath += ' H' + xi + ' V' + yi; }
+
+      // Vertical guide line for each bid
+      html += '<line x1="' + xi + '" y1="' + PLOT_TOP + '" x2="' + xi + '" y2="' + PLOT_BOT + '" stroke="#EDEFF5" stroke-width="1"/>';
+      html += '<line x1="' + xi + '" y1="' + PLOT_BOT + '" x2="' + xi + '" y2="' + (PLOT_BOT + 6) + '" stroke="#1C2452" stroke-width="1.5"/>';
+
+      // Separated X-Axis Values (Bid # + Time)
+      var tStr = b.time || b.timestamp || sampleTimes[i % sampleTimes.length];
+      html += '<text x="' + xi + '" y="' + (PLOT_BOT + 20) + '" font-size="11" font-weight="700" fill="#1C2452" text-anchor="middle">Bid ' + (i + 1) + '</text>';
+      html += '<text x="' + xi + '" y="' + (PLOT_BOT + 34) + '" font-size="10" fill="#8A91AA" text-anchor="middle">' + tStr + '</text>';
+
+      if (i === 0) {
+        bidPath = 'M' + xi + ',' + yi;
+        areaPath = 'M' + xi + ',' + PLOT_BOT + ' L' + xi + ',' + yi;
+      } else if (isTop) {
+        bidPath += ' H' + xi + ' V' + yi;
+        areaPath += ' H' + xi + ' V' + yi;
+      }
       if (isTop) {
         topPrice = b.price;
         topBidIdx = i;
-        bidDots += '<circle cx="' + xi + '" cy="' + yi + '" r="6" fill="#D99A06"><title>' + b.buyer + ': ₹' + Number(b.price).toLocaleString('en-IN') + '</title></circle>';
-      } else {
-        bidDots += '<circle cx="' + xi + '" cy="' + yi + '" r="4.5" fill="#F9FAF7" stroke="#D99A06" stroke-width="2"><title>' + b.buyer + ': ₹' + Number(b.price).toLocaleString('en-IN') + '</title></circle>';
       }
     });
+    html += '<text x="' + MID_X + '" y="' + (H - 6) + '" text-anchor="middle" font-size="11" font-weight="500" fill="#8A91AA">Sequential Live Bidding Offers (9:00 AM – 3:00 PM Trading Window)</text>';
+    html += '</g>';
+
+    // Finish step paths to right boundary
     if (n && topPrice) {
       bidPath += ' H' + CHART_R;
+      areaPath += ' H' + CHART_R + ' L' + CHART_R + ',' + PLOT_BOT + ' Z';
+      html += '<path d="' + areaPath + '" fill="url(#' + defsId + ')"/>';
       html += '<path d="' + bidPath + '" fill="none" stroke="#D99A06" stroke-width="3.5" stroke-linejoin="round"/>';
     }
+
+    // Dots for bids
+    bids.forEach(function (b, i) {
+      var xi = Math.round(xPos(i)), yi = Math.round(yPos(b.price));
+      if (i === topBidIdx) {
+        // High bid glowing pulse ring
+        bidDots += '<circle cx="' + xi + '" cy="' + yi + '" r="13" fill="rgba(217,154,6,0.18)"/>';
+        bidDots += '<circle cx="' + xi + '" cy="' + yi + '" r="6.5" fill="#D99A06"/>';
+        bidDots += '<circle cx="' + xi + '" cy="' + yi + '" r="2.5" fill="#FFFFFF"><title>' + b.buyer + ': ₹' + Number(b.price).toLocaleString('en-IN') + ' (High Offer)</title></circle>';
+      } else {
+        bidDots += '<circle cx="' + xi + '" cy="' + yi + '" r="4.5" fill="#FFFFFF" stroke="#D99A06" stroke-width="2.5"><title>' + b.buyer + ': ₹' + Number(b.price).toLocaleString('en-IN') + '</title></circle>';
+      }
+    });
     html += bidDots;
 
-    // Farmer price solid line
+    // Premium Floating Benchmark Badges (Right side with collision avoidance)
+    var badges = [];
     if (farmerPrice) {
-      var yf = yPos(farmerPrice);
-      html += '<line x1="' + LEFT + '" y1="' + yf + '" x2="' + CHART_R + '" y2="' + yf + '" stroke="#1C2452" stroke-width="3.5"/>';
+      badges.push({
+        y: yPos(farmerPrice),
+        label: 'Farmer Price: ₹' + Number(farmerPrice).toLocaleString('en-IN'),
+        bg: '#1C2452',
+        border: '#1C2452',
+        textCol: '#FFFFFF',
+        dot: '#AEB8E4'
+      });
+    }
+    if (topPrice) {
+      badges.push({
+        y: yPos(topPrice),
+        label: 'Highest Bid: ₹' + Number(topPrice).toLocaleString('en-IN'),
+        bg: '#FEF7E0',
+        border: '#D99A06',
+        textCol: '#8A5F00',
+        dot: '#D99A06'
+      });
+    }
+    if (mandiPrice) {
+      badges.push({
+        y: yPos(mandiPrice),
+        label: 'Mandi Rate: ₹' + Number(mandiPrice).toLocaleString('en-IN'),
+        bg: '#F5F0EB',
+        border: '#B89B85',
+        textCol: '#6B4E3A',
+        dot: '#8C6239'
+      });
     }
 
-    // Right-side labels (collision avoidance)
-    var labs = [];
-    if (farmerPrice) labs.push({ y: yPos(farmerPrice), text: 'Your price ₹' + Number(farmerPrice).toLocaleString('en-IN'), color: '#1C2452', weight: '600' });
-    if (topPrice)    labs.push({ y: yPos(topPrice),    text: 'Highest offer ₹' + Number(topPrice).toLocaleString('en-IN'), color: '#8A5F00', weight: '500' });
-    if (mandiPrice)  labs.push({ y: yPos(mandiPrice),  text: 'Mandi today ₹' + Number(mandiPrice).toLocaleString('en-IN'), color: '#6B4E3A', weight: '400' });
-    labs.sort(function (a, b) { return a.y - b.y; });
-    for (var k = 1; k < labs.length; k++) {
-      if (labs[k].y - labs[k - 1].y < 16) labs[k].y = labs[k - 1].y + 16;
+    badges.sort(function (a, b) { return a.y - b.y; });
+    var minGap = 28;
+    for (var k = 1; k < badges.length; k++) {
+      if (badges[k].y - badges[k - 1].y < minGap) {
+        badges[k].y = badges[k - 1].y + minGap;
+      }
     }
-    labs.forEach(function (l) {
-      html += '<text x="' + LABEL_X + '" y="' + (l.y + 4) + '" font-size="12.5" font-weight="' + l.weight + '" fill="' + l.color + '">' + escSVG(l.text) + '</text>';
+
+    badges.forEach(function (b) {
+      var by = Math.round(b.y - 12);
+      // Badge pill background
+      html += '<rect x="' + LABEL_X + '" y="' + by + '" width="180" height="24" rx="5" fill="' + b.bg + '" stroke="' + b.border + '" stroke-width="1.2"/>';
+      // Dot
+      html += '<circle cx="' + (LABEL_X + 11) + '" cy="' + (by + 12) + '" r="3.5" fill="' + b.dot + '"/>';
+      // Text
+      html += '<text x="' + (LABEL_X + 22) + '" y="' + (by + 16) + '" font-size="11.5" font-weight="700" fill="' + b.textCol + '">' + escSVG(b.label) + '</text>';
     });
 
     svgEl.innerHTML = html;
