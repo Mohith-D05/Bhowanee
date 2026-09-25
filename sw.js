@@ -5,7 +5,7 @@
    Works at root (/) or under a subpath (e.g. /bhowanee/ on GitHub Pages).
    ============================================================ */
 
-var CACHE = 'bhowanee-v4';
+var CACHE = 'bhowanee-v5';
 
 var LOCAL_FILES = [
   'index.html',
@@ -37,9 +37,7 @@ self.addEventListener('install', function (event) {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE).then(function (cache) {
-      // Resolve local file URLs relative to SW scope so they work
-      // both at root and under a subpath (e.g. /bhowanee/)
-      var scope = self.registration.scope; // e.g. "https://host/bhowanee/"
+      var scope = self.registration.scope;
       var local = LOCAL_FILES.map(function (f) { return scope + f; });
       var remote = REMOTE_FILES;
       return cache.addAll(local).then(function () {
@@ -63,10 +61,9 @@ self.addEventListener('activate', function (event) {
 
 self.addEventListener('fetch', function (event) {
   var req = event.request;
-  // Only handle GET requests for our origin and known CDN
   if (req.method !== 'GET') return;
   var url = req.url;
-  var scope = self.registration.scope; // works at root or /bhowanee/
+  var scope = self.registration.scope;
   var isApp = url.startsWith(scope) ||
               url.includes('leaflet') ||
               url.includes('fonts.googleapis') ||
@@ -89,7 +86,24 @@ self.addEventListener('fetch', function (event) {
     return;
   }
 
-  // App files: cache first, then network
+  // HTML navigation & app pages: Network-first, fallback to cache
+  var isHtml = req.mode === 'navigate' || url.endsWith('.html') || url.endsWith('/') || !url.split('/').pop().includes('.');
+  if (isHtml) {
+    event.respondWith(
+      fetch(req).then(function (r) {
+        if (r && r.status === 200) {
+          var clone = r.clone();
+          caches.open(CACHE).then(function (c) { c.put(req, clone); });
+        }
+        return r;
+      }).catch(function () {
+        return caches.match(req);
+      })
+    );
+    return;
+  }
+
+  // Assets (CSS, JS, images): cache first, update in background
   event.respondWith(
     caches.match(req).then(function (cached) {
       if (cached) return cached;
