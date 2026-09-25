@@ -152,35 +152,36 @@ window.BhComp = (function () {
 
     svgEl.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
 
-    // Defs for gradients & filters
+    // Defs for gradients & filters (Bhowanee Blue Theme)
     var defsId = 'bb-grad-' + Math.floor(Math.random() * 10000);
     var html = '<defs>' +
       '<linearGradient id="' + defsId + '" x1="0" y1="0" x2="0" y2="1">' +
-        '<stop offset="0%" stop-color="#D99A06" stop-opacity="0.28"/>' +
-        '<stop offset="100%" stop-color="#D99A06" stop-opacity="0.01"/>' +
+        '<stop offset="0%" stop-color="#1C2452" stop-opacity="0.22"/>' +
+        '<stop offset="60%" stop-color="#283C78" stop-opacity="0.08"/>' +
+        '<stop offset="100%" stop-color="#1C2452" stop-opacity="0.01"/>' +
       '</linearGradient>' +
     '</defs>';
 
-    // Background chart card area
-    html += '<rect x="' + LEFT + '" y="' + PLOT_TOP + '" width="' + (CHART_R - LEFT) + '" height="' + (PLOT_BOT - PLOT_TOP) + '" fill="#FAFBF8" rx="4"/>';
+    // Background chart card area (Neutral background with soft border)
+    html += '<rect x="' + LEFT + '" y="' + PLOT_TOP + '" width="' + (CHART_R - LEFT) + '" height="' + (PLOT_BOT - PLOT_TOP) + '" fill="#F7F9FC" stroke="#E5EAF0" stroke-width="1" rx="6"/>';
 
     // Gridlines & Y-axis labels
     html += '<g class="axis-y">';
     for (var v = lo; v <= hi; v += step) {
       var yv = yPos(v);
-      html += '<line x1="' + LEFT + '" y1="' + yv + '" x2="' + CHART_R + '" y2="' + yv + '" stroke="' + (v === lo ? '#1C2452' : '#E2E6EE') + '" stroke-width="' + (v === lo ? 1.5 : 1) + '" stroke-dasharray="' + (v === lo ? 'none' : '4 3') + '"/>';
-      html += '<text x="' + (LEFT - 10) + '" y="' + (yv + 4) + '" text-anchor="end" font-size="11.5" font-weight="500" fill="#4B5375">₹' + v.toLocaleString('en-IN') + '</text>';
+      html += '<line x1="' + LEFT + '" y1="' + yv + '" x2="' + CHART_R + '" y2="' + yv + '" stroke="' + (v === lo ? '#1C2452' : '#E5EAF0') + '" stroke-width="' + (v === lo ? 1.5 : 1) + '" stroke-dasharray="' + (v === lo ? 'none' : '4 3') + '"/>';
+      html += '<text x="' + (LEFT - 10) + '" y="' + (yv + 4) + '" text-anchor="end" font-size="11.5" font-weight="600" fill="#667085">₹' + v.toLocaleString('en-IN') + '</text>';
     }
     html += '<text x="' + LEFT + '" y="' + (PLOT_TOP - 12) + '" font-size="11.5" font-weight="700" fill="#1C2452">Price (₹/Qt)</text>';
     html += '</g>';
 
-    // Mandi benchmark line
+    // Mandi benchmark line (Subtle neutral tone)
     if (mandiPrice) {
       var ym = yPos(mandiPrice);
-      html += '<line x1="' + LEFT + '" y1="' + ym + '" x2="' + CHART_R + '" y2="' + ym + '" stroke="#8C6239" stroke-width="2" stroke-dasharray="6 4" opacity="0.9"/>';
+      html += '<line x1="' + LEFT + '" y1="' + ym + '" x2="' + CHART_R + '" y2="' + ym + '" stroke="#98A2B3" stroke-width="2" stroke-dasharray="6 4" opacity="0.9"/>';
     }
 
-    // Farmer target price line
+    // Farmer target price line (Deep Bhowanee Blue)
     if (farmerPrice) {
       var yf = yPos(farmerPrice);
       html += '<line x1="' + LEFT + '" y1="' + yf + '" x2="' + CHART_R + '" y2="' + yf + '" stroke="#1C2452" stroke-width="2.5" opacity="0.95"/>';
@@ -196,13 +197,13 @@ window.BhComp = (function () {
       var isTop = b.price > topPrice;
 
       // Vertical guide line for each bid
-      html += '<line x1="' + xi + '" y1="' + PLOT_TOP + '" x2="' + xi + '" y2="' + PLOT_BOT + '" stroke="#EDEFF5" stroke-width="1"/>';
+      html += '<line x1="' + xi + '" y1="' + PLOT_TOP + '" x2="' + xi + '" y2="' + PLOT_BOT + '" stroke="#E5EAF0" stroke-width="1"/>';
       html += '<line x1="' + xi + '" y1="' + PLOT_BOT + '" x2="' + xi + '" y2="' + (PLOT_BOT + 6) + '" stroke="#1C2452" stroke-width="1.5"/>';
 
       // Separated X-Axis Values (Bid # + Time)
       var tStr = b.time || b.timestamp || sampleTimes[i % sampleTimes.length];
       html += '<text x="' + xi + '" y="' + (PLOT_BOT + 20) + '" font-size="11" font-weight="700" fill="#1C2452" text-anchor="middle">Bid ' + (i + 1) + '</text>';
-      html += '<text x="' + xi + '" y="' + (PLOT_BOT + 34) + '" font-size="10" fill="#8A91AA" text-anchor="middle">' + tStr + '</text>';
+      html += '<text x="' + xi + '" y="' + (PLOT_BOT + 34) + '" font-size="10" font-weight="500" fill="#667085" text-anchor="middle">' + tStr + '</text>';
 
       if (i === 0) {
         bidPath = 'M' + xi + ',' + yi;
@@ -216,32 +217,32 @@ window.BhComp = (function () {
         topBidIdx = i;
       }
     });
-    html += '<text x="' + MID_X + '" y="' + (H - 6) + '" text-anchor="middle" font-size="11" font-weight="500" fill="#8A91AA">Sequential Live Bidding Offers (9:00 AM – 3:00 PM Trading Window)</text>';
+    html += '<text x="' + MID_X + '" y="' + (H - 6) + '" text-anchor="middle" font-size="11" font-weight="600" fill="#667085">Sequential Live Bidding Offers (9:00 AM – 3:00 PM Trading Window)</text>';
     html += '</g>';
 
-    // Finish step paths to right boundary
+    // Finish step paths to right boundary in Bhowanee Blue
     if (n && topPrice) {
       bidPath += ' H' + CHART_R;
       areaPath += ' H' + CHART_R + ' L' + CHART_R + ',' + PLOT_BOT + ' Z';
       html += '<path d="' + areaPath + '" fill="url(#' + defsId + ')"/>';
-      html += '<path d="' + bidPath + '" fill="none" stroke="#D99A06" stroke-width="3.5" stroke-linejoin="round"/>';
+      html += '<path d="' + bidPath + '" fill="none" stroke="#1C2452" stroke-width="3" stroke-linejoin="round"/>';
     }
 
-    // Dots for bids
+    // Dots for bids (Blue Highlights)
     bids.forEach(function (b, i) {
       var xi = Math.round(xPos(i)), yi = Math.round(yPos(b.price));
       if (i === topBidIdx) {
-        // High bid glowing pulse ring
-        bidDots += '<circle cx="' + xi + '" cy="' + yi + '" r="13" fill="rgba(217,154,6,0.18)"/>';
-        bidDots += '<circle cx="' + xi + '" cy="' + yi + '" r="6.5" fill="#D99A06"/>';
+        // High bid glowing pulse ring in Bhowanee Blue
+        bidDots += '<circle cx="' + xi + '" cy="' + yi + '" r="13" fill="rgba(28,36,82,0.18)"/>';
+        bidDots += '<circle cx="' + xi + '" cy="' + yi + '" r="6" fill="#1C2452"/>';
         bidDots += '<circle cx="' + xi + '" cy="' + yi + '" r="2.5" fill="#FFFFFF"><title>' + b.buyer + ': ₹' + Number(b.price).toLocaleString('en-IN') + ' (High Offer)</title></circle>';
       } else {
-        bidDots += '<circle cx="' + xi + '" cy="' + yi + '" r="4.5" fill="#FFFFFF" stroke="#D99A06" stroke-width="2.5"><title>' + b.buyer + ': ₹' + Number(b.price).toLocaleString('en-IN') + '</title></circle>';
+        bidDots += '<circle cx="' + xi + '" cy="' + yi + '" r="4.5" fill="#FFFFFF" stroke="#1C2452" stroke-width="2.5"><title>' + b.buyer + ': ₹' + Number(b.price).toLocaleString('en-IN') + '</title></circle>';
       }
     });
     html += bidDots;
 
-    // Premium Floating Benchmark Badges (Right side with collision avoidance)
+    // Premium Floating Benchmark Badges (Fintech Blue Palette)
     var badges = [];
     if (farmerPrice) {
       badges.push({
@@ -250,27 +251,27 @@ window.BhComp = (function () {
         bg: '#1C2452',
         border: '#1C2452',
         textCol: '#FFFFFF',
-        dot: '#AEB8E4'
+        dot: '#B9D3F8'
       });
     }
     if (topPrice) {
       badges.push({
         y: yPos(topPrice),
         label: 'Highest Bid: ₹' + Number(topPrice).toLocaleString('en-IN'),
-        bg: '#FEF7E0',
-        border: '#D99A06',
-        textCol: '#8A5F00',
-        dot: '#D99A06'
+        bg: '#EBF1FA',
+        border: '#1C2452',
+        textCol: '#1C2452',
+        dot: '#1C2452'
       });
     }
     if (mandiPrice) {
       badges.push({
         y: yPos(mandiPrice),
         label: 'Mandi Rate: ₹' + Number(mandiPrice).toLocaleString('en-IN'),
-        bg: '#F5F0EB',
-        border: '#B89B85',
-        textCol: '#6B4E3A',
-        dot: '#8C6239'
+        bg: '#F7F9FC',
+        border: '#E5EAF0',
+        textCol: '#667085',
+        dot: '#98A2B3'
       });
     }
 

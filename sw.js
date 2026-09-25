@@ -5,7 +5,7 @@
    Works at root (/) or under a subpath (e.g. /bhowanee/ on GitHub Pages).
    ============================================================ */
 
-var CACHE = 'bhowanee-v5';
+var CACHE = 'bhowanee-v6';
 
 var LOCAL_FILES = [
   'index.html',

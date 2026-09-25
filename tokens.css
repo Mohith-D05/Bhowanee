@@ -1,45 +1,76 @@
 /* ============================================================
-   Bhowanee - Design Tokens
-   One file imported by every dashboard. Do not add layout
-   rules here; keep it strictly to custom properties.
+   Bhowanee - Design Tokens (Blue Identity System)
+   Primary brand color: Existing Bhowanee Blue #1C2452
    ============================================================ */
 
 :root {
-  /* --- Surfaces --- */
-  --paper:      #EEF1EC;
-  --sheet:      #F9FAF7;
-  --sheet-alt:  #F1F4EF;
+  /* --- Surfaces & Backgrounds --- */
+  --neutral-bg:         #F7F9FC; /* Neutral Background */
+  --paper:              #F7F9FC; /* Page background */
+  --white:              #FFFFFF; /* Pure White */
+  --sheet:              #FFFFFF; /* Card / Surface background */
+  --sheet-alt:          #F0F4FA; /* Blue Background (subtle, almost-white blue tint) */
+  --blue-bg:            #F0F4FA; /* Subtle, almost-white blue tint */
+  --blue-subtle:        #F0F4FA;
 
-  /* --- Core ink --- */
-  --ink:        #1C2452;
-  --ink-soft:   #4B5375;
-  --ink-faint:  #8A91AA;
-  --rule:       #C7CDD8;
-  --rule-light: #E2E6EE;
+  /* --- Core Blue Brand Identity (Preserving iconic Bhowanee Blue) --- */
+  --primary-blue:       #1C2452; /* Primary Brand Blue */
+  --brand-blue:         #1C2452;
+  --dark-blue:          #111736; /* Darker shade of existing blue for headings/contrast */
+  --brand-blue-dark:    #111736;
+  --brand-blue-hover:   #151B3E; /* Button hover state */
+  --brand-blue-active:  #0F1530;
+  --light-blue:         #EBF1FA; /* Very pale tint of the existing blue */
+  --brand-blue-light:   #EBF1FA;
+  --brand-blue-accent:  #2546B0; /* Interactive accent */
+  --brand-blue-glow:    rgba(28, 36, 82, 0.15);
 
-  /* --- Brand accents --- */
-  --turmeric:      #D99A06;
-  --turmeric-text: #8A5F00;
-  --turmeric-bg:   #FDF3D5;
-  --soil:          #6B4E3A;
-  --soil-light:    #C4A882;
-  --field:         #4C7A34;
-  --field-light:   #D8ECC9;
-  --brick:         #B3362E;
-  --brick-light:   #FAE0DE;
+  /* --- Typography & Text --- */
+  --primary-text:       #17202A; /* Primary Text */
+  --ink:                #17202A;
+  --ink-primary:        #17202A;
+  --secondary-text:     #667085; /* Secondary Text */
+  --ink-soft:           #667085;
+  --ink-faint:          #98A2B3;
+  --border:             #E5EAF0; /* Border */
+  --rule:               #E5EAF0;
+  --rule-light:         #EFF2F7;
 
-  /* --- Contract stage colours --- */
-  --st-notsown:  #C9D0DE;
-  --st-growing:  #B7D29F;
-  --st-harvest:  #F0C860;
-  --st-bids:     #AEB8E4;
-  --st-issue:    #DCADCB;
-  --st-closed:   #A3B89A;
-  --st-paid:     #7DAA6C;
+  /* --- Semantic Accents (Restrained, used only when semantically appropriate) --- */
+  --success:            #168A48; /* Restrained green */
+  --success-bg:         #E8F5E9;
+  --success-text:       #0D592C;
+  --warning:            #D97706; /* Subtle amber / yellow */
+  --warning-bg:         #FEF3C7;
+  --warning-text:       #92400E;
+  --error:              #D92D20; /* Restrained red */
+  --error-bg:           #FEE4E2;
+  --error-text:         #912018;
 
-  /* --- Typography --- */
-  --font-slab: "Google Sans", "Product Sans", "Segoe UI", system-ui, sans-serif;
-  --font-body: "Google Sans", "Product Sans", "Segoe UI", system-ui, sans-serif;
+  /* --- Semantic Aliases (Realigned to Blue & Restrained Semantics) --- */
+  --turmeric:           #1C2452; /* Active indicators / highlights are Bhowanee Blue */
+  --turmeric-text:      #1C2452;
+  --turmeric-bg:        #EBF1FA;
+  --forest:             #168A48;
+  --field:              #168A48;
+  --field-light:        #E8F5E9;
+  --brick:              #D92D20;
+  --brick-light:        #FEE4E2;
+  --soil:               #667085;
+  --soil-light:         #E5EAF0;
+
+  /* --- Contract Stage Colors (Fintech Blue Palette) --- */
+  --st-notsown:         #E5EAF0;
+  --st-growing:         #D4E2F4;
+  --st-harvest:         #B9D3F8;
+  --st-bids:            #8FAFE3;
+  --st-issue:           #FEE4E2;
+  --st-closed:          #CBD5E1;
+  --st-paid:            #168A48;
+
+  /* --- Typography Stack --- */
+  --font-slab:          "Google Sans", "Product Sans", "Segoe UI", system-ui, sans-serif;
+  --font-body:          "Google Sans", "Product Sans", "Segoe UI", system-ui, sans-serif;
 
   /* --- Scale --- */
   --text-xs:   13.5px;
@@ -59,19 +90,19 @@
   --sp-xl:  48px;
 
   /* --- Controls --- */
-  --ctrl-h:    52px;
-  --ctrl-h-sm: 40px;
-  --ctrl-h-lg: 58px;
-  --radius:    3px;
-  --border:    2px solid var(--ink-soft);
+  --ctrl-h:    48px;
+  --ctrl-h-sm: 38px;
+  --ctrl-h-lg: 54px;
+  --radius:    8px;
+  --border-ctrl: 1.5px solid var(--rule);
 
-  /* --- Shadows --- */
-  --shadow-sm: 0 1px 3px rgba(28,36,82,.10);
-  --shadow-md: 0 4px 14px rgba(28,36,82,.14);
-  --shadow-lg: 0 8px 28px rgba(28,36,82,.18);
+  /* --- Shadows (Subtle, Premium Blue Undertone) --- */
+  --shadow-sm: 0 1px 3px rgba(28, 36, 82, 0.05), 0 1px 2px rgba(28, 36, 82, 0.03);
+  --shadow-md: 0 4px 14px rgba(28, 36, 82, 0.08), 0 2px 6px rgba(28, 36, 82, 0.04);
+  --shadow-lg: 0 10px 30px rgba(28, 36, 82, 0.12), 0 4px 10px rgba(28, 36, 82, 0.06);
 
   /* --- Motion --- */
-  --ease:     cubic-bezier(.25,.46,.45,.94);
+  --ease:     cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --duration: 180ms;
 }
 

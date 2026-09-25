@@ -34,7 +34,7 @@
   <header class="topbar" role="banner">
     <div style="display:flex;align-items:center;gap:12px">
       <span class="topbar-brand"><img src="logo.png" alt="Bhowanee Logo" class="brand-logo-img">Bhowanee</span>
-      <span class="chip sm" style="background:var(--turmeric);color:var(--ink);font-weight:600">Agricultural Capital</span>
+      <span class="chip sm" style="background:var(--brand-blue-light);color:var(--brand-blue);border:1px solid var(--brand-blue);font-weight:700">Agricultural Capital</span>
     </div>
     <div class="topbar-tools">
       <span id="tb-inv-user" style="font-size:14.5px;font-weight:500">Investor Demo (Tier 1 Accredited)</span>
@@ -1073,8 +1073,8 @@ function drawDaywiseChart() {
     ctx.closePath();
     ctx.fill();
 
-    // Subtle highlight line on top
-    ctx.strokeStyle = '#D99A06';
+    // Subtle highlight line on top (Bhowanee Blue accent)
+    ctx.strokeStyle = '#2546B0';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
@@ -1086,9 +1086,9 @@ function drawDaywiseChart() {
     ctx.fillText(d.vol, x + barW / 2, y - 6);
 
     // Day label
-    ctx.fillStyle = '#2A3047'; ctx.font = '600 11px "Google Sans", sans-serif';
+    ctx.fillStyle = '#17202A'; ctx.font = '600 11px "Google Sans", sans-serif';
     ctx.fillText(d.day, x + barW / 2, pad.top + chartH + 16);
-    ctx.fillStyle = '#8A91AA'; ctx.font = '500 10px "Google Sans", sans-serif';
+    ctx.fillStyle = '#667085'; ctx.font = '500 10px "Google Sans", sans-serif';
     ctx.fillText(d.date.replace('Sep ', ''), x + barW / 2, pad.top + chartH + 28);
   });
 }
@@ -1114,20 +1114,20 @@ function drawIntradayChart() {
   ctx.clearRect(0, 0, W, H);
 
   // Background subtle card tint
-  ctx.fillStyle = '#FAFBFD';
+  ctx.fillStyle = '#F7F9FC';
   ctx.fillRect(pad.left, pad.top, chartW, chartH);
 
   // Grid
-  ctx.strokeStyle = '#EEF2F6'; ctx.lineWidth = 1;
+  ctx.strokeStyle = '#E5EAF0'; ctx.lineWidth = 1;
   for (var i = 0; i <= 4; i++) {
     var y = pad.top + chartH * i / 4;
     ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + chartW, y); ctx.stroke();
     var pVal = maxP - pRange * i / 4;
-    ctx.fillStyle = '#8A91AA'; ctx.font = '500 11px "Google Sans", sans-serif'; ctx.textAlign = 'right';
+    ctx.fillStyle = '#667085'; ctx.font = '500 11px "Google Sans", sans-serif'; ctx.textAlign = 'right';
     ctx.fillText('₹' + Math.round(pVal), pad.left - 6, y + 4);
   }
 
-  // Smooth Area fill
+  // Smooth Area fill (Bhowanee Blue Gradient)
   ctx.beginPath();
   intradayBids.forEach(function(b, i) {
     var x = pad.left + (i / (intradayBids.length - 1)) * chartW;
@@ -1138,18 +1138,18 @@ function drawIntradayChart() {
   ctx.lineTo(pad.left, pad.top + chartH);
   ctx.closePath();
   var areaGrad = ctx.createLinearGradient(0, pad.top, 0, pad.top + chartH);
-  areaGrad.addColorStop(0, 'rgba(217, 154, 6, 0.22)');
-  areaGrad.addColorStop(0.7, 'rgba(28, 36, 82, 0.08)');
+  areaGrad.addColorStop(0, 'rgba(28, 36, 82, 0.18)');
+  areaGrad.addColorStop(0.7, 'rgba(28, 36, 82, 0.05)');
   areaGrad.addColorStop(1, 'rgba(28, 36, 82, 0.0)');
   ctx.fillStyle = areaGrad;
   ctx.fill();
 
-  // Premium line chart
+  // Premium line chart (Fintech Blue Spectrum)
   ctx.beginPath();
   var lineGrad = ctx.createLinearGradient(pad.left, 0, pad.left + chartW, 0);
   lineGrad.addColorStop(0, '#1C2452');
   lineGrad.addColorStop(0.5, '#23377A');
-  lineGrad.addColorStop(1, '#D99A06');
+  lineGrad.addColorStop(1, '#2546B0');
   ctx.strokeStyle = lineGrad;
   ctx.lineWidth = 2.5;
   ctx.lineJoin = 'round';
@@ -1167,17 +1167,17 @@ function drawIntradayChart() {
     var y = pad.top + chartH - ((b.price - minP) / pRange) * chartH;
     var isLast = (i === intradayBids.length - 1);
 
-    // Glowing halo for last point
+    // Glowing halo for last point in Bhowanee Blue
     if (isLast) {
       ctx.beginPath();
       ctx.arc(x, y, 7, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(217, 154, 6, 0.35)';
+      ctx.fillStyle = 'rgba(28, 36, 82, 0.22)';
       ctx.fill();
     }
 
     ctx.beginPath();
     ctx.arc(x, y, isLast ? 4 : 3, 0, Math.PI * 2);
-    ctx.fillStyle = isLast ? '#D99A06' : '#1C2452';
+    ctx.fillStyle = isLast ? '#2546B0' : '#1C2452';
     ctx.fill();
     ctx.strokeStyle = '#FFFFFF';
     ctx.lineWidth = 1.5;

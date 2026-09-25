@@ -11,35 +11,36 @@
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="shared.css">
 <style>
-body { display:flex; align-items:center; justify-content:center; min-height:100dvh; padding:20px; }
-.login-wrap { display:grid; grid-template-columns:minmax(0,5fr) minmax(0,7fr); max-width:960px; width:100%; border:1px solid var(--rule); background:var(--sheet); min-height:660px; box-shadow:var(--shadow-lg); }
-.login-art { position:relative; background:#E3EAD9; border-right:1px solid var(--rule); display:flex; flex-direction:column; justify-content:space-between; padding:28px; overflow:hidden; }
-.login-art p { font-family:var(--font-slab); font-weight:600; font-size:22px; line-height:1.3; max-width:15ch; color:var(--ink); }
-.login-form { padding:28px 44px 36px; display:flex; flex-direction:column; max-width:520px; width:100%; }
+body { display:flex; align-items:center; justify-content:center; min-height:100dvh; padding:20px; background:var(--neutral-bg); }
+.login-wrap { display:grid; grid-template-columns:minmax(0,5fr) minmax(0,7fr); max-width:960px; width:100%; border:1px solid var(--border); background:#FFFFFF; min-height:660px; border-radius:12px; overflow:hidden; box-shadow:var(--shadow-lg); }
+.login-art { position:relative; background:linear-gradient(165deg, #F4F7FC 0%, #E8EEF8 100%); border-right:1px solid var(--border); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:48px 36px; overflow:hidden; }
+.login-art p { font-family:var(--font-slab); font-weight:600; font-size:22px; line-height:1.4; max-width:18ch; color:var(--dark-blue); margin:0; }
+.login-form { padding:32px 48px 38px; display:flex; flex-direction:column; max-width:520px; width:100%; background:#FFFFFF; }
 .login-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:32px; }
-.wordmark { font-family:var(--font-slab); font-size:24px; font-weight:600; }
-.roles { list-style:none; margin:20px 0 0; padding:0; border-top:1px solid var(--rule); }
-.roles li { border-bottom:1px solid var(--rule); }
-.roles button { display:block; width:100%; text-align:left; background:transparent; border:0; cursor:pointer; padding:14px 10px; font:inherit; color:var(--ink); transition:background var(--duration); }
-.roles button:hover { background:var(--paper); }
-.rn { display:block; font-weight:600; font-size:17px; }
-.rd { display:block; font-size:14.5px; color:var(--ink-soft); margin-top:2px; }
-.done-box { margin-top:18px; padding:16px; border:1px solid var(--rule); background:var(--paper); font-size:15px; }
-.done-box b { font-family:var(--font-slab); font-size:19px; display:block; margin-bottom:4px; }
-@media (max-width:700px) { .login-wrap{grid-template-columns:1fr;} .login-art{display:none;} .login-form{padding:22px 20px 32px;} }
+.wordmark { font-family:var(--font-slab); font-size:24px; font-weight:700; color:var(--dark-blue); }
+.roles { list-style:none; margin:20px 0 0; padding:0; border-top:1px solid var(--border); }
+.roles li { border-bottom:1px solid var(--border); }
+.roles button { display:block; width:100%; text-align:left; background:transparent; border:0; cursor:pointer; padding:15px 12px; font:inherit; color:var(--primary-text); transition:all var(--duration) var(--ease); border-radius:6px; }
+.roles button:hover { background:var(--brand-blue-light); color:var(--brand-blue); }
+.roles button:hover .rn { color:var(--brand-blue); }
+.rn { display:block; font-weight:700; font-size:17px; color:var(--dark-blue); }
+.rd { display:block; font-size:14.5px; color:var(--secondary-text); margin-top:2px; }
+.done-box { margin-top:18px; padding:18px; border:1px solid var(--brand-blue); background:var(--brand-blue-subtle); border-radius:8px; font-size:15px; color:var(--dark-blue); }
+.done-box b { font-family:var(--font-slab); font-size:19px; display:block; margin-bottom:4px; color:var(--brand-blue); }
+@media (max-width:700px) { .login-wrap{grid-template-columns:1fr;} .login-art{display:none;} .login-form{padding:24px 20px 32px;} }
 </style>
 </head>
 <body>
 <div class="login-wrap">
-  <!-- Left brand showcase panel -->
-  <div class="login-art" aria-hidden="true" style="justify-content:center;align-items:center;text-align:center;background:linear-gradient(170deg, #EBF1E3 0%, #DCE7D0 100%);padding:48px 36px">
+  <!-- Left brand showcase panel (Fintech Blue Palette) -->
+  <div class="login-art" aria-hidden="true">
     <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:auto;margin-top:auto">
-      <div style="position:relative;margin-bottom:22px">
+      <div style="position:relative;margin-bottom:24px">
         <img src="logo.png" alt="Bhowanee Logo" style="width:130px;height:130px;border-radius:50%;object-fit:cover;box-shadow:0 12px 32px rgba(28,36,82,0.18);border:4px solid #FFFFFF;display:block">
-        <span style="position:absolute;bottom:4px;right:6px;width:24px;height:24px;background:var(--forest);border:3px solid #FFF;border-radius:50%" title="Platform Online"></span>
+        <span style="position:absolute;bottom:4px;right:6px;width:24px;height:24px;background:var(--brand-blue);border:3px solid #FFF;border-radius:50%;box-shadow:0 2px 6px rgba(28,36,82,0.25)" title="Platform Online"></span>
       </div>
-      <h1 style="font-family:var(--font-slab);font-size:38px;font-weight:700;color:var(--ink);letter-spacing:-0.5px;margin:0 0 10px;line-height:1.1">Bhowanee</h1>
-      <p style="font-family:var(--font-slab);font-size:22px;font-weight:600;color:var(--ink);line-height:1.4;max-width:18ch;margin:0">Let&#39;s celebrate agriculture together.</p>
+      <h1 style="font-family:var(--font-slab);font-size:38px;font-weight:700;color:var(--dark-blue);letter-spacing:-0.5px;margin:0 0 12px;line-height:1.1">Bhowanee</h1>
+      <p>Let&#39;s celebrate agriculture together.</p>
     </div>
   </div>
 
