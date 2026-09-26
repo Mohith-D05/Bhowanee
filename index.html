@@ -11,36 +11,371 @@
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="shared.css">
 <style>
-body { display:flex; align-items:center; justify-content:center; min-height:100dvh; padding:20px; background:var(--neutral-bg); }
-.login-wrap { display:grid; grid-template-columns:minmax(0,5fr) minmax(0,7fr); max-width:960px; width:100%; border:1px solid var(--border); background:#FFFFFF; min-height:660px; border-radius:12px; overflow:hidden; box-shadow:var(--shadow-lg); }
-.login-art { position:relative; background:linear-gradient(165deg, #F4F7FC 0%, #E8EEF8 100%); border-right:1px solid var(--border); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:48px 36px; overflow:hidden; }
-.login-art p { font-family:var(--font-slab); font-weight:600; font-size:22px; line-height:1.4; max-width:18ch; color:var(--dark-blue); margin:0; }
-.login-form { padding:32px 48px 38px; display:flex; flex-direction:column; max-width:520px; width:100%; background:#FFFFFF; }
-.login-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:32px; }
+body { display:flex; align-items:center; justify-content:center; min-height:100dvh; padding:28px 24px; background:var(--neutral-bg); }
+.login-wrap { display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); max-width:1200px; width:100%; border:1px solid var(--border); background:#FFFFFF; min-height:760px; border-radius:16px; overflow:hidden; box-shadow:0 16px 44px rgba(28,36,82,0.12), 0 4px 12px rgba(28,36,82,0.05); }
+.login-art { position:relative; background:linear-gradient(165deg, #F4F7FC 0%, #E8EEF8 100%); border-right:1px solid var(--border); display:flex; flex-direction:column; justify-content:space-between; align-items:center; text-align:center; padding:36px 32px 30px; overflow:hidden; }
+.login-art p { font-family:var(--font-slab); font-weight:600; font-size:20px; line-height:1.4; max-width:20ch; color:var(--dark-blue); margin:0; }
+.login-form { padding:36px 48px 36px; display:flex; flex-direction:column; max-width:540px; width:100%; background:#FFFFFF; margin:0 auto; justify-content:center; }
+.login-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
 .wordmark { font-family:var(--font-slab); font-size:24px; font-weight:700; color:var(--dark-blue); }
-.roles { list-style:none; margin:20px 0 0; padding:0; border-top:1px solid var(--border); }
+.roles { list-style:none; margin:16px 0 0; padding:0; border-top:1px solid var(--border); }
 .roles li { border-bottom:1px solid var(--border); }
-.roles button { display:block; width:100%; text-align:left; background:transparent; border:0; cursor:pointer; padding:15px 12px; font:inherit; color:var(--primary-text); transition:all var(--duration) var(--ease); border-radius:6px; }
+.roles button { display:block; width:100%; text-align:left; background:transparent; border:0; cursor:pointer; padding:12.5px 12px; font:inherit; color:var(--primary-text); transition:all var(--duration) var(--ease); border-radius:6px; }
 .roles button:hover { background:var(--brand-blue-light); color:var(--brand-blue); }
 .roles button:hover .rn { color:var(--brand-blue); }
-.rn { display:block; font-weight:700; font-size:17px; color:var(--dark-blue); }
-.rd { display:block; font-size:14.5px; color:var(--secondary-text); margin-top:2px; }
+.rn { display:block; font-weight:700; font-size:16px; color:var(--dark-blue); }
+.rd { display:block; font-size:13.5px; color:var(--secondary-text); margin-top:1.5px; }
 .done-box { margin-top:18px; padding:18px; border:1px solid var(--brand-blue); background:var(--brand-blue-subtle); border-radius:8px; font-size:15px; color:var(--dark-blue); }
 .done-box b { font-family:var(--font-slab); font-size:19px; display:block; margin-bottom:4px; color:var(--brand-blue); }
-@media (max-width:700px) { .login-wrap{grid-template-columns:1fr;} .login-art{display:none;} .login-form{padding:24px 20px 32px;} }
+
+/* ── Farmer Animation Styles ───────────────────────────────── */
+.farmer-stage {
+  width: 100%;
+  max-width: 460px;
+  margin: 8px 0 6px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.farmer-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(28,36,82,0.08);
+}
+
+@keyframes farmerWave {
+  0%   { transform: rotate(0deg); }
+  20%  { transform: rotate(-9deg); }
+  40%  { transform: rotate(7deg); }
+  60%  { transform: rotate(-6deg); }
+  80%  { transform: rotate(4deg); }
+  100% { transform: rotate(0deg); }
+}
+@keyframes farmerBreathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.02, 1.03); }
+}
+@keyframes farmerHeadNod {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  50%      { transform: rotate(2.5deg) translateY(-1px); }
+}
+@keyframes cropSwayL {
+  0%   { transform: rotate(0deg); }
+  50%  { transform: rotate(5deg); }
+  100% { transform: rotate(-4deg); }
+}
+@keyframes cropSwayR {
+  0%   { transform: rotate(0deg); }
+  50%  { transform: rotate(-5deg); }
+  100% { transform: rotate(4deg); }
+}
+@keyframes sunGlow {
+  0%, 100% { transform: scale(1); opacity: 0.88; }
+  50%      { transform: scale(1.08); opacity: 1; }
+}
+@keyframes cloudDrift1 {
+  0%   { transform: translateX(0); }
+  50%  { transform: translateX(18px); }
+  100% { transform: translateX(0); }
+}
+@keyframes cloudDrift2 {
+  0%   { transform: translateX(0); }
+  50%  { transform: translateX(-14px); }
+  100% { transform: translateX(0); }
+}
+@keyframes radarRing {
+  0%   { r: 4px; opacity: 0.9; }
+  100% { r: 24px; opacity: 0; }
+}
+@keyframes moteRise {
+  0%   { transform: translateY(0); opacity: 0.2; }
+  50%  { opacity: 0.9; }
+  100% { transform: translateY(-22px); opacity: 0; }
+}
+
+.anim-farmer-wave {
+  transform-origin: 242px 148px;
+  animation: farmerWave 2.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+.anim-farmer-torso {
+  transform-origin: 220px 210px;
+  animation: farmerBreathe 3.6s ease-in-out infinite;
+}
+.anim-farmer-head {
+  transform-origin: 220px 146px;
+  animation: farmerHeadNod 3.6s ease-in-out infinite;
+}
+.anim-wheat-l1 {
+  transform-origin: 45px 270px;
+  animation: cropSwayL 3.2s ease-in-out infinite alternate;
+}
+.anim-wheat-l2 {
+  transform-origin: 75px 270px;
+  animation: cropSwayL 2.7s ease-in-out infinite alternate;
+}
+.anim-wheat-r1 {
+  transform-origin: 385px 270px;
+  animation: cropSwayR 3.4s ease-in-out infinite alternate;
+}
+.anim-wheat-r2 {
+  transform-origin: 415px 270px;
+  animation: cropSwayR 2.9s ease-in-out infinite alternate;
+}
+.anim-sun-core {
+  transform-origin: 345px 85px;
+  animation: sunGlow 5s ease-in-out infinite;
+}
+.anim-cloud-1 {
+  animation: cloudDrift1 14s ease-in-out infinite;
+}
+.anim-cloud-2 {
+  animation: cloudDrift2 18s ease-in-out infinite;
+}
+.anim-radar {
+  animation: radarRing 2.6s ease-out infinite;
+}
+.anim-radar-delay {
+  animation: radarRing 2.6s ease-out infinite 1.3s;
+}
+.anim-mote-1 {
+  animation: moteRise 4s linear infinite;
+}
+.anim-mote-2 {
+  animation: moteRise 4.8s linear infinite 1.5s;
+}
+.anim-mote-3 {
+  animation: moteRise 4.2s linear infinite 2.5s;
+}
+
+.agri-trust-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.85);
+  border: 1px solid var(--border);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand-blue);
+  box-shadow: 0 1px 4px rgba(28,36,82,0.06);
+}
+
+@media (max-width:860px) {
+  .login-wrap { grid-template-columns: 1fr; max-width: 520px; }
+  .login-art { padding: 32px 24px; }
+  .login-form { padding: 24px 20px 32px; }
+}
 </style>
 </head>
 <body>
 <div class="login-wrap">
-  <!-- Left brand showcase panel (Fintech Blue Palette) -->
+  <!-- Left brand showcase panel (Fintech Blue Palette + Animated Farmer Scene) -->
   <div class="login-art" aria-hidden="true">
-    <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:auto;margin-top:auto">
-      <div style="position:relative;margin-bottom:24px">
-        <img src="logo.png" alt="Bhowanee Logo" style="width:130px;height:130px;border-radius:50%;object-fit:cover;box-shadow:0 12px 32px rgba(28,36,82,0.18);border:4px solid #FFFFFF;display:block">
-        <span style="position:absolute;bottom:4px;right:6px;width:24px;height:24px;background:var(--brand-blue);border:3px solid #FFF;border-radius:50%;box-shadow:0 2px 6px rgba(28,36,82,0.25)" title="Platform Online"></span>
+    <div style="display:flex;flex-direction:column;align-items:center;width:100%">
+      <div style="position:relative;margin-bottom:14px">
+        <img src="logo.png" alt="Bhowanee Logo" style="width:96px;height:96px;border-radius:50%;object-fit:cover;box-shadow:0 8px 24px rgba(28,36,82,0.16);border:3.5px solid #FFFFFF;display:block">
+        <span style="position:absolute;bottom:2px;right:4px;width:20px;height:20px;background:var(--brand-blue);border:2.5px solid #FFF;border-radius:50%;box-shadow:0 2px 6px rgba(28,36,82,0.25)" title="Platform Online"></span>
       </div>
-      <h1 style="font-family:var(--font-slab);font-size:38px;font-weight:700;color:var(--dark-blue);letter-spacing:-0.5px;margin:0 0 12px;line-height:1.1">Bhowanee</h1>
-      <p>Let&#39;s celebrate agriculture together.</p>
+      <h1 style="font-family:var(--font-slab);font-size:32px;font-weight:700;color:var(--dark-blue);letter-spacing:-0.5px;margin:0 0 6px;line-height:1.1">Bhowanee</h1>
+      <p style="font-size:18px">Let&#39;s celebrate agriculture together.</p>
+    </div>
+
+    <!-- Animated Farmer Illustration Scene -->
+    <div class="farmer-stage">
+      <svg class="farmer-svg" viewBox="0 0 460 275" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#E2EDF9"/>
+            <stop offset="60%" stop-color="#EFF5FC"/>
+            <stop offset="100%" stop-color="#F8FAFE"/>
+          </linearGradient>
+          <linearGradient id="hillBack" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#C7DAF0"/>
+            <stop offset="100%" stop-color="#B2CAE6"/>
+          </linearGradient>
+          <linearGradient id="hillMid" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#8CADDA"/>
+            <stop offset="100%" stop-color="#6E93C6"/>
+          </linearGradient>
+          <linearGradient id="fieldFront" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#34528A"/>
+            <stop offset="100%" stop-color="#1C2452"/>
+          </linearGradient>
+          <linearGradient id="sunGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#FFF2BF"/>
+            <stop offset="60%" stop-color="#FCD34D"/>
+            <stop offset="100%" stop-color="#F59E0B"/>
+          </linearGradient>
+          <linearGradient id="wheatGold" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#FDE68A"/>
+            <stop offset="50%" stop-color="#F59E0B"/>
+            <stop offset="100%" stop-color="#D97706"/>
+          </linearGradient>
+          <linearGradient id="turbanGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#1C2452"/>
+            <stop offset="70%" stop-color="#283C7A"/>
+            <stop offset="100%" stop-color="#192350"/>
+          </linearGradient>
+          <linearGradient id="dhotiGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#FFFFFF"/>
+            <stop offset="100%" stop-color="#E2E8F0"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Sky Background -->
+        <rect width="460" height="275" rx="14" fill="url(#skyGrad)"/>
+
+        <!-- Morning Sun & Radiating Halo -->
+        <circle cx="345" cy="85" r="54" fill="#FDE68A" opacity="0.32" class="anim-sun-core"/>
+        <circle cx="345" cy="85" r="36" fill="url(#sunGrad)" class="anim-sun-core"/>
+
+        <!-- Floating Clouds -->
+        <g class="anim-cloud-1" opacity="0.8">
+          <path d="M55,60 Q70,48 90,56 Q108,44 126,56 Q142,56 142,70 L55,70 Z" fill="#FFFFFF"/>
+        </g>
+        <g class="anim-cloud-2" opacity="0.65">
+          <path d="M260,42 Q272,32 288,38 Q302,28 316,38 Q328,38 328,48 L260,48 Z" fill="#FFFFFF"/>
+        </g>
+
+        <!-- Distant Mountain/Hill Layer -->
+        <path d="M0,175 Q115,130 230,165 T460,150 L460,275 L0,275 Z" fill="url(#hillBack)" opacity="0.75"/>
+
+        <!-- Mid Farmland Terraces with Cadastral Contour Lines -->
+        <path d="M0,195 Q130,165 260,190 Q370,210 460,180 L460,275 L0,275 Z" fill="url(#hillMid)"/>
+        <path d="M50,205 Q170,185 390,210" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+
+        <!-- Foreground Lush Fertile Field -->
+        <path d="M0,225 Q140,205 280,225 T460,215 L460,275 L0,275 Z" fill="url(#fieldFront)"/>
+        <path d="M20,248 Q180,230 440,250" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" stroke-dasharray="6 5" fill="none"/>
+
+        <!-- Smart Agri Beacon (Bhowanee IoT / Cadastral Link) -->
+        <g transform="translate(385, 195)">
+          <line x1="0" y1="0" x2="0" y2="18" stroke="#FFFFFF" stroke-width="2"/>
+          <circle cx="0" cy="0" r="4.5" fill="#D99A06"/>
+          <circle cx="0" cy="0" r="10" fill="none" stroke="#D99A06" stroke-width="1.5" class="anim-radar"/>
+          <circle cx="0" cy="0" r="18" fill="none" stroke="#38BDF8" stroke-width="1.2" class="anim-radar-delay"/>
+        </g>
+
+        <!-- Drifting Pollen / Sunlight Sparkles -->
+        <circle cx="110" cy="170" r="2.5" fill="#FDE68A" class="anim-mote-1"/>
+        <circle cx="285" cy="140" r="2" fill="#FFFFFF" class="anim-mote-2"/>
+        <circle cx="340" cy="115" r="2.5" fill="#FDE68A" class="anim-mote-3"/>
+
+        <!-- Foreground Left Swaying Wheat Crops -->
+        <g class="anim-wheat-l1">
+          <path d="M45,275 Q48,220 52,175" fill="none" stroke="#7A9BC2" stroke-width="2.5"/>
+          <path d="M52,175 Q57,158 52,142 Q47,158 52,175" fill="url(#wheatGold)"/>
+          <path d="M52,154 L58,146 M52,148 L60,138 M52,142 L56,132" stroke="#D97706" stroke-width="1.5" stroke-linecap="round"/>
+        </g>
+        <g class="anim-wheat-l2">
+          <path d="M72,275 Q70,225 76,185" fill="none" stroke="#8CADDA" stroke-width="2.5"/>
+          <path d="M76,185 Q81,170 76,155 Q71,170 76,185" fill="url(#wheatGold)"/>
+          <path d="M76,166 L82,158 M76,160 L84,150" stroke="#D97706" stroke-width="1.5" stroke-linecap="round"/>
+        </g>
+
+        <!-- Foreground Right Swaying Wheat Crops -->
+        <g class="anim-wheat-r1">
+          <path d="M388,275 Q392,225 386,178" fill="none" stroke="#7A9BC2" stroke-width="2.5"/>
+          <path d="M386,178 Q391,162 386,146 Q381,162 386,178" fill="url(#wheatGold)"/>
+          <path d="M386,158 L392,150 M386,152 L394,142" stroke="#D97706" stroke-width="1.5" stroke-linecap="round"/>
+        </g>
+        <g class="anim-wheat-r2">
+          <path d="M414,275 Q410,228 416,190" fill="none" stroke="#8CADDA" stroke-width="2.5"/>
+          <path d="M416,190 Q421,175 416,160 Q411,175 416,190" fill="url(#wheatGold)"/>
+        </g>
+
+        <!-- ── FARMER HERO CHARACTER ──────────────────────────── -->
+        <g id="farmer-character">
+          <!-- Shadow -->
+          <ellipse cx="220" cy="254" rx="34" ry="6.5" fill="rgba(17,23,54,0.32)"/>
+
+          <!-- Legs & Dhoti Pants -->
+          <path d="M208,206 L202,250 L214,250 L217,215 L223,215 L226,250 L238,250 L232,206 Z" fill="url(#dhotiGrad)"/>
+          <path d="M198,249 L215,249 L215,253 L198,253 Z" fill="#5D4037" rx="1.5"/>
+          <path d="M225,249 L242,249 L242,253 L225,253 Z" fill="#5D4037" rx="1.5"/>
+
+          <!-- Torso (Kurta + Bhowanee Navy Waistcoat) with Breathing Motion -->
+          <g class="anim-farmer-torso">
+            <!-- Kurta Body -->
+            <path d="M204,152 L236,152 L242,212 L198,212 Z" fill="#FFFFFF"/>
+            <!-- Waistcoat Left & Right -->
+            <path d="M204,152 L220,152 L220,208 L200,208 Z" fill="#1C2452"/>
+            <path d="M220,152 L236,152 L240,208 L220,208 Z" fill="#151B3E"/>
+            <!-- Golden Buttons -->
+            <circle cx="220" cy="168" r="2" fill="#D99A06"/>
+            <circle cx="220" cy="180" r="2" fill="#D99A06"/>
+            <circle cx="220" cy="192" r="2" fill="#D99A06"/>
+
+            <!-- Left Arm & Hand Holding Golden Wheat Sheaf -->
+            <path d="M204,156 L190,175 L196,194 L202,190" fill="none" stroke="#FFFFFF" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="196" cy="193" r="5" fill="#E0A97E"/>
+            <!-- Wheat Sheaf Held by Farmer -->
+            <g transform="translate(182, 164) rotate(-18)">
+              <path d="M14,35 Q10,18 8,0" fill="none" stroke="#D97706" stroke-width="2"/>
+              <path d="M8,0 Q12,-12 8,-24 Q4,-12 8,0" fill="url(#wheatGold)"/>
+              <path d="M8,-8 L13,-14 M8,-16 L14,-22" stroke="#B45309" stroke-width="1.2" stroke-linecap="round"/>
+            </g>
+          </g>
+
+          <!-- Right Arm & Waving Hand (Celebratory / Welcoming Wave) -->
+          <g class="anim-farmer-wave">
+            <!-- Kurta Sleeve -->
+            <path d="M236,155 L252,138 L262,118" fill="none" stroke="#FFFFFF" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Waistcoat Shoulder Cap -->
+            <path d="M234,152 Q246,154 246,165 L234,168 Z" fill="#151B3E"/>
+            <!-- Open Welcoming Hand -->
+            <circle cx="264" cy="115" r="5.5" fill="#E0A97E"/>
+            <!-- Animated Fingers Open in Greeting -->
+            <path d="M262,111 L264,103 M265,111 L268,104 M268,113 L272,107 M260,115 L257,112" stroke="#E0A97E" stroke-width="2.2" stroke-linecap="round"/>
+          </g>
+
+          <!-- Neck, Head & Traditional Turban (Pheta) with Gentle Nod Motion -->
+          <g class="anim-farmer-head">
+            <rect x="216" y="142" width="8" height="11" fill="#E0A97E"/>
+            <!-- Face -->
+            <ellipse cx="220" cy="132" rx="13" ry="14.5" fill="#E0A97E"/>
+            <circle cx="207" cy="132" r="3.5" fill="#CD9165"/>
+            <circle cx="233" cy="132" r="3.5" fill="#CD9165"/>
+
+            <!-- Eyes with Sparkle -->
+            <ellipse cx="215" cy="129" rx="1.8" ry="2" fill="#1C2452"/>
+            <ellipse cx="225" cy="129" rx="1.8" ry="2" fill="#1C2452"/>
+            <circle cx="215.5" cy="128.5" r="0.6" fill="#FFFFFF"/>
+            <circle cx="225.5" cy="128.5" r="0.6" fill="#FFFFFF"/>
+
+            <!-- Eyebrows -->
+            <path d="M212,125 Q215,123 218,125" fill="none" stroke="#1C2452" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M222,125 Q225,123 228,125" fill="none" stroke="#1C2452" stroke-width="1.2" stroke-linecap="round"/>
+
+            <!-- Nose -->
+            <path d="M220,129 L221,134 L219,134" fill="none" stroke="#CD9165" stroke-width="1.2" stroke-linecap="round"/>
+
+            <!-- Traditional Mustache -->
+            <path d="M213,137 Q220,135 220,138 Q220,135 227,137 Q223,141 220,138 Q217,141 213,137 Z" fill="#1C2452"/>
+
+            <!-- Warm Smiling Mouth -->
+            <path d="M217,141 Q220,144 223,141" fill="none" stroke="#8E4A32" stroke-width="1.4" stroke-linecap="round"/>
+
+            <!-- Traditional Maharashtrian Pheta / Turban (Bhowanee Blue + Gold Accent) -->
+            <path d="M205,125 Q220,105 235,125 Q239,117 234,111 Q220,101 206,111 Q201,117 205,125 Z" fill="url(#turbanGrad)"/>
+            <path d="M204,122 Q220,114 236,122 Q220,118 204,122 Z" fill="#253575"/>
+            <!-- Gold Trim Band -->
+            <path d="M206,124 Q220,117 234,124" fill="none" stroke="#D99A06" stroke-width="2" stroke-linecap="round"/>
+            <!-- Turban Plume / Fan (Turra) -->
+            <path d="M228,110 Q234,96 231,91 Q224,97 223,110 Z" fill="#1C2452"/>
+            <path d="M228,107 Q232,97 230,94" fill="none" stroke="#D99A06" stroke-width="1.5"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Trust Tagline Pill -->
+    <div class="agri-trust-pill">
+      <span>🌾 Empowering Indian Farmers &amp; Transparent Agri-Trade</span>
     </div>
   </div>
 
