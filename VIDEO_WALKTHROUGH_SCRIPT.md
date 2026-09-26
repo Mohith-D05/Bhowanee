@@ -1,155 +1,85 @@
-# 🎬 Bhowanee Prototype — 3 to 4-Minute Video Walkthrough Script
+# 🎬 Bhowanee Platform — Functionality Walkthrough Script (3–4 Minutes)
 
-**Platform:** Bhowanee (Unified Agricultural Commerce & Fintech Ecosystem)  
-**Target Runtime:** 3:30 – 4:00 Minutes  
-**Video Purpose:** Investor Pitch, Product Demonstration, Stakeholder Onboarding  
-**Core Tagline:** *"Let's celebrate agriculture together."*  
-**Date:** September 2026  
-
----
-
-## 📋 Pre-Recording Setup Checklist
-
-| Item | Recommendation | Done |
-|:---|:---|:---:|
-| **Display Resolution** | 1920 × 1080 (16:9 1080p). Avoid ultra-wide cropping. | [ ] |
-| **Browser Zoom** | 100% or 110% for crisp, legible typography on charts and cards. | [ ] |
-| **Local / Live URL** | `http://localhost:3000/index.html` or live GitHub Pages URL. | [ ] |
-| **Audio Setup** | Quiet room, clear microphone, 120–135 words per minute pacing. | [ ] |
-| **Cursor Highlighting** | Enable yellow/blue click halo in your screen recorder (OBS / Loom). | [ ] |
-| **Browser Tabs Setup** | Open each role dashboard in pre-loaded tabs (optional shortcut). | [ ] |
+**Event:** Smart India Hackathon 2026 Presentation  
+**Project:** Bhowanee — Unified Agricultural Commerce & Fintech Ecosystem  
+**Team:** Team Nexus  
+**Target Video Duration:** 3:30 – 3:45 Minutes (Maximum 4:00 Minutes)  
+**Total Word Count:** ~485 Words (Paced at 125–130 words/minute)  
+**Tone & Style:** Professional, functionality-first, concise, spoken in first-person plural (*"we"*, *"our platform"*).  
+**Strict Focus:** Zero narration of decorative UI, colors, or animations. Strictly one concise line per implemented functionality.
 
 ---
 
-## ⏱️ Video Structure & Pacing
+## 📋 Comprehensive System Inventory (Implemented Capabilities)
 
-```mermaid
-gantt
-    title Bhowanee 4-Minute Walkthrough Timeline
-    dateFormat  s
-    axisFormat  %M:%S
-    section Intro
-    Sign-in & 10s Ecosystem Story : 0, 40
-    section Production
-    Farmer Portal (Ask Price & Bids) : 40, 75
-    Block Administrator (Cadastral GIS) : 75, 110
-    section Market & Supply
-    Institutional Buyer (Pre-Orders & Auction) : 110, 150
-    Logistics (Fleet & Route Opt) : 150, 180
-    Storage & Warehouse (Cold Chain) : 180, 205
-    section Governance
-    Investor Analytics & Control Room : 205, 225
-    section Close
-    Conclusion & Platform Vision : 225, 240
-```
+| User Role / Portal | Implemented Features & Actions Covered |
+| :--- | :--- |
+| **Authentication & Core** (`index.html`, `auth.js`) | Multilingual toggle (EN, MR, HI); Phone + 6-digit SMS / Voice IVR OTP (Farmer & Block Admin); Email + Password + SMS OTP (Buyer, Logistics, Storage, Investor); Staff credentials + Authenticator MFA (Super Admin). |
+| **Farmer Dashboard** (`farmer.html`) | Mandi price benchmark comparison; Ask price stepper control; Market tolerance dynamic alerts; "Set my price" listing commit; Live SVG bid board; One-click "Accept best offer" into escrow; Parcel-linked soil & weather telemetry; One-click Block Admin IVR call; Historical escrow settlement log. |
+| **Block Administrator** (`block.html`) | Digitized GIS Cadastral Revenue Map (Dindori, Nashik); Satellite aerial vs. vector boundary toggle; Survey Gat number search & quick chips; Parcel distance measurement tool; 7/12 Land Record (Satbara) inspection; Agronomy task certification (sowing, irrigation, harvest); Farm input cost accounting; Farmer directory. |
+| **Institutional Buyer** (`buyer.html`) | Commodity & grade lot filtering; Mandi benchmark comparison; Certified quality lab test sheets (QC-ON-118); Forward Demand Planner registration; Live Bid Board with automated price-matching lock; 4-stage Delivery Tracker; Escrow settlement balance & tax invoices. |
+| **Logistics Partner** (`logistics.html`) | Multi-truck fleet registry & quintal capacity tracking; Route allotment engine with waypoint sequencing; Scheduled farm-gate pickup windows; Digital Proof of Handoff with weighbridge receipt upload; Transit loss audit log. |
+| **Storage & Warehouse** (`storage.html`) | Real-time chamber fill gauges & climate telemetry (❄️ 2°C / humidity); Facility registration form with physical inspection request stepper; Electronic Warehouse Receipts (e-NWR); Multi-chamber batch holding timeline; Direct escrow rental disbursements. |
+| **Investor Portal** (`investor.html`) | Direct Agricultural Production Plans evaluation; Side-by-side plan comparison; Portfolio IRR and capital allocation tracking; Automated yield re-investment switch; Taluka-level block risk analytics. |
+| **Super Admin Control Room** (`admin.html`) | Statewide Cadastral GIS oversight; Farmland lease contract pipeline; Aggregated supply vs. demand matrix; Master SBI escrow ledger & transaction velocity; Dispute arbitration queue; Platform compliance & audit trail. |
 
 ---
 
-## 🎬 Step-by-Step Script
+## 🎬 Master Timestamped Demonstration Script
+
+| Time | Screen & Presenter Action | Spoken Voice-Over Script (Exact Narration) |
+| :--- | :--- | :--- |
+| **0:00–0:25** | **Screen:** [`index.html`](file:///c:/Users/mohit/OneDrive/Documents/Bhowanee/index.html) *(Sign-in Page)*<br><br>**Action:**<br>1. Show the sign-in screen and Bhowanee header.<br>2. Click language buttons: **मराठी**, **हिन्दी**, then back to **English**.<br>3. Click **Farmer** role; enter mobile `9822114455`, click *Send code*, and show OTP field.<br>4. Point to role list to show commercial credential and staff MFA modes. | *"Welcome to Bhowanee, developed by Team Nexus for Smart India Hackathon 2026. Bhowanee is a unified agricultural commerce and fintech platform eliminating intermediary exploitation through verified farm procurement and automated escrow settlements.<br><br>The platform supports English, Marathi, and Hindi, featuring role-based authentication with mobile OTP, credential logins, and staff multi-factor security."* |
+| **0:25–0:55** | **Screen:** [`farmer.html`](file:///c:/Users/mohit/OneDrive/Documents/Bhowanee/farmer.html) *(Farmer Portal - Prakash Sonawane)*<br><br>**Action:**<br>1. **Sell Tab:** Show lot details (*12 Qt Onion, Gat 118*) and Mandi price (*₹1,880*).<br>2. Click `+10` stepper twice to set ₹2,100, trigger market tolerance prompt, and click **Set my price**.<br>3. **Offers Tab:** Click Offers tab; point to the live bid curve and hover over **Accept best offer**.<br>4. **Field Tab:** Click Field tab; scroll past NPK, soil moisture, and weather forecast.<br>5. **Call Tab:** Click Call tab; point to **Call block administrator** and escrow payment log. | *"In the Farmer Portal, farmers manage produce valuation, buyer offers, and farm telemetry.<br><br>The Sell tab displays verified lot specifications alongside live APMC Mandi benchmark rates.<br><br>Farmers set ask prices using numeric steppers with dynamic market tolerance guidance.<br><br>The Offers tab visualizes live buyer bids, enabling one-click acceptance into escrow.<br><br>The Field tab streams soil NPK and micro-climate data, while the Call tab logs payment receipts."* |
+| **0:55–1:25** | **Screen:** [`block.html`](file:///c:/Users/mohit/OneDrive/Documents/Bhowanee/block.html) *(Block Administrator - Dindori, Nashik)*<br><br>**Action:**<br>1. **Block Map:** Pan across Leaflet cadastral map; toggle between **Satellite Aerial** and **Cadastral Vector**.<br>2. Click quick chip **Gat 125**; activate **Measurement Tools** on the bottom toolbar.<br>3. Open right panel for Gat 125; display the **7/12 Land Record (Satbara)** card.<br>4. In the drawer, check off an agronomic task checkbox (*Irrigation / Sowing*).<br>5. Click **Cost log** in sidenav to show input expense ledger. | *"The Block Administrator dashboard provides hyper-local land verification and agronomic governance.<br><br>Administrators navigate interactive cadastral maps, switching between satellite aerial and vector boundaries.<br><br>Search tools and quick chips pinpoint individual Gat survey numbers to measure parcel distances.<br><br>Selecting a parcel reveals verified 7/12 land records detailing ownership, soil type, and crop stages.<br><br>Admins certify agronomy checklists—from sowing to harvest—and audit seasonal input expenses."* |
+| **1:25–2:00** | **Screen:** [`buyer.html`](file:///c:/Users/mohit/OneDrive/Documents/Bhowanee/buyer.html) *(Institutional Buyer - Fresh Mart Supply Co.)*<br><br>**Action:**<br>1. **Browse Lots:** Select commodity *Onion* and grade *Grade A*; show KPI cards and Mandi benchmark.<br>2. **Quality Reports:** Click Quality Reports; view Certificate *#QC-ON-118* with lab test specs.<br>3. **Demand Planner:** Click Demand Planner; show volume requirement form (*250 Qt, dock slot*).<br>4. **Live Bid Board:** Click Live Bid Board; step bid to ₹2,100, show auto-close notification, and click **Place Verified Bid**.<br>5. **Delivery Tracker & Invoices:** Click Delivery Tracker to view 4-stage milestones; click Invoices to show settled escrow account. | *"The Institutional Buyer portal streamlines commercial procurement, bidding, and contract fulfillment.<br><br>Browse Lots filters verified produce by commodity and grade against market price benchmarks.<br><br>Quality Reports provide certified laboratory test sheets detailing moisture, size uniformity, and pesticide compliance.<br><br>The Demand Planner registers forward procurement quotas, aligning farm sowing with corporate demand.<br><br>The Live Bid Board facilitates real-time auctions that auto-close when bids match farmer ask prices.<br><br>The Delivery Tracker and Escrow Ledger monitor milestones and automated dock disbursements."* |
+| **2:00–2:30** | **Screen:** [`logistics.html`](file:///c:/Users/mohit/OneDrive/Documents/Bhowanee/logistics.html) *(Logistics Partner Dashboard)*<br><br>**Action:**<br>1. **Vehicle Fleet:** Scroll table showing 4 registered trucks, capacities (*118 Qt total*), and driver details.<br>2. **Route Allotment & Schedule:** Click tab; highlight Vehicle 1 timeline (*25th Sep & 30th Sep pickups*) and green **Route Optimization** badge.<br>3. **Farm Gate Pickups:** Click tab; view pending farm collection windows.<br>4. **Proof of Handoff:** Click tab; show digital custody form with weighbridge slip upload.<br>5. **Transit Loss Log:** Click tab; show zero-loss transit record. | *"The Logistics Partner portal coordinates rural transport, scheduled collections, and custody verification.<br><br>Vehicle Fleet registers transport trucks, payload capacities in quintals, and driver assignments.<br><br>The Route Allotment engine sequences multi-farm waypoints into optimized collection corridors, preventing deadhead mileage.<br><br>Farm Gate Pickups coordinates field collection windows and active transit volumes.<br><br>The Proof of Handoff tool validates custody transfers through weighbridge receipts and photo verification.<br><br>A transit loss log audits zero-loss delivery compliance."* |
+| **2:30–2:55** | **Screen:** [`storage.html`](file:///c:/Users/mohit/OneDrive/Documents/Bhowanee/storage.html) *(Storage & Warehouse Partner)*<br><br>**Action:**<br>1. **My Facilities & Capacity:** Show cold storage card with live temperature telemetry (*❄️ 2°C Optimal*) and capacity gauges.<br>2. **List Facility & Verification:** Click tab; scroll down facility registration form and Bhowanee 4-step audit stepper.<br>3. **Storage Orders:** Click tab; view electronic warehouse receipts (*e-NWR*) and stored volumes.<br>4. **Holding Timeline & Ledger:** Click Rent & Escrow Ledger; show automated monthly rental settlement (*₹64,350 via SBI Escrow*). | *"The Storage and Warehouse portal manages crop preservation and collateralized inventory.<br><br>Facilities displays live storage fill gauges, temperature telemetry, and humidity sensors.<br><br>Warehouse operators list new facilities and request physical on-site verification from Bhowanee field auditors.<br><br>The Storage Orders tab issues electronic warehouse receipts for inward crop batches.<br><br>Operators track chamber rotation timelines and receive monthly rental disbursements directly through escrow."* |
+| **2:55–3:20** | **Screen:** [`investor.html`](file:///c:/Users/mohit/OneDrive/Documents/Bhowanee/investor.html) & [`admin.html`](file:///c:/Users/mohit/OneDrive/Documents/Bhowanee/admin.html)<br><br>**Action:**<br>1. In `investor.html`: On Open Plans, sort plans by IRR; click **Compare Selected**.<br>2. On My Investments: Show crop diversification bar chart and auto-reinvest toggle.<br>3. Switch to `admin.html`: Show statewide cadastral map and Farmland Leases pipeline.<br>4. In `admin.html`: Click Settlement Ledger and Dispute Queue in sidenav. | *"The Investor and Administrator dashboards deliver capital deployment analytics and statewide governance.<br><br>The Investor portal compares agricultural production plans funding verified farm seasons against pre-sold demand.<br><br>Investors monitor portfolio IRR, crop diversification, and automated dividend payouts.<br><br>In the Super Admin Control Room, administrators oversee statewide operations, tracking active land leases and district crop health.<br><br>Platform staff audit master escrow balances, track contract velocity, and resolve dispute tickets."* |
+| **3:20–3:45** | **Screen:** Return to [`index.html`](file:///c:/Users/mohit/OneDrive/Documents/Bhowanee/index.html) *(Overview Summary)*<br><br>**Action:**<br>1. Show the complete platform integration context.<br>2. Center on the Bhowanee emblem and mission statement. | *"Bhowanee connects these roles into an unbroken, transparent loop:<br><br>Field sowing is verified on cadastral maps; farmers price their harvest autonomously; buyers secure volumes through forward plans or spot auctions; logistics and cold storage preserve produce quality; and verified dock weighments trigger automated, direct escrow payments to farmers.<br><br>By replacing fragmented middlemen with verifiable data and escrow security, Bhowanee empowers Indian agriculture from field to fork. Thank you."* |
 
 ---
 
-### **Scene 1: Introduction & The 10-Second Ecosystem Story (0:00 – 0:40)**
-* **Page:** [`index.html`](file:///c:/Users/mohit/OneDrive/Documents/Bhowanee/index.html) *(Sign-in Page)*
+## 🎬 Ordered Recording Checklist
 
-| Screen Action & Visual Cues | Spoken Voiceover (Word-for-Word) |
-|:---|:---|
-| Start with the sign-in card centered cleanly on screen.<br><br>Gently hover your cursor over the **Bhowanee** circular logo and the tagline: *"Let's celebrate agriculture together."* | *"Welcome to Bhowanee — a unified agricultural commerce and fintech ecosystem built to transform India's farming value chain from harvest to escrow settlement."* |
-| Move cursor to the animated canvas on the left panel. Allow the camera to follow the **10-second master animation cycle** as it plays:<br>1. Farmer Prakash & IoT telemetry beacon<br>2. Logistics truck driving to the warehouse<br>3. Cloud exchange board deploying pre-orders & matching bids<br>4. Golden rupee coins flowing back to the celebrating farmer.<br><br>Point to the **4-step synchronized narrative stepper** underneath lighting up in sequence: `1. Farm & Direct Price` → `2. Fleet & Cold Storage` → `3. Pre-Orders & Bids` → `4. Direct Escrow Payout`. | *"Right here on our sign-in page, our 10-second live ecosystem animation tells the complete story: Indian farmers setting their own fair prices, GPS-routed fleet pickup, modern cold storage preservation, institutional buyer pre-orders and competitive bidding, and instantaneous 100% direct escrow payouts with zero middleman exploitation."* |
-| Click the language buttons at the top right: click **मराठी**, click **हिन्दी**, then click back to **English**. | *"The platform is built natively for India, featuring instant regional localization in Marathi, Hindi, and English, with secure role-based portals for every participant in the agri-chain."* |
+Follow this exact sequence during your screen capture session:
 
----
-
-### **Scene 2: The Farmer Portal – Pricing & Guaranteed Sale (0:40 – 1:15)**
-* **Page:** [`farmer.html`](file:///c:/Users/mohit/OneDrive/Documents/Bhowanee/farmer.html) *(Click **Farmer** on sign-in)*
-
-| Screen Action & Visual Cues | Spoken Voiceover (Word-for-Word) |
-|:---|:---|
-| Land on the **Sell** tab for farmer Prakash Sonawane.<br><br>Point cursor to the **Lot Meta** (*Onion · 12 quintal · Grade A · Gat 118*) and the live **Today's mandi price** reference card (*₹1,880*). | *"Let's first enter the Farmer Portal. Meet Prakash Sonawane from Dindori, Nashik. Instead of being forced into distress selling at local mandis, Prakash sees today's mandi reference rate of ₹1,880, but retains full sovereign control over his valuation."* |
-| Click the `+10` stepper button twice to set the price to **₹2,100**. Click the blue **"Set my price"** button. Point to the green confirmation message. | *"Using an intuitive stepper, he sets his ask price to ₹2,100 per quintal and locks it into the Bhowanee system."* |
-| In the left navigation, click the **Offers** tab.<br><br>Show the **Live Bid Graph** displaying ascending buyer bids over time.<br><br>Hover over the top bid (`₹2,100` from Fresh Mart) and click **"Accept offer"**. Point to the closed lot alert. | *"Moving to the Offers tab, Prakash has full transparency into live bids coming from institutional buyers. When a buyer matches his ₹2,100 ask price, he simply clicks Accept. The lot closes instantly, locking the buyer's funds in escrow."* |
-
----
-
-### **Scene 3: Block Administrator – Cadastral Land Mapping (1:15 – 1:50)**
-* **Page:** [`block.html`](file:///c:/Users/mohit/OneDrive/Documents/Bhowanee/block.html) *(Sign out / select **Block administrator**)*
-
-| Screen Action & Visual Cues | Spoken Voiceover (Word-for-Word) |
-|:---|:---|
-| Land on the **Dindori Block Admin** dashboard.<br><br>Pan across the interactive **Leaflet Cadastral Map**, showing color-coded land parcels (Gat numbers 118, 123, 125, 128, 129). | *"Behind every verified harvest is the Block Administrator. In Dindori, our local administrator oversees agricultural parcels using digitized GIS cadastral mapping."* |
-| Click on a parcel on the map (Gat 125 – Prakash's land). The right drawer opens showing farmer details, crop stage, and task list.<br><br>Scroll down through tasks (*Sowing, Irrigation, Fertiliser, Harvest*) and cost tracking. | *"Admins monitor every farmer's Gat land record, soil moisture telemetry, and sowing schedule. By verifying tasks like irrigation and fertilizer on-site, Bhowanee ensures institutional buyers receive certified Grade-A commodities with 100% land traceability."* |
-
----
-
-### **Scene 4: Institutional Buyer – Pre-Orders & Live Bidding (1:50 – 2:30)**
-* **Page:** [`buyer.html`](file:///c:/Users/mohit/OneDrive/Documents/Bhowanee/buyer.html) *(Sign out / select **Buyer**)*
-
-| Screen Action & Visual Cues | Spoken Voiceover (Word-for-Word) |
-|:---|:---|
-| Land on **Browse Lots** for Fresh Mart Supply Co.<br><br>Point to the KPI cards: *Lots Available*, *Total Volume (20.0 Qt)*, and *100% Lab Quality Tested*. Filter by commodity (*Onion*) and grade (*Grade A*). | *"Now let's switch to the Institutional Buyer portal, utilized by FMCG brands, food processors, and large APMC merchants like Fresh Mart Supply Co."* |
-| Click **Demand Planner** and then **Live Bid Board** in the sidenav.<br><br>Emphasize the core Bhowanee workflow: Pre-orders are fulfilled first; remaining excess enters the live auction. | *"Our buyer workflow solves a major industry problem: Seasonal demand is registered in advance through Forward Pre-Orders. When harvest arrives, verified volumes deploy to advance pre-orders first. Any excess produce then enters the Live Bid Board for real-time competitive bidding."* |
-| Click the **Delivery Tracker** tab.<br><br>Point to the 4-step delivery timeline: `1. Farm Gate Picked` → `2. In Transit` → `3. Staged at Dindori Cold Store` → `4. Buyer Delivery`. | *"Once closed, buyers track dock delivery in real time across four verifiable milestones, backed by automated escrow accounts that release payment only upon certified dock weigh-in."* |
-
----
-
-### **Scene 5: Logistics Partner – Fleet & Route Optimization (2:30 – 3:00)**
-* **Page:** [`logistics.html`](file:///c:/Users/mohit/OneDrive/Documents/Bhowanee/logistics.html) *(Sign out / select **Logistics Partner**)*
-
-| Screen Action & Visual Cues | Spoken Voiceover (Word-for-Word) |
-|:---|:---|
-| Land on the **Vehicle Fleet** dashboard.<br><br>Scroll down to show the multi-vehicle listing (Truck 1, Truck 2, capacities, and active GPS status badges). | *"Farm-to-fork reliability requires dedicated supply chain logistics. In the Logistics Partner portal, fleet operators register multiple transport vehicles with verified tonnage capacities."* |
-| Click **Route Allotment & Schedule** in the sidenav.<br><br>Highlight the route timeline (e.g. 25th September pickup, 30th delivery) and the green **Route Optimization** badge. | *"Bhowanee's route optimization engine groups multi-farm gate pickups into scheduled collection corridors. This minimizes empty transit miles, guarantees prompt farm-gate collection, and prevents post-harvest transit loss."* |
+- [ ] **1. Sign-in & Authentication (`index.html`):**
+  - [ ] Start on sign-in card with full viewport visible.
+  - [ ] Click language toggle: **मराठी**, **हिन्दी**, then return to **English**.
+  - [ ] Select **Farmer** role; input phone `9822114455`, click **Send code**, enter OTP `123456`.
+- [ ] **2. Farmer Portal (`farmer.html`):**
+  - [ ] Open **Sell** tab: Point to Mandi price (`₹1,880`), click `+10` stepper twice to `₹2,100`, click **Set my price**.
+  - [ ] Open **Offers** tab: Point to the live bid curve and hover on **Accept best offer**.
+  - [ ] Open **Field** tab: Scroll to show soil NPK, pH, and weather telemetry.
+  - [ ] Open **Call** tab: Point to **Call block administrator** button and payment history list.
+- [ ] **3. Block Administrator Dashboard (`block.html`):**
+  - [ ] Open **Block map**: Toggle from **Satellite Aerial** to **Cadastral Vector**.
+  - [ ] Click quick chip **Gat 125**; click **Measurement Tools** on the bottom bar.
+  - [ ] Open right drawer: View **7/12 Land Record** card, check an agronomy task checkbox.
+  - [ ] Open **Cost log** tab in sidenav to show input expenditure tracking.
+- [ ] **4. Institutional Buyer Dashboard (`buyer.html`):**
+  - [ ] Open **Browse Lots**: Select commodity filter **Onion** and grade **Grade A**.
+  - [ ] Open **Quality Reports**: View lab certificate `#QC-ON-118`.
+  - [ ] Open **Demand Planner**: Scroll through the projected volume registration form.
+  - [ ] Open **Live Bid Board**: Adjust counter-bid stepper to `₹2,100`, show auto-close alert.
+  - [ ] Open **Delivery Tracker**: Point to the 4-step delivery milestones; view **Invoices & Escrow**.
+- [ ] **5. Logistics Partner Dashboard (`logistics.html`):**
+  - [ ] Open **Vehicle Fleet**: Scroll through the 4-vehicle fleet table and capacities.
+  - [ ] Open **Route Allotment & Schedule**: Show Vehicle 1 route timeline (*25th Sep & 30th Sep*) and green optimization badge.
+  - [ ] Open **Farm Gate Pickups**: Show pending collection table.
+  - [ ] Open **Proof of Handoff**: Show digital custody transfer form and weighbridge slip upload area.
+- [ ] **6. Storage & Warehouse Dashboard (`storage.html`):**
+  - [ ] Open **My Facilities & Capacity**: Show temperature telemetry (`❄️ 2°C Optimal`) and fill gauges.
+  - [ ] Open **List Facility & Verification**: Scroll through registration fields and 4-step audit stepper.
+  - [ ] Open **Storage Orders**: Show electronic warehouse receipts (`e-NWR`).
+  - [ ] Open **Rent & Escrow Ledger**: Show monthly rental settlement ledger (`₹64,350`).
+- [ ] **7. Investor & Admin Portals (`investor.html` & `admin.html`):**
+  - [ ] In `investor.html`: Open **Open Plans**, sort by IRR, click **Compare Selected**.
+  - [ ] Open **My Investments**: Show crop diversification bar chart and auto-reinvest switch.
+  - [ ] In `admin.html`: Show statewide cadastral GIS map, lease pipeline, and **Settlement Ledger**.
+- [ ] **8. Closing Summary (`index.html`):**
+  - [ ] Return to main overview and hold cursor steadily on Bhowanee header as you deliver the concluding remarks.
 
 ---
-
-### **Scene 6: Storage & Warehouse Partner (3:00 – 3:25)**
-* **Page:** [`storage.html`](file:///c:/Users/mohit/OneDrive/Documents/Bhowanee/storage.html) *(Sign out / select **Storage & Warehouse**)*
-
-| Screen Action & Visual Cues | Spoken Voiceover (Word-for-Word) |
-|:---|:---|
-| Land on **My Facilities & Capacity**.<br><br>Show the facility card with real-time temperature telemetry (`❄️ 2°C Optimal`), humidity indicators, and storage utilization progress bars. | *"To combat crop perishability, our Storage & Warehouse portal allows cold storage operators to list verified holding capacity, humidity zones, and temperature specs."* |
-| Point to the **Physical Verification by Bhowanee** stepper and click **Storage Orders** to show electronic warehouse receipts (e-NWR). | *"Facilities undergo physical verification by Bhowanee field auditors. Once verified, warehouses receive automated inbound storage orders, turning harvest into collateralized, grade-preserved inventory."* |
-
----
-
-### **Scene 7: Investor Analytics & Super Admin Control (3:25 – 3:45)**
-* **Page:** [`investor.html`](file:///c:/Users/mohit/OneDrive/Documents/Bhowanee/investor.html) & [`admin.html`](file:///c:/Users/mohit/OneDrive/Documents/Bhowanee/admin.html)
-
-| Screen Action & Visual Cues | Spoken Voiceover (Word-for-Word) |
-|:---|:---|
-| In `investor.html`, scroll past the interactive portfolio return charts, profit metrics, and block risk distribution. | *"For capital partners, the Investor portal offers transparent yield tracking, funding farm inputs and cold chain infrastructure with structured, risk-mitigated returns."* |
-| In `admin.html`, briefly show the platform-wide control room: active contracts, total transaction velocity, escrow balances, and block health. | *"And finally, the Bhowanee Control Room monitors platform-wide contract velocity, escrow balances, and block health in real time."* |
-
----
-
-### **Scene 8: Conclusion & Platform Vision (3:45 – 4:00)**
-* **Page:** [`index.html`](file:///c:/Users/mohit/OneDrive/Documents/Bhowanee/index.html) *(Return to Sign-in Page)*
-
-| Screen Action & Visual Cues | Spoken Voiceover (Word-for-Word) |
-|:---|:---|
-| Return to the sign-in page with the full card in view.<br><br>Let the camera linger on the celebrating farmer animation and the Bhowanee title. | *"By connecting the farmer, the administrator, the buyer, logistics, storage, and investors into a single trusted loop, Bhowanee removes middlemen, guarantees fair value, and brings financial dignity to rural agriculture."* |
-| Hover cursor over the tagline: *"Let's celebrate agriculture together."* | *"Thank you for watching — let's celebrate agriculture together!"* |
-
----
-
-## 💡 Practical Recording Tips
-
-1. **Pre-Open Browser Tabs (Recommended Strategy):**  
-   To keep your video completely seamless without having to type phone numbers or OTPs during recording, open each dashboard in advance in adjacent browser tabs:
-   - **Tab 1:** `index.html` (Sign-in Page)
-   - **Tab 2:** `farmer.html` (Farmer Prakash)
-   - **Tab 3:** `block.html` (Dindori Block Admin)
-   - **Tab 4:** `buyer.html` (Fresh Mart Buyer)
-   - **Tab 5:** `logistics.html` (Fleet Operations)
-   - **Tab 6:** `storage.html` (Storage & Warehouse)
-   - **Tab 7:** `investor.html` / `admin.html` (Investor & Admin)  
-   *Use `Ctrl + Tab` or mouse clicks to switch smoothly between tabs as you speak.*
-
-2. **Pacing & Breath:**  
-   Allow 1 full second after navigating to a page before speaking. This gives viewers a moment to visually absorb the dashboard before hearing your explanation.
-
-3. **Mouse Movement:**  
-   Move the mouse with intention. Hover directly over the numbers and buttons you mention (e.g. Mandi price, Ask price, Route optimization badge, Temperature display) to direct the viewer's eye.
-
----
-*Document saved in project root as `VIDEO_WALKTHROUGH_SCRIPT.md`.*
+*Ready-to-record walkthrough script prepared for Smart India Hackathon 2026 presentation.*

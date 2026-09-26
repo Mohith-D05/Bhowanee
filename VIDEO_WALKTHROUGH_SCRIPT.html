@@ -2,564 +2,600 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Bhowanee - Video Walkthrough Script</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bhowanee — Project Demonstration Script (Smart India Hackathon 2026)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Google+Sans+Display:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --primary: #1C2452;
+    --primary-light: #2A3678;
+    --accent: #2563EB;
+    --accent-soft: #EFF6FF;
+    --text-dark: #0F172A;
+    --text-muted: #475569;
+    --border: #CBD5E1;
+    --border-light: #E2E8F0;
+    --bg-alt: #F8FAFC;
+    --success: #16A34A;
+    --warning: #D97706;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text-dark);
+    background: #FFFFFF;
+    line-height: 1.45;
+    font-size: 11pt;
+    padding: 24px 32px;
+  }
+
   @page {
-    size: A4;
-    margin: 14mm 14mm 16mm 14mm;
+    size: A4 portrait;
+    margin: 14mm 12mm 14mm 12mm;
     @bottom-right {
-      content: counter(page);
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 8pt;
+      color: #64748B;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
   }
 
-  *, *::before, *::after {
-    box-sizing: border-box;
+  @media print {
+    body { padding: 0; font-size: 10pt; line-height: 1.38; }
+    .no-print { display: none !important; }
+    .page-break-before { page-break-before: always; }
+    tr { page-break-inside: avoid; }
+    .card-block { page-break-inside: avoid; }
+    .print-header { position: running(header); }
   }
 
-  body {
-    font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    color: #1E293B;
-    background: #FFFFFF;
-    margin: 0;
-    padding: 0;
-    font-size: 11pt;
-    line-height: 1.45;
-  }
-
-  /* ── Header Banner ────────────────────────────────────────── */
   .doc-header {
-    border-bottom: 2.5px solid #1C2452;
+    border-bottom: 2px solid var(--primary);
     padding-bottom: 14px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: flex-start;
   }
-  .doc-brand {
+
+  .brand-area {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
   }
-  .doc-brand img {
-    width: 52px;
-    height: 52px;
+
+  .brand-logo {
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    border: 2px solid #1C2452;
     object-fit: cover;
+    border: 2px solid var(--primary);
   }
-  .doc-brand h1 {
-    margin: 0;
-    font-family: 'Google Sans Display', 'Google Sans', sans-serif;
-    font-size: 24pt;
-    font-weight: 700;
-    color: #1C2452;
+
+  .title-area h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20pt;
+    color: var(--primary);
+    letter-spacing: -0.5px;
     line-height: 1.1;
   }
-  .doc-brand p {
-    margin: 2px 0 0;
-    font-size: 11pt;
-    color: #475569;
-    font-weight: 500;
-  }
-  .doc-meta {
-    text-align: right;
-    font-size: 9pt;
-    color: #64748B;
-    line-height: 1.4;
-  }
-  .doc-meta b {
-    color: #1C2452;
-  }
-  .badge-runtime {
-    display: inline-block;
-    background: #1C2452;
-    color: #FFFFFF;
-    font-size: 9pt;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 12px;
-    margin-top: 4px;
-  }
 
-  /* ── Overview & Checklist Box ─────────────────────────────── */
-  .meta-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-bottom: 22px;
-    page-break-inside: avoid;
-  }
-  .card-box {
-    background: #F8FAFD;
-    border: 1px solid #E2E8F0;
-    border-radius: 8px;
-    padding: 12px 16px;
-  }
-  .card-box h3 {
-    margin: 0 0 8px;
+  .title-area p {
     font-size: 10.5pt;
-    font-weight: 700;
-    color: #1C2452;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .checklist {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    font-size: 9pt;
-  }
-  .checklist li {
-    padding: 2.5px 0;
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-    color: #334155;
-  }
-  .checklist li::before {
-    content: "✓";
-    font-weight: 700;
-    color: #16A34A;
+    font-weight: 600;
+    color: var(--accent);
+    margin-top: 3px;
   }
 
-  /* ── Timeline Summary Table ───────────────────────────────── */
-  .summary-table {
+  .meta-badges {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 8.5pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  .badge-primary { background: var(--primary); color: #fff; }
+  .badge-accent { background: var(--accent-soft); color: var(--accent); border: 1px solid #BFDBFE; }
+  .badge-success { background: #DCFCE7; color: var(--success); border: 1px solid #BBF7D0; }
+
+  .specs-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--bg-alt);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 20px;
+    gap: 12px;
+  }
+
+  .spec-item {
+    font-size: 9pt;
+  }
+
+  .spec-item b {
+    display: block;
+    color: var(--primary);
+    font-size: 9.5pt;
+    margin-bottom: 1px;
+  }
+
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13pt;
+    color: var(--primary);
+    border-left: 4px solid var(--accent);
+    padding-left: 8px;
+    margin: 20px 0 10px 0;
+  }
+
+  /* Capabilities Inventory Table */
+  .inventory-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 8.5pt;
+  }
+
+  .inventory-table th {
+    background: var(--primary);
+    color: #fff;
+    text-align: left;
+    padding: 6px 10px;
+    font-weight: 700;
+  }
+
+  .inventory-table td {
+    padding: 6px 10px;
+    border: 1px solid var(--border-light);
+    vertical-align: top;
+  }
+
+  .inventory-table tr:nth-child(even) {
+    background: var(--bg-alt);
+  }
+
+  /* Main Script Table */
+  .script-table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 22px;
-    font-size: 9pt;
-    page-break-inside: avoid;
-  }
-  .summary-table th {
-    background: #1C2452;
-    color: #FFFFFF;
-    padding: 7px 10px;
-    text-align: left;
-    font-weight: 600;
-    font-size: 8.5pt;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .summary-table td {
-    padding: 6px 10px;
-    border-bottom: 1px solid #E2E8F0;
-    color: #334155;
-  }
-  .summary-table tr:nth-child(even) td {
-    background: #F8FAFD;
-  }
-  .time-badge {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 600;
-    font-size: 8.5pt;
-    background: #E8EEF8;
-    color: #1C2452;
-    padding: 2px 6px;
-    border-radius: 4px;
-    display: inline-block;
-  }
-
-  /* ── Scene Blocks ─────────────────────────────────────────── */
-  .scene-card {
-    border: 1px solid #CBD5E1;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 18px;
-    page-break-inside: avoid;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  }
-  .scene-header {
-    background: linear-gradient(90deg, #1C2452 0%, #29386D 100%);
-    color: #FFFFFF;
-    padding: 8px 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .scene-title {
-    font-size: 11pt;
-    font-weight: 700;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .scene-time {
-    font-family: 'JetBrains Mono', monospace;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 9pt;
-    font-weight: 600;
-  }
-  .scene-target {
-    background: #F1F5F9;
-    padding: 5px 14px;
-    font-size: 8.5pt;
-    color: #475569;
-    font-family: 'JetBrains Mono', monospace;
-    border-bottom: 1px solid #E2E8F0;
-  }
-
-  .script-grid {
-    display: grid;
-    grid-template-columns: 1.15fr 1.35fr;
     font-size: 9.5pt;
   }
-  .col-action {
-    background: #FAFAFC;
-    padding: 12px 14px;
-    border-right: 1px solid #E2E8F0;
-    color: #334155;
-    line-height: 1.45;
-  }
-  .col-voiceover {
-    background: #FFFFFF;
-    padding: 12px 14px;
-    color: #0F172A;
-    font-style: italic;
-    line-height: 1.5;
-  }
-  .col-header {
-    font-size: 8pt;
-    text-transform: uppercase;
+
+  .script-table th {
+    background: var(--primary);
+    color: #fff;
+    text-align: left;
+    padding: 8px 10px;
     font-weight: 700;
-    letter-spacing: 0.5px;
-    margin-bottom: 6px;
-    font-style: normal;
-  }
-  .col-action .col-header { color: #64748B; }
-  .col-voiceover .col-header { color: #1C2452; }
-
-  .highlight-click {
-    background: #FEF3C7;
-    color: #92400E;
-    font-weight: 600;
-    padding: 1px 4px;
-    border-radius: 3px;
-    font-style: normal;
-  }
-  .highlight-val {
-    background: #E0E7FF;
-    color: #3730A3;
-    font-weight: 600;
-    padding: 1px 4px;
-    border-radius: 3px;
-    font-style: normal;
+    font-size: 9.5pt;
+    letter-spacing: 0.3px;
   }
 
-  /* ── Footer ───────────────────────────────────────────────── */
-  .doc-footer {
-    margin-top: 24px;
-    border-top: 1px solid #E2E8F0;
-    padding-top: 10px;
-    display: flex;
-    justify-content: space-between;
+  .script-table td {
+    padding: 10px 10px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .script-table tr:nth-child(even) {
+    background: #FAFBFD;
+  }
+
+  .time-cell {
+    width: 12%;
+    font-weight: 800;
+    color: var(--primary);
+    font-family: 'Space Grotesk', monospace;
+    font-size: 9.5pt;
+    white-space: nowrap;
+  }
+
+  .action-cell {
+    width: 38%;
+    font-size: 9pt;
+    color: #334155;
+    line-height: 1.35;
+  }
+
+  .action-cell b.screen-tag {
+    display: inline-block;
+    background: #EEF2FF;
+    color: var(--primary);
+    padding: 2px 6px;
+    border-radius: 3px;
     font-size: 8.5pt;
-    color: #94A3B8;
+    border: 1px solid #C7D2FE;
+    margin-bottom: 5px;
+  }
+
+  .action-cell ol, .action-cell ul {
+    margin-left: 15px;
+    margin-top: 4px;
+  }
+
+  .action-cell li {
+    margin-bottom: 3px;
+  }
+
+  .narration-cell {
+    width: 50%;
+    font-size: 9.5pt;
+    line-height: 1.45;
+    color: #0F172A;
+  }
+
+  .narration-cell p {
+    margin-bottom: 6px;
+  }
+
+  .narration-cell p:last-child {
+    margin-bottom: 0;
+  }
+
+  .narration-cell em {
+    color: var(--accent);
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  /* Checklist section */
+  .checklist-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 10px;
+  }
+
+  .check-box-group {
+    background: var(--bg-alt);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 8.5pt;
+  }
+
+  .check-box-group h4 {
+    font-size: 9.5pt;
+    color: var(--primary);
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 4px;
+  }
+
+  .check-box-group label {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 4px;
+    cursor: default;
+    color: #334155;
+  }
+
+  .check-box-group input[type="checkbox"] {
+    margin-top: 2px;
+    accent-color: var(--primary);
+  }
+
+  .footer-note {
+    margin-top: 22px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    font-size: 8pt;
+    color: var(--text-muted);
+    text-align: center;
   }
 </style>
 </head>
 <body>
 
-<!-- Header Banner -->
-<div class="doc-header">
-  <div class="doc-brand">
-    <img src="logo.png" alt="Bhowanee">
-    <div>
-      <h1>Bhowanee</h1>
-      <p>Video Walkthrough Script &amp; Demonstration Guide</p>
+  <!-- Document Header -->
+  <div class="doc-header">
+    <div class="brand-area">
+      <img src="logo.png" alt="Bhowanee Logo" class="brand-logo" onerror="this.style.display='none'">
+      <div class="title-area">
+        <h1>BHOWANEE PLATFORM WALKTHROUGH SCRIPT</h1>
+        <p>Smart India Hackathon 2026 Presentation • Team Nexus</p>
+      </div>
+    </div>
+    <div class="meta-badges">
+      <span class="badge badge-primary">Target Duration: 3:30 – 3:45 Max</span>
+      <span class="badge badge-accent">Word Count: 485 Words (130 WPM)</span>
+      <span class="badge badge-success">Functionality-By-Functionality</span>
     </div>
   </div>
-  <div class="doc-meta">
-    <div><b>Version:</b> Working Prototype v8</div>
-    <div><b>Target Runtime:</b> 3:30 – 4:00 Minutes</div>
-    <div class="badge-runtime">Full Ecosystem Walkthrough</div>
-  </div>
-</div>
 
-<!-- Overview Cards -->
-<div class="meta-grid">
-  <div class="card-box">
-    <h3>📋 Pre-Recording Setup</h3>
-    <ul class="checklist">
-      <li>Resolution: 1920 × 1080 (16:9 Full HD).</li>
-      <li>Browser Zoom: 100% or 110% for crisp cards &amp; charts.</li>
-      <li>Audio: Quiet environment, clear mic, 120–135 WPM pace.</li>
-      <li>Cursor: Highlight mouse clicks enabled in recording tool.</li>
-    </ul>
+  <!-- Specs Overview -->
+  <div class="specs-bar">
+    <div class="spec-item">
+      <b>Core Objective</b>
+      Live functionality demonstration of all 7 roles, auth flows &amp; dashboards.
+    </div>
+    <div class="spec-item">
+      <b>Narration Rule</b>
+      Zero UI/animation fluff. Strictly 1 line per distinct implemented feature.
+    </div>
+    <div class="spec-item">
+      <b>Speaker Perspective</b>
+      First-person plural (<em>"we"</em>, <em>"our platform"</em>) in natural English.
+    </div>
+    <div class="spec-item">
+      <b>End-to-End Linkage</b>
+      Land verification &rarr; pricing &rarr; pre-order/bids &rarr; cold fleet &rarr; escrow.
+    </div>
   </div>
-  <div class="card-box">
-    <h3>💡 Tab Pre-Loading Strategy (Pro-Tip)</h3>
-    <ul class="checklist">
-      <li>Tab 1: <code>index.html</code> (Sign-in &amp; Ecosystem Story)</li>
-      <li>Tab 2: <code>farmer.html</code> (Prakash Sonawane · Ask Price)</li>
-      <li>Tab 3: <code>block.html</code> (Dindori Cadastral Land Map)</li>
-      <li>Tab 4: <code>buyer.html</code> (Fresh Mart Pre-Orders &amp; Bids)</li>
-      <li>Tab 5: <code>logistics.html</code> (Fleet Routes) &amp; <code>storage.html</code></li>
-    </ul>
-  </div>
-</div>
 
-<!-- Timeline Summary -->
-<table class="summary-table">
-  <thead>
-    <tr>
-      <th style="width:12%">Timeline</th>
-      <th style="width:24%">Scene &amp; Persona</th>
-      <th style="width:20%">Target Page</th>
-      <th style="width:44%">Key Demonstration Focus</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><span class="time-badge">0:00 – 0:40</span></td>
-      <td><b>1. Ecosystem Story</b></td>
-      <td><code>index.html</code></td>
-      <td>Brand identity, 10s ecosystem animation &amp; 4-phase stepper.</td>
-    </tr>
-    <tr>
-      <td><span class="time-badge">0:40 – 1:15</span></td>
-      <td><b>2. Farmer Portal</b></td>
-      <td><code>farmer.html</code></td>
-      <td>Mandi comparison (₹1,880), set ask price (₹2,100), accept live bid.</td>
-    </tr>
-    <tr>
-      <td><span class="time-badge">1:15 – 1:50</span></td>
-      <td><b>3. Block Admin</b></td>
-      <td><code>block.html</code></td>
-      <td>GIS Cadastral land map, Gat parcel traceability, task logs.</td>
-    </tr>
-    <tr>
-      <td><span class="time-badge">1:50 – 2:30</span></td>
-      <td><b>4. Institutional Buyer</b></td>
-      <td><code>buyer.html</code></td>
-      <td>Pre-orders deployment first, live bidding on excess, escrow tracker.</td>
-    </tr>
-    <tr>
-      <td><span class="time-badge">2:30 – 3:00</span></td>
-      <td><b>5. Logistics Partner</b></td>
-      <td><code>logistics.html</code></td>
-      <td>Multi-vehicle fleet listing, scheduled corridor route optimization.</td>
-    </tr>
-    <tr>
-      <td><span class="time-badge">3:00 – 3:25</span></td>
-      <td><b>6. Cold Storage</b></td>
-      <td><code>storage.html</code></td>
-      <td>Certified capacity, 2°C temperature telemetry, e-NWR orders.</td>
-    </tr>
-    <tr>
-      <td><span class="time-badge">3:25 – 3:45</span></td>
-      <td><b>7. Investor &amp; Admin</b></td>
-      <td><code>investor.html</code> / <code>admin.html</code></td>
-      <td>Fintech yield analytics, returns distribution, central control room.</td>
-    </tr>
-    <tr>
-      <td><span class="time-badge">3:45 – 4:00</span></td>
-      <td><b>8. Vision &amp; Close</b></td>
-      <td><code>index.html</code></td>
-      <td>Celebrating farmer animation, tagline: <i>"Let's celebrate agriculture together."</i></td>
-    </tr>
-  </tbody>
-</table>
+  <!-- Capabilities Inventory -->
+  <h2 class="section-title">1. System Capabilities Inventory (All Implemented Features)</h2>
+  <table class="inventory-table">
+    <thead>
+      <tr>
+        <th style="width:22%">Role / Portal</th>
+        <th>Implemented Tools, Actions, Reports &amp; Verified Features</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Authentication</b><br><small><code>index.html</code>, <code>auth.js</code></small></td>
+        <td>Instant regional language toggle (English, Marathi, Hindi); 10-digit mobile + 6-digit SMS / Voice IVR OTP (Farmer &amp; Block Admin); Commercial Email + Password + SMS OTP (Buyer, Logistics, Storage, Investor); Staff work email + Authenticator MFA (Super Admin).</td>
+      </tr>
+      <tr>
+        <td><b>Farmer Portal</b><br><small><code>farmer.html</code></small></td>
+        <td>Sell Tab: APMC Mandi benchmark price comparison (₹1,880), numeric ask price stepper, market tolerance advice (+10% / -10%), "Set my price" listing action. Offers Tab: live SVG bid board, "Accept best offer" into escrow, "Wait for more". Field Tab: parcel-linked soil NPK, pH, moisture, and micro-climate forecast. Call Tab: one-click Block Admin IVR dialer and payment history ledger.</td>
+      </tr>
+      <tr>
+        <td><b>Block Administrator</b><br><small><code>block.html</code></small></td>
+        <td>Cadastral GIS Map: Dindori Nashik revenue map, Satellite Aerial vs. Vector boundary toggle, Gat survey number search &amp; quick chips (125, 124, 66), boundary distance measurement tool. Right Drawer: 7/12 Land Record (Satbara) inspection, field operation certification checklist (sowing, irrigation, harvest), input expense accounting, farmer directory.</td>
+      </tr>
+      <tr>
+        <td><b>Institutional Buyer</b><br><small><code>buyer.html</code></small></td>
+        <td>Browse Lots: commodity &amp; grade filtering with mandi benchmark comparisons. Quality Reports: certified laboratory test certificates (#QC-ON-118). Demand Planner: forward seasonal volume procurement registration. Live Bid Board: real-time auctions with automatic ask-matching lock. Delivery Tracker: 4-stage consignment tracking. Invoices &amp; Escrow: pre-funded settlement balances &amp; tax receipts.</td>
+      </tr>
+      <tr>
+        <td><b>Logistics Partner</b><br><small><code>logistics.html</code></small></td>
+        <td>Vehicle Fleet: multi-truck registry, payload capacities in quintals, driver assignments. Route Allotment: waypoint sequencing engine grouping farm pickups into corridors (25th &amp; 30th Sep routes) to eliminate empty miles. Farm Gate Pickups: collection schedules. Proof of Handoff: digital custody transfers with weighbridge receipt upload. Transit Loss Log: zero-loss transit audit.</td>
+      </tr>
+      <tr>
+        <td><b>Storage &amp; Warehouse</b><br><small><code>storage.html</code></small></td>
+        <td>My Facilities: live fill gauges, chamber climate telemetry (❄️ 2°C Optimal), humidity sensors. List Facility: warehouse onboarding form with 4-step Bhowanee physical audit workflow. Storage Orders: Electronic Warehouse Receipts (e-NWR) for inward produce. Holding Timeline: chamber batch rotation tracking. Rent Ledger: direct monthly escrow payouts (₹64,350).</td>
+      </tr>
+      <tr>
+        <td><b>Investor &amp; Admin</b><br><small><code>investor.html</code>, <code>admin.html</code></small></td>
+        <td>Investor: Direct Agricultural Production Plans evaluation, side-by-side comparison, portfolio IRR and commodity diversification tracking, auto-reinvest yield switch. Super Admin Control Room: statewide cadastral operations, farmland lease pipeline, aggregated demand vs. supply matrix, master SBI escrow ledger, dispute arbitration queue.</td>
+      </tr>
+    </tbody>
+  </table>
 
-<!-- ── SCENE 1 ─────────────────────────────────────────────── -->
-<div class="scene-card">
-  <div class="scene-header">
-    <div class="scene-title">Scene 1: Introduction &amp; The 10-Second Ecosystem Story</div>
-    <div class="scene-time">0:00 – 0:40</div>
-  </div>
-  <div class="scene-target">URL: index.html · Sign-in Portal</div>
-  <div class="script-grid">
-    <div class="col-action">
-      <div class="col-header">Screen Action &amp; Visual Cues</div>
-      1. Center the sign-in card on screen. Hover over the Bhowanee logo and tagline: <i>"Let's celebrate agriculture together."</i><br><br>
-      2. Follow the <b>10-second live animation</b> on the left panel as it cycles through the 4 stages:<br>
-      • Farmer Prakash setting ask price.<br>
-      • Truck driving along highway to cold store.<br>
-      • Exchange board matching bids.<br>
-      • Golden coins streaming to farmer.<br><br>
-      3. Point cursor to the <b>4 synchronized stepper badges</b> below lighting up in sequence.<br><br>
-      4. Click <span class="highlight-click">मराठी</span>, then <span class="highlight-click">हिन्दी</span>, then back to <span class="highlight-click">English</span>.
-    </div>
-    <div class="col-voiceover">
-      <div class="col-header">Spoken Narration (Word-for-Word)</div>
-      "Welcome to Bhowanee — a unified agricultural commerce and fintech ecosystem built to transform India's farming value chain from harvest to escrow settlement.<br><br>
-      Right here on our sign-in page, our 10-second live ecosystem animation tells the complete story: Indian farmers setting their own fair prices, GPS-routed fleet pickup, modern cold storage preservation, institutional buyer pre-orders and competitive bidding, and instantaneous 100% direct escrow payouts with zero middleman exploitation.<br><br>
-      The platform is built natively for India, featuring instant regional localization in Marathi, Hindi, and English, with secure role-based portals for every participant in the agri-chain."
-    </div>
-  </div>
-</div>
+  <!-- Master Walkthrough Script -->
+  <h2 class="section-title page-break-before">2. Master Walkthrough Script (Timestamped 3-Column Format)</h2>
 
-<!-- ── SCENE 2 ─────────────────────────────────────────────── -->
-<div class="scene-card">
-  <div class="scene-header">
-    <div class="scene-title">Scene 2: Farmer Portal — Direct Pricing &amp; Guaranteed Sale</div>
-    <div class="scene-time">0:40 – 1:15</div>
-  </div>
-  <div class="scene-target">URL: farmer.html · Farmer: Prakash Sonawane (Dindori, Nashik)</div>
-  <div class="script-grid">
-    <div class="col-action">
-      <div class="col-header">Screen Action &amp; Visual Cues</div>
-      1. Click <span class="highlight-click">Farmer</span> on the sign-in page to enter <code>farmer.html</code>.<br><br>
-      2. On the <b>Sell</b> tab, highlight the lot metadata: <span class="highlight-val">Onion · 12 quintal · Grade A · Gat 118</span> and today's Mandi reference rate <span class="highlight-val">₹1,880</span>.<br><br>
-      3. Click the <span class="highlight-click">+10</span> button to raise the price to <span class="highlight-val">₹2,100</span>, then click <span class="highlight-click">Set my price</span>.<br><br>
-      4. Navigate to the <b>Offers</b> tab. Show the real-time bid comparison chart. Click <span class="highlight-click">Accept offer</span> on the top bid.
-    </div>
-    <div class="col-voiceover">
-      <div class="col-header">Spoken Narration (Word-for-Word)</div>
-      "Let's first enter the Farmer Portal. Meet Prakash Sonawane from Dindori, Nashik. Instead of being forced into distress selling at local mandis, Prakash sees today's mandi reference rate of ₹1,880, but retains full sovereign control over his valuation.<br><br>
-      Using an intuitive stepper, he sets his ask price to ₹2,100 per quintal and locks it into the Bhowanee system.<br><br>
-      Moving to the Offers tab, Prakash has full transparency into live bids coming from institutional buyers. When a buyer matches his ₹2,100 ask price, he simply clicks Accept. The lot closes instantly, locking the buyer's funds in escrow."
-    </div>
-  </div>
-</div>
+  <table class="script-table">
+    <thead>
+      <tr>
+        <th style="width:12%">Time</th>
+        <th style="width:38%">Screen &amp; Presenter Actions</th>
+        <th style="width:50%">Spoken Voice-Over Script (Exact Narration)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Segment 1 -->
+      <tr>
+        <td class="time-cell">0:00–0:25<br><small style="color:#64748B;font-weight:500">25 Seconds</small></td>
+        <td class="action-cell">
+          <b class="screen-tag">index.html (Sign-in)</b>
+          <ol>
+            <li>Show landing screen with Bhowanee emblem and role list.</li>
+            <li>Click language buttons: <b>मराठी</b>, <b>हिन्दी</b>, then return to <b>English</b>.</li>
+            <li>Click <b>Farmer</b>; enter mobile <code>9822114455</code>, click <em>Send code</em>, and show OTP input.</li>
+            <li>Point to role options to indicate credential and staff MFA modes.</li>
+          </ol>
+        </td>
+        <td class="narration-cell">
+          <p>“Welcome to Bhowanee, developed by Team Nexus for Smart India Hackathon 2026. Bhowanee is a unified agricultural commerce and fintech platform eliminating intermediary exploitation through verified farm procurement and automated escrow settlements.</p>
+          <p>The platform supports English, Marathi, and Hindi, featuring role-based authentication with mobile OTP, credential logins, and staff multi-factor security.”</p>
+        </td>
+      </tr>
 
-<!-- ── SCENE 3 ─────────────────────────────────────────────── -->
-<div class="scene-card">
-  <div class="scene-header">
-    <div class="scene-title">Scene 3: Block Administrator — Cadastral Land Mapping</div>
-    <div class="scene-time">1:15 – 1:50</div>
-  </div>
-  <div class="scene-target">URL: block.html · Dindori Block Administration</div>
-  <div class="script-grid">
-    <div class="col-action">
-      <div class="col-header">Screen Action &amp; Visual Cues</div>
-      1. Switch to <span class="highlight-click">Block administrator</span> portal.<br><br>
-      2. Pan over the interactive <b>Leaflet Cadastral Map</b> showcasing color-coded parcels: Gat 118, Gat 123, Gat 125.<br><br>
-      3. Click on <span class="highlight-click">Gat 125</span> (Prakash Sonawane). The side drawer opens.<br><br>
-      4. Scroll through the agronomy lifecycle tasks (<span class="highlight-val">Sowing, Irrigation, Fertiliser, Harvest</span>) and verified input cost sheet.
-    </div>
-    <div class="col-voiceover">
-      <div class="col-header">Spoken Narration (Word-for-Word)</div>
-      "Behind every verified harvest is the Block Administrator. In Dindori, our local administrator oversees agricultural parcels using digitized GIS cadastral mapping.<br><br>
-      Admins monitor every farmer's Gat land record, soil moisture telemetry, and sowing schedule. By verifying tasks like irrigation and fertilizer on-site, Bhowanee ensures institutional buyers receive certified Grade-A commodities with 100% land traceability."
-    </div>
-  </div>
-</div>
+      <!-- Segment 2 -->
+      <tr>
+        <td class="time-cell">0:25–0:55<br><small style="color:#64748B;font-weight:500">30 Seconds</small></td>
+        <td class="action-cell">
+          <b class="screen-tag">farmer.html (Farmer Portal)</b>
+          <ol>
+            <li><b>Sell Tab:</b> View lot metadata (<em>12 Qt Onion, Gat 118</em>) and Mandi price (<em>₹1,880</em>).</li>
+            <li>Click <code>+10</code> stepper to set ₹2,100, trigger market tolerance advice, and click <b>Set my price</b>.</li>
+            <li><b>Offers Tab:</b> Open tab, inspect live SVG bid curve, hover on <b>Accept best offer</b>.</li>
+            <li><b>Field Tab:</b> Open tab, scroll through soil NPK, pH, and micro-climate data.</li>
+            <li><b>Call Tab:</b> Open tab, show <b>Call block administrator</b> and payment history.</li>
+          </ol>
+        </td>
+        <td class="narration-cell">
+          <p>“In the Farmer Portal, farmers manage produce valuation, buyer offers, and farm telemetry.</p>
+          <p>The Sell tab displays verified lot specifications alongside live APMC Mandi benchmark rates.</p>
+          <p>Farmers set ask prices using numeric steppers with dynamic market tolerance guidance.</p>
+          <p>The Offers tab visualizes live buyer bids, enabling one-click acceptance into escrow.</p>
+          <p>The Field tab streams soil NPK and micro-climate data, while the Call tab logs payment receipts.”</p>
+        </td>
+      </tr>
 
-<!-- ── SCENE 4 ─────────────────────────────────────────────── -->
-<div class="scene-card">
-  <div class="scene-header">
-    <div class="scene-title">Scene 4: Institutional Buyer — Pre-Orders &amp; Live Bidding</div>
-    <div class="scene-time">1:50 – 2:30</div>
-  </div>
-  <div class="scene-target">URL: buyer.html · Buyer: Fresh Mart Supply Co</div>
-  <div class="script-grid">
-    <div class="col-action">
-      <div class="col-header">Screen Action &amp; Visual Cues</div>
-      1. Switch to <span class="highlight-click">Buyer</span> portal.<br><br>
-      2. On <b>Browse Lots</b>, point to the KPI cards: <span class="highlight-val">20.0 Qt Available</span> and <span class="highlight-val">100% Lab Quality Tested</span>.<br><br>
-      3. Show <b>Demand Planner</b> and navigate to <b>Live Bid Board</b>. Explain that forward pre-orders are fulfilled first; surplus harvest enters the auction.<br><br>
-      4. Click <b>Delivery Tracker</b> to show the 4-stage pipeline: <span class="highlight-val">1. Farm Gate → 2. Transit → 3. Cold Store → 4. Dock Delivery</span>.
-    </div>
-    <div class="col-voiceover">
-      <div class="col-header">Spoken Narration (Word-for-Word)</div>
-      "Now let's switch to the Institutional Buyer portal, utilized by FMCG brands, food processors, and large APMC merchants like Fresh Mart Supply Co.<br><br>
-      Our buyer workflow solves a major industry problem: Seasonal demand is registered in advance through Forward Pre-Orders. When harvest arrives, verified volumes deploy to advance pre-orders first. Any excess produce then enters the Live Bid Board for real-time competitive bidding.<br><br>
-      Once closed, buyers track dock delivery in real time across four verifiable milestones, backed by automated escrow accounts that release payment only upon certified dock weigh-in."
-    </div>
-  </div>
-</div>
+      <!-- Segment 3 -->
+      <tr>
+        <td class="time-cell">0:55–1:25<br><small style="color:#64748B;font-weight:500">30 Seconds</small></td>
+        <td class="action-cell">
+          <b class="screen-tag">block.html (Block Administrator)</b>
+          <ol>
+            <li><b>Block Map:</b> Pan Leaflet cadastral map; toggle between <b>Satellite Aerial</b> and <b>Cadastral Vector</b>.</li>
+            <li>Click quick chip <b>Gat 125</b>; click <b>Measurement Tools</b> on bottom bar.</li>
+            <li>Open right drawer for Gat 125; display <b>7/12 Land Record (Satbara)</b>.</li>
+            <li>Check off an agronomy task checkbox (<em>Irrigation / Sowing</em>).</li>
+            <li>Click <b>Cost log</b> in sidenav to display seasonal input expenditure.</li>
+          </ol>
+        </td>
+        <td class="narration-cell">
+          <p>“The Block Administrator dashboard provides hyper-local land verification and agronomic governance.</p>
+          <p>Administrators navigate interactive cadastral maps, switching between satellite aerial and vector boundaries.</p>
+          <p>Search tools and quick chips pinpoint individual Gat survey numbers to measure parcel distances.</p>
+          <p>Selecting a parcel reveals verified 7/12 land records detailing ownership, soil type, and crop stages.</p>
+          <p>Admins certify agronomy checklists—from sowing to harvest—and audit seasonal input expenses.”</p>
+        </td>
+      </tr>
 
-<!-- ── SCENE 5 ─────────────────────────────────────────────── -->
-<div class="scene-card">
-  <div class="scene-header">
-    <div class="scene-title">Scene 5: Logistics Partner — Fleet &amp; Route Optimization</div>
-    <div class="scene-time">2:30 – 3:00</div>
-  </div>
-  <div class="scene-target">URL: logistics.html · Logistics &amp; Fleet Operations Desk</div>
-  <div class="script-grid">
-    <div class="col-action">
-      <div class="col-header">Screen Action &amp; Visual Cues</div>
-      1. Switch to <span class="highlight-click">Logistics Partner</span> portal.<br><br>
-      2. Scroll down to show multi-vehicle fleet listing (<span class="highlight-val">Truck 1, Truck 2</span>, tonnage capacities, and active GPS telemetry).<br><br>
-      3. Click <b>Route Allotment &amp; Schedule</b>.<br><br>
-      4. Highlight the scheduled timeline (<span class="highlight-val">25th Sep Pickup → 30th Delivery</span>) and the green <span class="highlight-click">Route Optimized</span> badge.
-    </div>
-    <div class="col-voiceover">
-      <div class="col-header">Spoken Narration (Word-for-Word)</div>
-      "Farm-to-fork reliability requires dedicated supply chain logistics. In the Logistics Partner portal, fleet operators register multiple transport vehicles with verified tonnage capacities.<br><br>
-      Bhowanee's route optimization engine groups multi-farm gate pickups into scheduled collection corridors. This minimizes empty transit miles, guarantees prompt farm-gate collection, and prevents post-harvest transit loss."
-    </div>
-  </div>
-</div>
+      <!-- Segment 4 -->
+      <tr>
+        <td class="time-cell">1:25–2:00<br><small style="color:#64748B;font-weight:500">35 Seconds</small></td>
+        <td class="action-cell">
+          <b class="screen-tag">buyer.html (Institutional Buyer)</b>
+          <ol>
+            <li><b>Browse Lots:</b> Filter commodity <em>Onion</em> and grade <em>Grade A</em>; check Mandi benchmark.</li>
+            <li><b>Quality Reports:</b> Open tab; view certified Lab Sheet <em>#QC-ON-118</em>.</li>
+            <li><b>Demand Planner:</b> Open tab; show projected quota form (<em>250 Qt, dock slot</em>).</li>
+            <li><b>Live Bid Board:</b> Step bid to ₹2,100, trigger auto-close alert, click <b>Place Verified Bid</b>.</li>
+            <li><b>Delivery &amp; Invoices:</b> Check 4-stage delivery tracker; view settled escrow invoices.</li>
+          </ol>
+        </td>
+        <td class="narration-cell">
+          <p>“The Institutional Buyer portal streamlines commercial procurement, bidding, and contract fulfillment.</p>
+          <p>Browse Lots filters verified produce by commodity and grade against market price benchmarks.</p>
+          <p>Quality Reports provide certified laboratory test sheets detailing moisture, size uniformity, and pesticide compliance.</p>
+          <p>The Demand Planner registers forward procurement quotas, aligning farm sowing with corporate demand.</p>
+          <p>The Live Bid Board facilitates real-time auctions that auto-close when bids match farmer ask prices.</p>
+          <p>The Delivery Tracker and Escrow Ledger monitor milestones and automated dock disbursements.”</p>
+        </td>
+      </tr>
 
-<!-- ── SCENE 6 ─────────────────────────────────────────────── -->
-<div class="scene-card">
-  <div class="scene-header">
-    <div class="scene-title">Scene 6: Storage &amp; Warehouse Partner</div>
-    <div class="scene-time">3:00 – 3:25</div>
-  </div>
-  <div class="scene-target">URL: storage.html · Certified Storage Operations</div>
-  <div class="script-grid">
-    <div class="col-action">
-      <div class="col-header">Screen Action &amp; Visual Cues</div>
-      1. Switch to <span class="highlight-click">Storage &amp; Warehouse</span> portal.<br><br>
-      2. On <b>My Facilities &amp; Capacity</b>, show the warehouse card with climate monitoring (<span class="highlight-val">❄️ 2°C Optimal</span>) and capacity utilization bars.<br><br>
-      3. Point to the <b>Physical Verification by Bhowanee</b> stepper and click <span class="highlight-click">Storage Orders</span> to display electronic warehouse receipts.
-    </div>
-    <div class="col-voiceover">
-      <div class="col-header">Spoken Narration (Word-for-Word)</div>
-      "To combat crop perishability, our Storage &amp; Warehouse portal allows cold storage operators to list verified holding capacity, humidity zones, and temperature specs.<br><br>
-      Facilities undergo physical verification by Bhowanee field auditors. Once verified, warehouses receive automated inbound storage orders, turning harvest into collateralized, grade-preserved inventory."
-    </div>
-  </div>
-</div>
+      <!-- Segment 5 -->
+      <tr>
+        <td class="time-cell">2:00–2:30<br><small style="color:#64748B;font-weight:500">30 Seconds</small></td>
+        <td class="action-cell">
+          <b class="screen-tag">logistics.html (Logistics Partner)</b>
+          <ol>
+            <li><b>Vehicle Fleet:</b> Scroll table showing 4 registered trucks, capacities (<em>118 Qt</em>), and driver assignments.</li>
+            <li><b>Route Allotment:</b> Open tab; highlight Vehicle 1 timeline (<em>25th Sep &amp; 30th Sep pickups</em>) and green <b>Route Optimization</b> badge.</li>
+            <li><b>Farm Gate Pickups:</b> Open tab; view scheduled collection window table.</li>
+            <li><b>Proof of Handoff:</b> Show digital custody transfer form with weighbridge slip upload.</li>
+            <li><b>Transit Loss Log:</b> View zero-loss transit record.</li>
+          </ol>
+        </td>
+        <td class="narration-cell">
+          <p>“The Logistics Partner portal coordinates rural transport, scheduled collections, and custody verification.</p>
+          <p>Vehicle Fleet registers transport trucks, payload capacities in quintals, and driver assignments.</p>
+          <p>The Route Allotment engine sequences multi-farm waypoints into optimized collection corridors, preventing deadhead mileage.</p>
+          <p>Farm Gate Pickups coordinates field collection windows and active transit volumes.</p>
+          <p>The Proof of Handoff tool validates custody transfers through weighbridge receipts and photo verification.</p>
+          <p>A transit loss log audits zero-loss delivery compliance.”</p>
+        </td>
+      </tr>
 
-<!-- ── SCENE 7 ─────────────────────────────────────────────── -->
-<div class="scene-card">
-  <div class="scene-header">
-    <div class="scene-title">Scene 7: Investor Analytics &amp; Super Admin Control</div>
-    <div class="scene-time">3:25 – 3:45</div>
-  </div>
-  <div class="scene-target">URL: investor.html &amp; admin.html</div>
-  <div class="script-grid">
-    <div class="col-action">
-      <div class="col-header">Screen Action &amp; Visual Cues</div>
-      1. Open <span class="highlight-click">Investor</span> portal: scroll through portfolio yield metrics, returns distribution, and risk spreading across blocks.<br><br>
-      2. Briefly switch to <span class="highlight-click">Bhowanee team</span> control room (<code>admin.html</code>) showing overall platform metrics, transaction volume, and escrow balances.
-    </div>
-    <div class="col-voiceover">
-      <div class="col-header">Spoken Narration (Word-for-Word)</div>
-      "For capital partners, the Investor portal offers transparent yield tracking, funding farm inputs and cold chain infrastructure with structured, risk-mitigated returns.<br><br>
-      And finally, the Bhowanee Control Room monitors platform-wide contract velocity, escrow balances, and block health in real time."
-    </div>
-  </div>
-</div>
+      <!-- Segment 6 -->
+      <tr>
+        <td class="time-cell">2:30–2:55<br><small style="color:#64748B;font-weight:500">25 Seconds</small></td>
+        <td class="action-cell">
+          <b class="screen-tag">storage.html (Storage &amp; Warehouse)</b>
+          <ol>
+            <li><b>My Facilities:</b> View facility card with live chamber temperature (<em>❄️ 2°C Optimal</em>) and capacity fill gauges.</li>
+            <li><b>List Facility:</b> Open tab; show facility specification inputs and 4-step Bhowanee audit stepper.</li>
+            <li><b>Storage Orders:</b> Open tab; view electronic warehouse receipts (<em>e-NWR</em>) and batch volumes.</li>
+            <li><b>Holding Timeline &amp; Ledger:</b> View batch rotation and automated rental settlement (<em>₹64,350 via SBI Escrow</em>).</li>
+          </ol>
+        </td>
+        <td class="narration-cell">
+          <p>“The Storage and Warehouse portal manages crop preservation and collateralized inventory.</p>
+          <p>Facilities displays live storage fill gauges, temperature telemetry, and humidity sensors.</p>
+          <p>Warehouse operators list new facilities and request physical on-site verification from Bhowanee field auditors.</p>
+          <p>The Storage Orders tab issues electronic warehouse receipts for inward crop batches.</p>
+          <p>Operators track chamber rotation timelines and receive monthly rental disbursements directly through escrow.”</p>
+        </td>
+      </tr>
 
-<!-- ── SCENE 8 ─────────────────────────────────────────────── -->
-<div class="scene-card">
-  <div class="scene-header">
-    <div class="scene-title">Scene 8: Conclusion &amp; Platform Vision</div>
-    <div class="scene-time">3:45 – 4:00</div>
-  </div>
-  <div class="scene-target">URL: index.html · Sign-in Return</div>
-  <div class="script-grid">
-    <div class="col-action">
-      <div class="col-header">Screen Action &amp; Visual Cues</div>
-      1. Return to the main sign-in page with the full card in view.<br><br>
-      2. Let the camera linger on the celebrating farmer animation on the left.<br><br>
-      3. Hover cursor over the tagline: <i>"Let's celebrate agriculture together."</i>
-    </div>
-    <div class="col-voiceover">
-      <div class="col-header">Spoken Narration (Word-for-Word)</div>
-      "By connecting the farmer, the administrator, the buyer, logistics, storage, and investors into a single trusted loop, Bhowanee removes middlemen, guarantees fair value, and brings financial dignity to rural agriculture.<br><br>
-      Thank you for watching — let's celebrate agriculture together!"
-    </div>
-  </div>
-</div>
+      <!-- Segment 7 -->
+      <tr>
+        <td class="time-cell">2:55–3:20<br><small style="color:#64748B;font-weight:500">25 Seconds</small></td>
+        <td class="action-cell">
+          <b class="screen-tag">investor.html &amp; admin.html</b>
+          <ol>
+            <li><b>investor.html:</b> Open Plans, sort by IRR; click <b>Compare Selected</b> to show side-by-side specs.</li>
+            <li><b>My Investments:</b> Show commodity diversification bar and auto-reinvest toggle.</li>
+            <li><b>admin.html:</b> Show statewide cadastral map and Farmland Leases pipeline.</li>
+            <li><b>Control Room:</b> Click Settlement Ledger and Dispute Queue in sidenav.</li>
+          </ol>
+        </td>
+        <td class="narration-cell">
+          <p>“The Investor and Administrator dashboards deliver capital deployment analytics and statewide governance.</p>
+          <p>The Investor portal compares agricultural production plans funding verified farm seasons against pre-sold demand.</p>
+          <p>Investors monitor portfolio IRR, crop diversification, and automated dividend payouts.</p>
+          <p>In the Super Admin Control Room, administrators oversee statewide operations, tracking active land leases and district crop health.</p>
+          <p>Platform staff audit master escrow balances, track contract velocity, and resolve dispute tickets.”</p>
+        </td>
+      </tr>
 
-<div class="doc-footer">
-  <div>Bhowanee Agricultural Platform · Working Demonstration Script</div>
-  <div>Generated for Video Recording · September 2026</div>
-</div>
+      <!-- Segment 8 -->
+      <tr>
+        <td class="time-cell">3:20–3:45<br><small style="color:#64748B;font-weight:500">25 Seconds</small></td>
+        <td class="action-cell">
+          <b class="screen-tag">index.html (Closing Summary)</b>
+          <ol>
+            <li>Return to main ecosystem context.</li>
+            <li>Hold view on Bhowanee emblem and mission statement.</li>
+          </ol>
+        </td>
+        <td class="narration-cell">
+          <p>“Bhowanee connects these roles into an unbroken, transparent loop:</p>
+          <p>Field sowing is verified on cadastral maps; farmers price their harvest autonomously; buyers secure volumes through forward plans or spot auctions; logistics and cold storage preserve produce quality; and verified dock weighments trigger automated, direct escrow payments to farmers.</p>
+          <p>By replacing fragmented middlemen with verifiable data and escrow security, Bhowanee empowers Indian agriculture from field to fork. Thank you.”</p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Recording Checklist -->
+  <h2 class="section-title page-break-before">3. Ordered Recording Checklist (Capture Guide)</h2>
+  <div class="checklist-grid">
+    <div class="check-box-group">
+      <h4>Phase 1: Authentication &amp; Farm Production</h4>
+      <label><input type="checkbox"> <b>Sign-in (<code>index.html</code>):</b> Test language toggle (EN &rarr; MR &rarr; HI &rarr; EN).</label>
+      <label><input type="checkbox"> <b>Sign-in (<code>index.html</code>):</b> Select Farmer role, enter mobile <code>9822114455</code>, show OTP.</label>
+      <label><input type="checkbox"> <b>Farmer (<code>farmer.html</code>):</b> Sell tab &rarr; view Mandi ₹1,880 &rarr; step to ₹2,100 &rarr; Set price.</label>
+      <label><input type="checkbox"> <b>Farmer (<code>farmer.html</code>):</b> Offers tab &rarr; point to bid SVG &rarr; hover Accept best offer.</label>
+      <label><input type="checkbox"> <b>Farmer (<code>farmer.html</code>):</b> Field tab &rarr; scroll soil NPK &amp; micro-climate cards.</label>
+      <label><input type="checkbox"> <b>Farmer (<code>farmer.html</code>):</b> Call tab &rarr; point to Call Admin button &amp; payment list.</label>
+      <label><input type="checkbox"> <b>Block Admin (<code>block.html</code>):</b> Map &rarr; toggle Satellite Aerial to Vector mode.</label>
+      <label><input type="checkbox"> <b>Block Admin (<code>block.html</code>):</b> Click Gat 125 chip &rarr; open 7/12 Land Record drawer.</label>
+      <label><input type="checkbox"> <b>Block Admin (<code>block.html</code>):</b> Check an agronomy task box &rarr; open Cost log tab.</label>
+    </div>
+
+    <div class="check-box-group">
+      <h4>Phase 2: Market, Supply Chain &amp; Governance</h4>
+      <label><input type="checkbox"> <b>Buyer (<code>buyer.html</code>):</b> Browse Lots &rarr; filter Onion &amp; Grade A.</label>
+      <label><input type="checkbox"> <b>Buyer (<code>buyer.html</code>):</b> Quality Reports &rarr; show Lab Test Certificate #QC-ON-118.</label>
+      <label><input type="checkbox"> <b>Buyer (<code>buyer.html</code>):</b> Demand Planner &rarr; show volume registration form.</label>
+      <label><input type="checkbox"> <b>Buyer (<code>buyer.html</code>):</b> Live Bid Board &rarr; step bid to ₹2,100 &rarr; show auto-close notice.</label>
+      <label><input type="checkbox"> <b>Buyer (<code>buyer.html</code>):</b> Delivery Tracker &rarr; show 4 milestones &rarr; view Invoices.</label>
+      <label><input type="checkbox"> <b>Logistics (<code>logistics.html</code>):</b> Fleet &rarr; Route Allotment (Vehicle 1 timeline &amp; opt badge).</label>
+      <label><input type="checkbox"> <b>Logistics (<code>logistics.html</code>):</b> Pickups &rarr; Proof of Handoff weighbridge slip upload.</label>
+      <label><input type="checkbox"> <b>Storage (<code>storage.html</code>):</b> Facilities (❄️ 2°C telemetry) &rarr; Orders (e-NWR) &rarr; Rent Ledger.</label>
+      <label><input type="checkbox"> <b>Investor (<code>investor.html</code>):</b> Plans (IRR sort) &rarr; Compare &rarr; Portfolio diversification.</label>
+      <label><input type="checkbox"> <b>Admin (<code>admin.html</code>):</b> State cadastral map &rarr; Farmland leases &rarr; Settlement ledger.</label>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    Bhowanee Demonstration Script • Smart India Hackathon 2026 • Verified against running codebase • Document generated September 2026
+  </div>
 
 </body>
 </html>
