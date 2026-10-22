@@ -1,0 +1,16 @@
+{
+  "name": "bhowanee-platform",
+  "version": "1.0.0",
+  "description": "Bhowanee Platform - Full-Stack Agritech Portal (NestJS + PostGIS + Static Frontend)",
+  "private": true,
+  "scripts": {
+    "docker:up": "docker compose up --build -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:restart": "docker compose restart",
+    "docker:ps": "docker compose ps",
+    "backend:build": "npm --prefix backend run build",
+    "backend:test": "npm --prefix backend run test",
+    "backend:start": "npm --prefix backend run start:dev"
+  }
+}

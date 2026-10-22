@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # ── 1. PostgreSQL Database with PostGIS ──────────────────
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: bhowanee-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bhowanee
+      POSTGRES_USER: bhowanee_dev
+      POSTGRES_PASSWORD: bhowanee_dev_pass
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - '5433:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U bhowanee_dev -d bhowanee']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - bhowanee-network
+
+  # ── 2. NestJS Backend + Socket.IO ────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bhowanee-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://bhowanee_dev:bhowanee_dev_pass@db:5432/bhowanee?schema=public
+      JWT_ACCESS_SECRET: bhowanee_super_secret_jwt_access_token_key_2026
+      JWT_REFRESH_SECRET: bhowanee_super_secret_jwt_refresh_token_key_2026
+      JWT_ACCESS_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
+      OTP_MOCK_ENABLED: "true"
+      COOKIE_DOMAIN: localhost
+      COOKIE_SECURE: "false"
+    ports:
+      - '3000:3000'
+    networks:
+      - bhowanee-network
+
+  # ── 3. Frontend Web Server & Reverse Proxy (Nginx) ───────
+  web:
+    image: nginx:alpine
+    container_name: bhowanee-web
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - '80:80'
+      - '8080:80'
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - .:/usr/share/nginx/html:ro
+    networks:
+      - bhowanee-network
+
+volumes:
+  pgdata:
+
+networks:
+  bhowanee-network:
+    driver: bridge

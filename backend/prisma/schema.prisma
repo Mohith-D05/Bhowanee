@@ -1,0 +1,482 @@
+// ============================================================
+// Bhowanee - Prisma Schema
+// PostgreSQL with PostGIS support
+// Mirrors all entities from the existing frontend data.js
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── User & Authentication ──────────────────────────────────
+
+enum UserRole {
+  FARMER
+  BLOCK_ADMIN
+  BUYER
+  INVESTOR
+  LOGISTICS
+  STORAGE
+  TEAM
+}
+
+model User {
+  id            String    @id @default(cuid())
+  role          UserRole
+  name          String
+  phone         String?   @unique
+  email         String?   @unique
+  passwordHash  String?
+  lang          String    @default("en")
+  status        String    @default("active")
+  blockId       String?
+  districtId    String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  block         Block?    @relation(fields: [blockId], references: [id])
+  district      District? @relation(fields: [districtId], references: [id])
+  refreshTokens RefreshToken[]
+  otpCodes      OtpCode[]
+  contracts     Contract[] @relation("FarmerContracts")
+  bids          Bid[]
+  investments   Investment[]
+  kycSubmission KycSubmission?
+  auditActions  AuditEntry[] @relation("AuditActor")
+  raisedDisputes Dispute[] @relation("DisputeRaiser")
+
+  @@index([role])
+  @@index([blockId])
+  @@index([districtId])
+  @@index([status])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  userId    String
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ── Geography ──────────────────────────────────────────────
+
+model District {
+  id        String   @id // e.g. "nashik", "pune"
+  name      String
+  region    String?
+  createdAt DateTime @default(now())
+
+  blocks    Block[]
+  users     User[]
+  stats     DistrictStats?
+}
+
+model Block {
+  id         String   @id @default(cuid())
+  name       String
+  districtId String
+  createdAt  DateTime @default(now())
+
+  district   District   @relation(fields: [districtId], references: [id])
+  users      User[]
+  contracts  Contract[]
+
+  @@index([districtId])
+}
+
+// ── Contracts & Farming ────────────────────────────────────
+
+enum ContractStage {
+  NOT_SOWN
+  GROWING
+  HARVEST
+  BIDS
+  ISSUE
+  CLOSED
+  PAID
+}
+
+model Contract {
+  id          String        @id @default(cuid())
+  farmerId    String
+  blockId     String
+  village     String
+  district    String
+  crop        String
+  area        Float         // acres
+  gat         String        // cadastral gat number
+  stage       ContractStage @default(NOT_SOWN)
+  notes       String?
+  leaseStart  DateTime?
+  leaseEnd    DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Crop plan dates
+  planSow       DateTime?
+  planIrrigate  DateTime?
+  planFertilise DateTime?
+  planHarvest   DateTime?
+
+  // Relations
+  farmer      User          @relation("FarmerContracts", fields: [farmerId], references: [id])
+  block       Block         @relation(fields: [blockId], references: [id])
+  tasks       Task[]
+  costs       Cost[]
+  lots        Lot[]
+  disputes    Dispute[]
+  compliance  ComplianceItem[]
+  payments    Payment[]
+  pickups     Pickup[]
+
+  @@index([farmerId])
+  @@index([blockId])
+  @@index([stage])
+  @@index([district])
+  @@index([crop])
+}
+
+model Task {
+  id         String   @id @default(cuid())
+  contractId String
+  label      String
+  due        DateTime
+  done       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId])
+}
+
+model Cost {
+  id         String   @id @default(cuid())
+  contractId String
+  type       String   // Seeds, Fertiliser, Labour, etc.
+  amount     Int      // stored in paisa (smallest unit) for precision
+  date       DateTime
+  createdAt  DateTime @default(now())
+
+  contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId])
+}
+
+// ── Lots & Bidding ─────────────────────────────────────────
+
+enum LotStatus {
+  DRAFT
+  OPEN
+  CLOSED
+}
+
+model Lot {
+  id          String    @id @default(cuid())
+  contractId  String
+  grade       String    // A, B, etc.
+  weightQt    Float     // quintals
+  farmerPrice Int       @default(0) // INR per quintal
+  status      LotStatus @default(DRAFT)
+  listedAt    DateTime  @default(now())
+  closedAt    DateTime?
+  closedBidId String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  contract    Contract  @relation(fields: [contractId], references: [id])
+  bids        Bid[]
+  pickups     Pickup[]
+  handoffs    Handoff[]
+  payments    Payment[]
+
+  @@index([contractId])
+  @@index([status])
+}
+
+model Bid {
+  id        String   @id @default(cuid())
+  lotId     String
+  buyerId   String
+  price     Int      // INR per quintal
+  createdAt DateTime @default(now())
+
+  lot       Lot      @relation(fields: [lotId], references: [id])
+  buyer     User     @relation(fields: [buyerId], references: [id])
+
+  @@index([lotId])
+  @@index([buyerId])
+  @@index([createdAt])
+}
+
+// ── Investment Plans ───────────────────────────────────────
+
+enum PlanStatus {
+  OPEN
+  CLOSING_SOON
+  FULL
+}
+
+model Plan {
+  id              String     @id @default(cuid())
+  name            String
+  term            String     // e.g. "5 months"
+  termMonths      Int
+  risk            String     // Higher, Medium, Lower
+  riskScore       Int        // 1-3
+  demandSold      Int        // percentage
+  expectedReturn  String     // "14 to 18%"
+  expectedReturnPct Float
+  minInvestment   Int        // INR
+  status          PlanStatus @default(OPEN)
+  note            String?
+  soil            String?
+  water           String?
+  cropHistory     String?
+  buyers          String[]   // array of buyer names
+  timelineSow     DateTime?
+  timelineHarvest DateTime?
+  timelinePayout  DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  investments     Investment[]
+}
+
+model Investment {
+  id              String   @id @default(cuid())
+  planId          String
+  investorId      String
+  amount          Int      // INR
+  stage           String   @default("Pending") // Pending, Growing, Closed
+  projectedReturn Int?
+  actualReturn    Int?
+  nextPayout      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  plan            Plan     @relation(fields: [planId], references: [id])
+  investor        User     @relation(fields: [investorId], references: [id])
+
+  @@index([planId])
+  @@index([investorId])
+}
+
+// ── Warehouses & Storage ───────────────────────────────────
+
+model Warehouse {
+  id         String   @id @default(cuid())
+  name       String
+  lat        Float?
+  lng        Float?
+  capacityQt Int      // total capacity in quintals
+  usedQt     Int      @default(0)
+  contact    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  pickups    Pickup[]
+}
+
+// ── Logistics ──────────────────────────────────────────────
+
+enum PickupStatus {
+  PENDING
+  SCHEDULED
+  IN_TRANSIT
+  DONE
+}
+
+model Pickup {
+  id           String       @id @default(cuid())
+  lotId        String
+  contractId   String
+  farm         String       // farm location description
+  warehouseId  String
+  scheduledAt  DateTime?
+  status       PickupStatus @default(PENDING)
+  vehicle      String?
+  lossQt       Float?
+  lossReason   String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  lot          Lot          @relation(fields: [lotId], references: [id])
+  contract     Contract     @relation(fields: [contractId], references: [id])
+  warehouse    Warehouse    @relation(fields: [warehouseId], references: [id])
+
+  @@index([lotId])
+  @@index([contractId])
+  @@index([warehouseId])
+  @@index([status])
+}
+
+model Handoff {
+  id          String   @id @default(cuid())
+  lotId       String
+  from        String
+  to          String
+  weightQt    Float
+  photo       String?
+  confirmedBy String?
+  createdAt   DateTime @default(now())
+
+  lot         Lot      @relation(fields: [lotId], references: [id])
+
+  @@index([lotId])
+}
+
+// ── Disputes ───────────────────────────────────────────────
+
+enum DisputeStatus {
+  OPEN
+  RESOLVED
+}
+
+model Dispute {
+  id          String        @id @default(cuid())
+  contractId  String
+  type        String        // Quality, Crop damage, etc.
+  description String
+  status      DisputeStatus @default(OPEN)
+  raisedById  String
+  owner       String?       // assigned admin
+  resolution  String?
+  resolvedAt  DateTime?
+  evidence    String[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  contract    Contract      @relation(fields: [contractId], references: [id])
+  raisedBy    User          @relation("DisputeRaiser", fields: [raisedById], references: [id])
+
+  @@index([contractId])
+  @@index([status])
+}
+
+// ── Payments ───────────────────────────────────────────────
+
+enum PaymentStatus {
+  PENDING
+  SETTLED
+}
+
+model Payment {
+  id         String        @id @default(cuid())
+  contractId String
+  lotId      String?
+  amount     Int           // INR
+  fromName   String
+  toName     String
+  method     String        @default("Bank transfer")
+  status     PaymentStatus @default(PENDING)
+  settledAt  DateTime?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  contract   Contract      @relation(fields: [contractId], references: [id])
+  lot        Lot?          @relation(fields: [lotId], references: [id])
+
+  @@index([contractId])
+  @@index([status])
+}
+
+// ── Audit Trail ────────────────────────────────────────────
+
+model AuditEntry {
+  id         String   @id @default(cuid())
+  action     String
+  actorId    String
+  forFarmer  String?
+  confirmed  String?
+  createdAt  DateTime @default(now())
+
+  actor      User     @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([createdAt])
+}
+
+// ── Compliance ─────────────────────────────────────────────
+
+model ComplianceItem {
+  id         String   @id @default(cuid())
+  contractId String
+  type       String   // Lease renewal, Land ceiling check, etc.
+  dueDate    DateTime
+  status     String   @default("Pending") // Active, Pending, Urgent
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  contract   Contract @relation(fields: [contractId], references: [id])
+
+  @@index([contractId])
+  @@index([status])
+}
+
+// ── KYC / Onboarding ───────────────────────────────────────
+
+enum KycStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model KycSubmission {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  role            String
+  status          KycStatus @default(PENDING)
+  rejectionReason String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id])
+
+  @@index([status])
+}
+
+// ── District Aggregate Stats ───────────────────────────────
+
+model DistrictStats {
+  id         String   @id
+  districtId String   @unique
+  contracts  Int      @default(0)
+  farmers    Int      @default(0)
+  acres      Float    @default(0)
+  openBids   Int      @default(0)
+  disputes   Int      @default(0)
+  demandQt   Int      @default(0)
+  supplyQt   Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  district   District @relation(fields: [districtId], references: [id])
+}

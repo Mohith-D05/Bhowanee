@@ -169,23 +169,17 @@
         </div>
       </div>
 
+      <!-- Portfolio Performance Chart (Dynamic) -->
+      <div style="background:var(--sheet);border:1px solid var(--rule);padding:20px;margin-bottom:20px;border-radius:8px">
+        <div id="portfolio-value-chart" style="width:100%"></div>
+      </div>
+
+      <!-- Live Commodity Ticker -->
+      <div id="portfolio-ticker" style="margin-bottom:20px"></div>
+
       <!-- Asset Allocation & Risk Profile -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
-        <div style="background:var(--sheet);border:1px solid var(--rule);padding:20px">
-          <h3 style="font-family:var(--font-slab);font-size:17px;margin-bottom:12px">Crop &amp; Commodity Allocation</h3>
-          <div style="display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--rule);margin-bottom:14px">
-            <div style="width:45%;background:#B06000" title="Onions: 45%"></div>
-            <div style="width:25%;background:#137333" title="Pulses / Gram: 25%"></div>
-            <div style="width:20%;background:#C5221F" title="Tomatoes: 20%"></div>
-            <div style="width:10%;background:#1A73E8" title="Soybean: 10%"></div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
-            <div><span style="display:inline-block;width:10px;height:10px;background:#B06000;border-radius:2px;margin-right:6px"></span><b>Onion (Rabi):</b> 45% (₹1.46L)</div>
-            <div><span style="display:inline-block;width:10px;height:10px;background:#137333;border-radius:2px;margin-right:6px"></span><b>Pulses / JV:</b> 25% (₹81.2K)</div>
-            <div><span style="display:inline-block;width:10px;height:10px;background:#C5221F;border-radius:2px;margin-right:6px"></span><b>Tomatoes:</b> 20% (₹65.0K)</div>
-            <div><span style="display:inline-block;width:10px;height:10px;background:#1A73E8;border-radius:2px;margin-right:6px"></span><b>Soybean:</b> 10% (₹32.5K)</div>
-          </div>
-        </div>
+        <div id="crop-allocation-donut" style="background:var(--sheet);border:1px solid var(--rule);padding:20px;border-radius:8px"></div>
 
         <div style="background:var(--sheet);border:1px solid var(--rule);padding:20px">
           <h3 style="font-family:var(--font-slab);font-size:17px;margin-bottom:12px">Field Telemetry &amp; Crop Health</h3>
@@ -541,6 +535,9 @@
         <div id="market-clock-badge" style="padding:10px 18px;border-radius:6px;font-weight:700;font-size:14px;letter-spacing:.04em"></div>
       </div>
 
+      <!-- Live Market Ticker -->
+      <div id="bid-market-ticker" style="margin-bottom:16px"></div>
+
       <div class="kpi-row">
         <div class="kpi-card"><div class="num" id="bc-kpi-vol">0 Qt</div><div class="lbl">Volume Bid Today</div></div>
         <div class="kpi-card"><div class="num" id="bc-kpi-bids">0</div><div class="lbl">Total Bid Entries</div></div>
@@ -548,21 +545,19 @@
         <div class="kpi-card"><div class="num" id="bc-kpi-lots">0</div><div class="lbl">Active Lots</div></div>
       </div>
 
+      <!-- Interactive Intraday Price Chart (Groww/Zerodha style) -->
+      <div style="background:var(--sheet);border:1px solid var(--rule);padding:20px;border-radius:8px;margin-bottom:20px">
+        <div id="chart-intraday-dynamic" style="width:100%"></div>
+      </div>
+
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:4px">
-        <!-- Day-wise chart -->
-        <div style="background:var(--sheet);border:1px solid var(--rule);padding:20px">
-          <h3 style="font-size:16px;margin-bottom:4px">7-Day Bid Volume (Qt per day)</h3>
-          <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:16px">Total quintals bid per trading session</p>
-          <canvas id="chart-daywise" height="200" style="width:100%"></canvas>
+        <!-- Day-wise volume bar chart (Dynamic) -->
+        <div style="background:var(--sheet);border:1px solid var(--rule);padding:20px;border-radius:8px">
+          <div id="chart-daywise-dynamic" style="width:100%"></div>
         </div>
-        <!-- Intraday timestamped chart -->
-        <div style="background:var(--sheet);border:1px solid var(--rule);padding:20px">
-          <h3 style="font-size:16px;margin-bottom:4px">Today's Intraday Bid Activity (09:00 - 15:00)</h3>
-          <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:16px">Bid price per quintal over today's session</p>
-          <canvas id="chart-intraday" height="200" style="width:100%"></canvas>
-          <div id="market-closed-overlay" style="display:none;text-align:center;padding:24px;color:var(--ink-soft);font-size:14px;border:1px dashed var(--rule);margin-top:12px;border-radius:4px">
-            Market session closed. Next session opens at 09:00 IST.
-          </div>
+        <!-- Commodity-wise price comparison (Dynamic Line) -->
+        <div style="background:var(--sheet);border:1px solid var(--rule);padding:20px;border-radius:8px">
+          <div id="chart-commodity-price" style="width:100%"></div>
         </div>
       </div>
 
@@ -646,7 +641,10 @@
 <script src="auth.js"></script>
 <script src="market.js"></script>
 <script src="data.js"></script>
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+<script src="api-client.js"></script>
 <script src="components.js"></script>
+<script src="charts.js"></script>
 <script>
 /* ============================================================
    Investor Dashboard Logic
@@ -1019,204 +1017,38 @@ function updateMarketClock() {
   if (overlay) overlay.style.display = open ? 'none' : 'block';
 }
 
-function drawDaywiseChart() {
-  var canvas = document.getElementById('chart-daywise');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var W = canvas.offsetWidth || 400;
-  canvas.width = W;
-  canvas.height = 200;
-  var H = canvas.height;
-
-  var pad = { top: 20, right: 20, bottom: 40, left: 44 };
-  var chartW = W - pad.left - pad.right;
-  var chartH = H - pad.top - pad.bottom;
-
-  var maxVol = Math.max.apply(null, bidDayData.map(function(d) { return d.vol; }));
-  var barW = chartW / bidDayData.length * 0.6;
-  var gap = chartW / bidDayData.length;
-
-  ctx.clearRect(0, 0, W, H);
-
-  // Grid lines
-  ctx.strokeStyle = '#EDF1F7';
-  ctx.lineWidth = 1;
-  for (var i = 0; i <= 4; i++) {
-    var y = pad.top + chartH - (chartH * i / 4);
-    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + chartW, y); ctx.stroke();
-    ctx.fillStyle = '#8A91AA'; ctx.font = '500 11px "Google Sans", sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText(Math.round(maxVol * i / 4) + ' Qt', pad.left - 6, y + 4);
-  }
-
-  // Bars
-  bidDayData.forEach(function(d, i) {
-    var x = pad.left + i * gap + gap * 0.2;
-    var barH = (d.vol / maxVol) * chartH;
-    var y = pad.top + chartH - barH;
-    var radius = Math.min(6, barW / 2);
-
-    // Gradient bar
-    var grad = ctx.createLinearGradient(0, y, 0, y + barH);
-    grad.addColorStop(0, '#1C2452');
-    grad.addColorStop(0.6, '#283870');
-    grad.addColorStop(1, '#3E5496');
-    ctx.fillStyle = grad;
-
-    // Rounded top bar
-    ctx.beginPath();
-    ctx.moveTo(x, y + barH);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
-    ctx.lineTo(x + barW - radius, y);
-    ctx.quadraticCurveTo(x + barW, y, x + barW, y + radius);
-    ctx.lineTo(x + barW, y + barH);
-    ctx.closePath();
-    ctx.fill();
-
-    // Subtle highlight line on top (Bhowanee Blue accent)
-    ctx.strokeStyle = '#2546B0';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + barW - radius, y);
-    ctx.stroke();
-
-    // Volume label on top
-    ctx.fillStyle = '#1C2452'; ctx.font = 'bold 11px "Google Sans", sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(d.vol, x + barW / 2, y - 6);
-
-    // Day label
-    ctx.fillStyle = '#17202A'; ctx.font = '600 11px "Google Sans", sans-serif';
-    ctx.fillText(d.day, x + barW / 2, pad.top + chartH + 16);
-    ctx.fillStyle = '#667085'; ctx.font = '500 10px "Google Sans", sans-serif';
-    ctx.fillText(d.date.replace('Sep ', ''), x + barW / 2, pad.top + chartH + 28);
-  });
-}
-
-function drawIntradayChart() {
-  var canvas = document.getElementById('chart-intraday');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var W = canvas.offsetWidth || 400;
-  canvas.width = W;
-  canvas.height = 200;
-  var H = canvas.height;
-
-  var pad = { top: 24, right: 24, bottom: 42, left: 54 };
-  var chartW = W - pad.left - pad.right;
-  var chartH = H - pad.top - pad.bottom;
-
-  var prices = intradayBids.map(function(b) { return b.price; });
-  var minP = Math.min.apply(null, prices) - 50;
-  var maxP = Math.max.apply(null, prices) + 50;
-  var pRange = maxP - minP;
-
-  ctx.clearRect(0, 0, W, H);
-
-  // Background subtle card tint
-  ctx.fillStyle = '#F7F9FC';
-  ctx.fillRect(pad.left, pad.top, chartW, chartH);
-
-  // Grid
-  ctx.strokeStyle = '#E5EAF0'; ctx.lineWidth = 1;
-  for (var i = 0; i <= 4; i++) {
-    var y = pad.top + chartH * i / 4;
-    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + chartW, y); ctx.stroke();
-    var pVal = maxP - pRange * i / 4;
-    ctx.fillStyle = '#667085'; ctx.font = '500 11px "Google Sans", sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText('₹' + Math.round(pVal), pad.left - 6, y + 4);
-  }
-
-  // Smooth Area fill (Bhowanee Blue Gradient)
-  ctx.beginPath();
-  intradayBids.forEach(function(b, i) {
-    var x = pad.left + (i / (intradayBids.length - 1)) * chartW;
-    var y = pad.top + chartH - ((b.price - minP) / pRange) * chartH;
-    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-  });
-  ctx.lineTo(pad.left + chartW, pad.top + chartH);
-  ctx.lineTo(pad.left, pad.top + chartH);
-  ctx.closePath();
-  var areaGrad = ctx.createLinearGradient(0, pad.top, 0, pad.top + chartH);
-  areaGrad.addColorStop(0, 'rgba(28, 36, 82, 0.18)');
-  areaGrad.addColorStop(0.7, 'rgba(28, 36, 82, 0.05)');
-  areaGrad.addColorStop(1, 'rgba(28, 36, 82, 0.0)');
-  ctx.fillStyle = areaGrad;
-  ctx.fill();
-
-  // Premium line chart (Fintech Blue Spectrum)
-  ctx.beginPath();
-  var lineGrad = ctx.createLinearGradient(pad.left, 0, pad.left + chartW, 0);
-  lineGrad.addColorStop(0, '#1C2452');
-  lineGrad.addColorStop(0.5, '#23377A');
-  lineGrad.addColorStop(1, '#2546B0');
-  ctx.strokeStyle = lineGrad;
-  ctx.lineWidth = 2.5;
-  ctx.lineJoin = 'round';
-  ctx.lineCap = 'round';
-  intradayBids.forEach(function(b, i) {
-    var x = pad.left + (i / (intradayBids.length - 1)) * chartW;
-    var y = pad.top + chartH - ((b.price - minP) / pRange) * chartH;
-    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-
-  // Dots and time labels
-  intradayBids.forEach(function(b, i) {
-    var x = pad.left + (i / (intradayBids.length - 1)) * chartW;
-    var y = pad.top + chartH - ((b.price - minP) / pRange) * chartH;
-    var isLast = (i === intradayBids.length - 1);
-
-    // Glowing halo for last point in Bhowanee Blue
-    if (isLast) {
-      ctx.beginPath();
-      ctx.arc(x, y, 7, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(28, 36, 82, 0.22)';
-      ctx.fill();
-    }
-
-    ctx.beginPath();
-    ctx.arc(x, y, isLast ? 4 : 3, 0, Math.PI * 2);
-    ctx.fillStyle = isLast ? '#2546B0' : '#1C2452';
-    ctx.fill();
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    if (i % 2 === 0 || isLast) {
-      ctx.fillStyle = '#4B5375'; ctx.font = '500 10px "Google Sans", sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText(b.time, x, pad.top + chartH + 16);
-    }
-  });
-
-  // X-axis label
-  ctx.fillStyle = '#71788E'; ctx.font = '500 10px "Google Sans", sans-serif'; ctx.textAlign = 'center';
-  ctx.fillText('Execution Time (IST)  •  Live Bid Stream', pad.left + chartW / 2, pad.top + chartH + 32);
-}
-
 function renderBidChartKPIs() {
-  var vol = intradayBids.reduce(function(s, b) { return s + b.qty; }, 0);
+  var vol = intradayBids.reduce(function(sum, b) { return sum + b.qty; }, 0);
   var high = Math.max.apply(null, intradayBids.map(function(b) { return b.price; }));
-  document.getElementById('bc-kpi-vol').textContent = vol + ' Qt';
-  document.getElementById('bc-kpi-bids').textContent = intradayBids.length;
-  document.getElementById('bc-kpi-high').textContent = 'Rs ' + high;
-  document.getElementById('bc-kpi-lots').textContent = 2;
+  var lots = {};
+  intradayBids.forEach(function(b) { lots[b.lot] = true; });
+  var lotCount = Object.keys(lots).length;
+
+  var volEl = document.getElementById('bc-kpi-vol');
+  var bidsEl = document.getElementById('bc-kpi-bids');
+  var highEl = document.getElementById('bc-kpi-high');
+  var lotsEl = document.getElementById('bc-kpi-lots');
+
+  if (volEl) volEl.textContent = vol + ' Qt';
+  if (bidsEl) bidsEl.textContent = intradayBids.length;
+  if (highEl) highEl.textContent = '₹' + high.toLocaleString('en-IN');
+  if (lotsEl) lotsEl.textContent = lotCount;
 }
 
 function renderBidLog() {
   var tbody = document.getElementById('bid-log-tbody');
   if (!tbody) return;
   var html = '';
-  intradayBids.slice().reverse().forEach(function(b) {
-    var withinWindow = true; // all sample bids are within window
+  var bidsReversed = intradayBids.slice().reverse();
+  bidsReversed.forEach(function(b) {
     html += '<tr>';
     html += '<td><b>' + b.time + '</b></td>';
-    html += '<td>' + b.lot + '</td>';
+    html += '<td><span class="chip sm stage-contract">' + b.lot + '</span></td>';
     html += '<td>' + b.commodity + '</td>';
-    html += '<td>' + b.qty + ' Qt</td>';
-    html += '<td><b>Rs ' + b.price + '</b></td>';
+    html += '<td><b>' + b.qty + ' Qt</b></td>';
+    html += '<td style="font-weight:700;color:var(--forest)">₹' + b.price.toLocaleString('en-IN') + '</td>';
     html += '<td>' + b.bidder + '</td>';
-    html += '<td><span class="stat-pill pill-green">Accepted</span></td>';
+    html += '<td><span class="stat-pill pill-green">Matched</span></td>';
     html += '</tr>';
   });
   tbody.innerHTML = html;
@@ -1224,13 +1056,175 @@ function renderBidLog() {
 
 function initBidCharts() {
   updateMarketClock();
-  setInterval(updateMarketClock, 1000);
   renderBidChartKPIs();
   renderBidLog();
-  setTimeout(function() {
-    drawDaywiseChart();
-    drawIntradayChart();
-  }, 50);
+  initBidChartsSection();
+}
+
+/* ── Dynamic Chart Instances ────────────────────────────── */
+var _chartIntraday = null;
+var _chartDaywise = null;
+var _chartCommodity = null;
+var _chartPortfolio = null;
+var _chartDonut = null;
+var _bidTickerInst = null;
+var _portfolioTickerInst = null;
+
+function initBidChartsSection() {
+  var intradayEl = document.getElementById('chart-intraday-dynamic');
+  var daywiseEl  = document.getElementById('chart-daywise-dynamic');
+  var commodEl   = document.getElementById('chart-commodity-price');
+  var tickerEl   = document.getElementById('bid-market-ticker');
+
+  // Convert sample intradayBids to BhChart format
+  var intradayData = intradayBids.map(function(b) {
+    return { time: b.time, price: b.price, volume: b.qty };
+  });
+
+  // Build intraday chart
+  if (intradayEl && typeof BhChart !== 'undefined') {
+    intradayEl.id = intradayEl.id || ('idc-' + Date.now());
+    if (_chartIntraday) _chartIntraday.destroy();
+    _chartIntraday = BhChart.createLineChart(intradayEl, {
+      title: "Today's Intraday Bid Activity",
+      subtitle: 'Onion Grade A · Live bid stream 09:00 – 15:00 IST',
+      data: { '1D': intradayData },
+      basePrice: 2140,
+      volatility: 35,
+      unit: 'Rs/Qt',
+      showVolume: true,
+      showPeriodSelector: false,
+      height: 280,
+      theme: 'auto'
+    });
+  }
+
+  // Convert bidDayData to BhChart bar format
+  var barData = bidDayData.map(function(d) {
+    return { label: d.day, sublabel: d.date.replace('Sep ',''), value: d.vol, bids: d.bids, high: d.high };
+  });
+
+  if (daywiseEl && typeof BhChart !== 'undefined') {
+    if (_chartDaywise) _chartDaywise.destroy();
+    _chartDaywise = BhChart.createBarChart(daywiseEl, {
+      title: '7-Day Bid Volume',
+      subtitle: 'Total quintals bid per trading session',
+      data: barData,
+      unit: 'Qt',
+      height: 220
+    });
+  }
+
+  // Commodity price comparison line chart
+  if (commodEl && typeof BhChart !== 'undefined') {
+    commodEl.id = commodEl.id || ('cmc-' + Date.now());
+    if (_chartCommodity) _chartCommodity.destroy();
+    var mandiPrices = Market ? Market.getPriceHistory('Onion') : [];
+    var commodData = mandiPrices.map(function(p, i) {
+      var daysAgo = mandiPrices.length - 1 - i;
+      var d = new Date(); d.setDate(d.getDate() - daysAgo);
+      return { dateStr: d.toLocaleDateString('en-IN', { day:'numeric', month:'short' }), price: p, volume: Math.round(Math.random()*30+10) };
+    });
+    _chartCommodity = BhChart.createLineChart(commodEl, {
+      title: 'Onion Mandi Price Trend',
+      subtitle: '14-day spot price · Nashik APMC',
+      data: { '2W': commodData, '1M': BhChart.generateHistoricalData(1880, 40, 30) },
+      unit: 'Rs/Qt',
+      showVolume: false,
+      showPeriodSelector: true,
+      height: 220,
+      theme: 'auto'
+    });
+  }
+
+  // Live market ticker
+  if (tickerEl && typeof BhChart !== 'undefined') {
+    if (_bidTickerInst) { tickerEl.innerHTML = ''; }
+    _bidTickerInst = BhChart.createLiveTicker(tickerEl, {
+      items: [
+        { name: 'Onion Grade A', price: 2270, change: 5.2 },
+        { name: 'Onion Grade B', price: 2110, change: 1.4 },
+        { name: 'Tomato (Pvt)', price: 2200, change: 6.1 },
+        { name: 'Soybean', price: 4800, change: -1.7 },
+        { name: 'Pulses', price: 6200, change: 2.4 },
+        { name: 'Onion (Mandi)', price: 1880, change: 1.1 },
+        { name: 'Bhowanee GMV', price: 14850000, change: 3.8 }
+      ]
+    });
+  }
+}
+
+function initPortfolioSection() {
+  var portfolioEl = document.getElementById('portfolio-value-chart');
+  var donutEl     = document.getElementById('crop-allocation-donut');
+  var tickerEl    = document.getElementById('portfolio-ticker');
+
+  // Portfolio performance line chart (simulates IRR growth)
+  if (portfolioEl && typeof BhChart !== 'undefined') {
+    portfolioEl.id = portfolioEl.id || ('pfc-' + Date.now());
+    if (_chartPortfolio) _chartPortfolio.destroy();
+
+    // Build invested-capital-to-projected value curve
+    var baseInvested = 325000;
+    var projectedYield = 371200;
+    var portfolioHistory = BhChart.generateHistoricalData(baseInvested, 1200, 90);
+    // Ensure last value trends toward projected
+    portfolioHistory[portfolioHistory.length - 1].price = 325000;
+    portfolioHistory = portfolioHistory.map(function(d, i) {
+      var progress = i / (portfolioHistory.length - 1);
+      var trendFactor = 1 + (0.142 * progress * 0.6); // partial IRR accrual
+      d.price = Math.round(baseInvested * trendFactor + (Math.random() - 0.48) * 800);
+      return d;
+    });
+    var portfolioYearData = BhChart.generateHistoricalData(300000, 2000, 365);
+
+    _chartPortfolio = BhChart.createLineChart(portfolioEl, {
+      title: 'Portfolio Value Growth',
+      subtitle: 'Invested capital + accrued yield · IRR 14.2%',
+      data: {
+        '3M': portfolioHistory,
+        '1Y': portfolioYearData
+      },
+      unit: '₹',
+      showVolume: false,
+      showPeriodSelector: true,
+      height: 260,
+      theme: 'gain'
+    });
+  }
+
+  // Crop allocation donut chart
+  if (donutEl && typeof BhChart !== 'undefined') {
+    if (_chartDonut) _chartDonut.destroy();
+    _chartDonut = BhChart.createDonutChart(donutEl, {
+      title: 'Crop & Commodity Allocation',
+      subtitle: 'By invested capital',
+      data: [
+        { label: 'Onion (Rabi)',   value: 146250, color: '#B06000' },
+        { label: 'Pulses / JV',    value: 81250,  color: '#137333' },
+        { label: 'Tomatoes',       value: 65000,  color: '#C5221F' },
+        { label: 'Soybean',        value: 32500,  color: '#1A73E8' }
+      ],
+      unit: '₹',
+      centerLabel: '₹3.25L',
+      centerSub: 'Total invested'
+    });
+  }
+
+  // Portfolio live ticker
+  if (tickerEl && typeof BhChart !== 'undefined') {
+    if (_portfolioTickerInst) { tickerEl.innerHTML = ''; }
+    _portfolioTickerInst = BhChart.createLiveTicker(tickerEl, {
+      items: [
+        { name: 'Your Portfolio', price: 325000, change: 14.2 },
+        { name: 'Dindori Block IRR', price: 0, change: 16.5 },
+        { name: 'Niphad Block IRR', price: 0, change: 13.8 },
+        { name: 'Onion Price',  price: 1880, change: 1.1 },
+        { name: 'Pulses Price', price: 6200, change: 2.4 },
+        { name: 'Projected Payout', price: 371200, change: 14.2 }
+      ]
+    });
+  }
 }
 
 // ── Multi-Block Analytics & Monitoring Data ───────────────
@@ -1397,13 +1391,28 @@ window.toggleAutoReinvest = function(enabled) {
 var _origSwitch = switchSection;
 switchSection = function(sec) {
   _origSwitch(sec);
-  if (sec === 'bidcharts') { initBidCharts(); }
-  if (sec === 'blocks') { renderBlocks('all'); }
+  if (sec === 'bidcharts')  {
+    updateMarketClock();
+    if (!switchSection._clockInterval) {
+      switchSection._clockInterval = setInterval(updateMarketClock, 1000);
+    }
+    renderBidChartKPIs();
+    renderBidLog();
+    setTimeout(initBidChartsSection, 80);
+  }
+  if (sec === 'blocks')     { renderBlocks('all'); }
+  if (sec === 'portfolio')  { setTimeout(initPortfolioSection, 80); }
 };
 
-// Initialize blocks on load
+window.initBidCharts = initBidCharts;
+window.initBidChartsSection = initBidChartsSection;
+window.initPortfolioSection = initPortfolioSection;
+
+// Initialize on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
   if (typeof renderBlocks === 'function') renderBlocks('all');
+  // Pre-render portfolio charts since it's the likely landing for investors
+  setTimeout(initPortfolioSection, 200);
 });
 </script>
 </body>

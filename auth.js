@@ -27,6 +27,11 @@
 
     logout: function () {
       sessionStorage.removeItem(SESSION_KEY);
+      if (window.BhApi) {
+        BhApi.clearToken();
+        BhApi.disconnect();
+        try { BhApi.logout(); } catch (e) {}
+      }
       window.location.href = 'index.html';
     },
 

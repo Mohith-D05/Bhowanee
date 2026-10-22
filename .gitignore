@@ -11,4 +11,19 @@ desktop.ini
 .agents/
 .gemini/
 
-# No build artefacts — this is a pure static site
+# Root dependencies & env
+node_modules/
+.env
+.env.local
+*.log
+
+# Backend
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/.env.*
+backend/coverage/
+
+# Prisma
+backend/prisma/migrations/
+backend/prisma/*.db
